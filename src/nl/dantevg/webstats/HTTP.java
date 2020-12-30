@@ -8,6 +8,7 @@ import java.util.Scanner;
 public class HTTP {
 	public static void send(PrintWriter out, String code, String data){
 		out.println("HTTP/1.1 " + code);
+		out.println("Access-Control-Allow-Origin: *"); // ADD CORS header
 		out.println();
 		out.println(data);
 		out.flush();

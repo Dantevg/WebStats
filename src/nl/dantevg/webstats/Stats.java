@@ -5,37 +5,42 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.ScoreboardManager;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.util.Set;
 
 public class Stats {
-	public static JSONObject getScoreboard(){
-		ScoreboardManager manager = Bukkit.getScoreboardManager();
-		Scoreboard scoreboard = manager.getMainScoreboard();
-		
-		// Get players
+	public static JSONArray getScoreboardEntries(Scoreboard scoreboard){
 		Set<String> entries = scoreboard.getEntries();
 		JSONArray entriesJson = new JSONArray();
 		entriesJson.addAll(entries);
-		
-		// Get objectives
+		return entriesJson;
+	}
+	
+	public static JSONObject getScoreboardScores(Scoreboard scoreboard){
 		JSONObject objectivesJson = new JSONObject();
 		for (Objective objective : scoreboard.getObjectives()) {
 			JSONObject objectiveJson = new JSONObject();
 			
 			// Get player scores
-			for (String entry : entries) {
+			for (String entry : scoreboard.getEntries()) {
 				Score s = objective.getScore(entry);
 				if(s.isScoreSet()){
 					objectiveJson.put(entry, s.getScore());
 				}
 			}
 			
-			objectivesJson.put(objective.getName(), objectiveJson);
+			objectivesJson.put(objective.getDisplayName(), objectiveJson);
 		}
+		return objectivesJson;
+	}
+	
+	public static JSONObject getScoreboard(){
+		Scoreboard scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
+		
+		JSONArray entriesJson = getScoreboardEntries(scoreboard); // Get players
+		JSONObject objectivesJson = getScoreboardScores(scoreboard); // Get objectives
 		
 		JSONObject scoreboardJson = new JSONObject();
 		scoreboardJson.put("entries", entriesJson);
