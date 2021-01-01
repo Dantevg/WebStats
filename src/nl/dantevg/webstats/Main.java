@@ -12,8 +12,8 @@ public class Main extends JavaPlugin implements Runnable {
 	@Override
 	public void onEnable() {
 		// Config
-		this.saveDefaultConfig();
-		this.port = this.getConfig().getInt("port");
+		saveDefaultConfig();
+		port = getConfig().getInt("port");
 		
 		// Start server in a new thread, otherwise `serverSocket.accept()` will block the main thread
 		Thread thread = new Thread(this, "WebStats");

@@ -8,6 +8,7 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.util.List;
 import java.util.Set;
 
 public class Stats {
@@ -19,8 +20,14 @@ public class Stats {
 	}
 	
 	public static JSONObject getScoreboardScores(Scoreboard scoreboard){
+		List<String> objectivesFilter = Main.getPlugin(Main.class).getConfig().getStringList("objectives");
+		boolean allObjectives = objectivesFilter.contains("*");
+		
 		JSONObject objectivesJson = new JSONObject();
 		for (Objective objective : scoreboard.getObjectives()) {
+			// Filter objectives
+			if(!allObjectives && !objectivesFilter.contains(objective.getDisplayName())) continue;
+			
 			JSONObject objectiveJson = new JSONObject();
 			
 			// Get player scores
@@ -52,7 +59,7 @@ public class Stats {
 	public static JSONArray getOnline(){
 		JSONArray playersJson = new JSONArray();
 		for(Player p : Bukkit.getOnlinePlayers()){
-			playersJson.add(p.getDisplayName());
+			playersJson.add(p.getName());
 		}
 		return playersJson;
 	}

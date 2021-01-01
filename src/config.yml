@@ -1,1 +1,10 @@
+# Configuration file for WebStats
+
+# Port to use for the service. Make sure that this port corresponds
+# to the one set in the web page js script
 port: 8080
+
+# Objectives to use. When '*' is present, uses all objectives.
+# (make sure to enclose the '*' in quotes)
+objectives:
+  - '*'
