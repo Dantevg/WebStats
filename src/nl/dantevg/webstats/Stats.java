@@ -56,10 +56,11 @@ public class Stats {
 		return scoreboardJson;
 	}
 	
-	public static JSONArray getOnline(){
-		JSONArray playersJson = new JSONArray();
+	public static JSONObject getOnline(){
+		JSONObject playersJson = new JSONObject();
+		boolean hasEssentials = Bukkit.getPluginManager().getPlugin("Essentials") != null;
 		for(Player p : Bukkit.getOnlinePlayers()){
-			playersJson.add(p.getName());
+			playersJson.put(p.getName(), (hasEssentials && AFKHelper.isAFK(p)) ? "afk" : true);
 		}
 		return playersJson;
 	}
