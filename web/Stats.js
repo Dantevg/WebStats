@@ -12,12 +12,15 @@ class WebStats {
 		this.display = new Display(table, sortBy, descending)
 		this.connection = new Connection(ip, port)
 		
-		setInterval(() => {
-			if(document.hidden) return
-			console.log("update online status")
-			this.connection.getOnline().then(this.display.updateOnlineStatus.bind(this.display))
-		}, WebStats.updateInterval)
+		// Set online status update interval
+		if(WebStats.updateInterval > 0){
+			setInterval(() => {
+				if(document.hidden) return
+				this.connection.getOnline().then(this.display.updateOnlineStatus.bind(this.display))
+			}, WebStats.updateInterval)
+		}
 		
+		// Get data and init
 		this.connection.getStats().then(data => this.init(data))
 	}
 	
