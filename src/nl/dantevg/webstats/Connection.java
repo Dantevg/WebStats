@@ -3,6 +3,7 @@ package nl.dantevg.webstats;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.*;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class Connection {
@@ -17,8 +18,11 @@ public class Connection {
 			// Route to correct end point
 			route(HTTP.parseHeader(in), out);
 			
-		} catch (IOException | URISyntaxException e) {
+		} catch (IOException e) {
 			System.err.println(e.getMessage());
+		} catch (URISyntaxException | NoSuchElementException e) {
+			System.err.println(e.getMessage());
+			HTTP.send(out, "400 BAD REQUEST", "");
 		} finally {
 			// Close input and output streams
 			try {

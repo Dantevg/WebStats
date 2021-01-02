@@ -3,6 +3,7 @@ package nl.dantevg.webstats;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class HTTP {
@@ -14,7 +15,7 @@ public class HTTP {
 		out.flush();
 	}
 	
-	public static URI parseHeader(Scanner in) throws URISyntaxException {
+	public static URI parseHeader(Scanner in) throws URISyntaxException, NoSuchElementException {
 		in.next();
 		String url = in.next();
 		in.nextLine();
