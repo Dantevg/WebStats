@@ -11,9 +11,9 @@ Exposes scoreboard and player online/AFK status to a webpage.
 **On web server:**
 Include the source files:
 ```html
-<script src="/js/Display.js"></script>
-<script src="/js/Connection.js"></script>
-<script src="/js/Stats.js"></script>
+<script src="Display.js"></script>
+<script src="Connection.js"></script>
+<script src="Stats.js"></script>
 ```
 
 Initialise WebStats after page load:
