@@ -19,9 +19,9 @@ public class Connection {
 			route(HTTP.parseHeader(in), out);
 			
 		} catch (IOException e) {
-			System.err.println(e.getMessage());
+			System.err.println("Failed to open I/O stream: " + e.getMessage());
 		} catch (URISyntaxException | NoSuchElementException e) {
-			System.err.println(e.getMessage());
+			System.err.println("Failed to parse URI: " + e.getMessage());
 			HTTP.send(out, "400 BAD REQUEST", "");
 		} finally {
 			// Close input and output streams
@@ -29,14 +29,16 @@ public class Connection {
 				in.close();
 				out.close();
 				socket.close();
-			} catch (Exception e) {
+			} catch (NullPointerException | IOException e) {
 				System.err.println("Error closing stream: " + e.getMessage());
 			}
 		}
 	}
 	
-	private static void route(URI uri, PrintWriter out){
-		switch(uri.getPath()){
+	private static void route(URI uri, PrintWriter out) throws NoSuchElementException {
+		String path = uri.getPath();
+		if(path == null) throw new NoSuchElementException();
+		switch(path){
 			case "/stats.json":
 				HTTP.send(out, "200 OK", Stats.getAll().toString());
 				break;
