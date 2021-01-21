@@ -1,0 +1,21 @@
+21.01 11:47:53 [Server] WARN null
+21.01 11:47:55 [Server] WARN null
+21.01 11:47:56 [Server] WARN No line found
+21.01 11:47:58 [Server] WARN null
+21.01 11:47:59 [Server] WARN null
+21.01 11:48:02 [Server] WARN No line found
+21.01 11:48:04 [Server] WARN No line found
+21.01 11:48:05 [Server] WARN No line found
+21.01 11:48:07 [Server] WARN null
+21.01 11:48:08 [Server] WARN Illegal character in path at index 0: fedcba`
+21.01 11:48:09 [Server] WARN Illegal character in path at index 30: ??random1random2random3random4
+21.01 11:48:11 [Server] WARN Illegal character in path at index 2: ??^0\?P??NM?
+21.01 11:48:14 [Server] WARN No line found
+21.01 11:48:16 [Server] WARN null
+21.01 11:48:16 [Server] WARN Illegal character in path at index 0:
+21.01 11:48:17 [Server] WARN No line found
+21.01 11:48:17 [Server] WARN Exception in thread "WebStats" java.lang.NullPointerException
+21.01 11:48:17 [Server] WARN at nl.dantevg.webstats.Connection.route(Connection.java:39)
+21.01 11:48:17 [Server] WARN at nl.dantevg.webstats.Connection.start(Connection.java:19)
+21.01 11:48:17 [Server] WARN at nl.dantevg.webstats.Main.run(Main.java:33)
+21.01 11:48:17 [Server] WARN at java.lang.Thread.run(Thread.java:748)
