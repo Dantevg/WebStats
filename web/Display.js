@@ -34,16 +34,6 @@ class Display {
 			let status = this.prependElement(name, "div")
 			status.classList.add("status")
 			
-			if(data.online[entry] === true){
-				status.classList.add("online")
-				status.setAttribute("title", "online")
-			}else if(data.online[entry] === "afk"){
-				status.classList.add("afk")
-				status.setAttribute("title", "afk")
-			}else{
-				status.setAttribute("title", "offline")
-			}
-			
 			// Append empty elements for alignment
 			for(const objective of data.scoreboard.objectives){
 				let td = this.appendElement(tr, "td")
@@ -54,30 +44,40 @@ class Display {
 		}
 		
 		// Fill entries
-		for(const objective of data.scoreboard.objectives){
-			const entries = data.scoreboard.scores[objective]
-			for(const entry in entries){
-				let td = this.table.querySelector("tr[entry='"
-					+ Display.quoteEscape(entry) + "'] td[objective='"
-					+ Display.quoteEscape(objective) + "']")
-				if(!td) continue
+		this.updateStats(data)
+	}
+	
+	updateScoreboard(scoreboard){
+		const rows = this.table.querySelectorAll("tr")
+		for(const row of rows){
+			const entry = row.getAttribute("entry")
+			for(const td of row.querySelectorAll("td")){
+				const objective = td.getAttribute("objective")
+				const value = scoreboard.scores[objective]?.[entry]
+				if(!value) continue
 				td.classList.remove("empty")
-				td.setAttribute("value", entries[entry])
-				td.innerText = Number(entries[entry]).toLocaleString()
+				td.setAttribute("value", value)
+				td.innerText = Number(value).toLocaleString()
 			}
 		}
 	}
 	
-	updateOnlineStatus(data){
+	updateOnlineStatus(online){
 		const rows = this.table.querySelectorAll("tr")
 		for(const row of rows){
 			const entry = row.getAttribute("entry")
 			const statusElement = row.querySelector(".status")
 			if(statusElement){
-				statusElement.classList.toggle("online", data[entry] === true)
-				statusElement.classList.toggle("afk", data[entry] === "afk")
+				statusElement.classList.toggle("online", online[entry] === true)
+				statusElement.classList.toggle("afk", online[entry] === "afk")
+				statusElement.setAttribute("title", Display.statusToName(online[entry]))
 			}
 		}
+	}
+	
+	updateStats(data){
+		this.updateScoreboard(data.scoreboard)
+		this.updateOnlineStatus(data.online)
 	}
 	
 	appendElement(base, type){
@@ -153,5 +153,8 @@ class Display {
 			return (descending ? -1 : 1) * a.localeCompare(b, undefined, {sensitivity: "base"})
 		}
 	}
+	
+	static statusToName = status =>
+		status === true ? "online" : (status === "afk" ? "afk" : "offline")
 	
 }
