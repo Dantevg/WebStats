@@ -6,16 +6,18 @@ class Display {
 	}
 	
 	init(data){
+		this.data = new Data(data)
+		
 		// Create header of objectives
 		let trHeader = document.createElement("tr")
 		this.appendTh(trHeader, "Player").setAttribute("colspan", 2)
 		this.table.append(trHeader)
-		for(const objective of data.scoreboard.objectives){
+		for(const objective of this.data.objectives){
 			this.appendTh(trHeader, objective)
 		}
 		
 		// Create rows of (empty) entries
-		for(const entry of data.scoreboard.entries){
+		for(const entry of this.data.entries){
 			let tr = document.createElement("tr")
 			tr.setAttribute("entry", Display.quoteEscape(entry))
 			
@@ -35,7 +37,7 @@ class Display {
 			status.classList.add("status")
 			
 			// Append empty elements for alignment
-			for(const objective of data.scoreboard.objectives){
+			for(const objective of this.data.objectives){
 				let td = this.appendElement(tr, "td")
 				td.classList.add("empty")
 				td.setAttribute("objective", Display.quoteEscape(objective))
@@ -48,12 +50,13 @@ class Display {
 	}
 	
 	updateScoreboard(scoreboard){
+		this.data.setScoreboard(scoreboard)
 		const rows = this.table.querySelectorAll("tr")
 		for(const row of rows){
 			const entry = row.getAttribute("entry")
 			for(const td of row.querySelectorAll("td")){
 				const objective = td.getAttribute("objective")
-				const value = scoreboard.scores[objective]?.[entry]
+				const value = this.data.scores[objective]?.[entry]
 				if(!value) continue
 				td.classList.remove("empty")
 				td.setAttribute("value", value)
@@ -63,14 +66,15 @@ class Display {
 	}
 	
 	updateOnlineStatus(online){
+		this.data.setOnlineStatus(online)
 		const rows = this.table.querySelectorAll("tr")
 		for(const row of rows){
 			const entry = row.getAttribute("entry")
 			const statusElement = row.querySelector(".status")
 			if(statusElement){
-				statusElement.classList.toggle("online", online[entry] === true)
-				statusElement.classList.toggle("afk", online[entry] === "afk")
-				statusElement.setAttribute("title", Display.statusToName(online[entry]))
+				statusElement.classList.toggle("online", this.data.isOnline(entry))
+				statusElement.classList.toggle("afk", this.data.isAFK(entry))
+				statusElement.setAttribute("title", this.data.getStatus(entry))
 			}
 		}
 	}
@@ -153,8 +157,5 @@ class Display {
 			return (descending ? -1 : 1) * a.localeCompare(b, undefined, {sensitivity: "base"})
 		}
 	}
-	
-	static statusToName = status =>
-		status === true ? "online" : (status === "afk" ? "afk" : "offline")
 	
 }
