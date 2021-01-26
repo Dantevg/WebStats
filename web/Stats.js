@@ -22,7 +22,8 @@ class WebStats {
 	}
 	
 	init(data){
-		this.display.init(data) // Display data in table
+		this.data = new Data(data)
+		this.display.init(this.data) // Display data in table
 		
 		// Get sorting from url params, if present
 		const params = (new URL(document.location)).searchParams
@@ -33,7 +34,12 @@ class WebStats {
 	}
 	
 	update(){
-		this.connection.getStats().then(this.display.updateStats.bind(this.display))
+		// When nobody is online, assume scoreboard does not change
+		if(this.data.nOnline > 0){
+			this.connection.getStats().then(this.display.updateStats.bind(this.display))
+		}else{
+			this.connection.getOnline().then(this.display.updateOnlineStatus.bind(this.display))
+		}
 	}
 	
 	startUpdateInterval(first){

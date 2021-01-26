@@ -11,15 +11,13 @@ class Data {
 		}
 		return this.objectivesmemo
 	}
-	
 	get entries(){ return this.scoreboard.entries }
-	
 	get scores(){ return this.scoreboard.scores }
-	
 	get online(){ return this.players }
+	get nOnline(){ return Object.keys(this.players).length }
 	
 	getScore = (entry, objective) => this.scoreboard.scores[objective][entry]
-
+	
 	isOnline = player => this.players[player] === true
 	isAFK = player => this.players[player] === "afk"
 	isOffline = player => !!this.players[player]
@@ -30,7 +28,7 @@ class Data {
 		this.objectivesmemo = undefined // Reset memoised array
 	}
 	setOnlineStatus = online => this.players = online
-	setAll(data){
+	setStats(data){
 		this.setScoreboard(data.scoreboard)
 		this.setOnlineStatus(data.online)
 	}

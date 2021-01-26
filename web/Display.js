@@ -6,7 +6,7 @@ class Display {
 	}
 	
 	init(data){
-		this.data = new Data(data)
+		this.data = data
 		
 		// Create header of objectives
 		let trHeader = document.createElement("tr")
