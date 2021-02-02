@@ -24,6 +24,7 @@ class Display {
 			// Append skin image
 			let img = this.appendElement(tr, "td")
 			this.appendImg(img, "https://www.mc-heads.net/avatar/" + entry + ".png")
+				.setAttribute("alt", entry)
 			img.classList.add("sticky")
 			img.setAttribute("title", entry)
 			
