@@ -11,6 +11,7 @@ Exposes scoreboard and player online/AFK status to a webpage.
 **On web server:**
 Include the source files:
 ```html
+<script src="Data.js"></script>
 <script src="Display.js"></script>
 <script src="Connection.js"></script>
 <script src="Stats.js"></script>
@@ -31,5 +32,9 @@ window.onload = () => {
 	})
 }
 ```
+
+## Plugin config file
+- `port`: the port number to use. Make sure you open a port on the Minecraft server and place it here
+- `objectives`: the list of objectives to send from server to webpage. `*` means all objectives
 
 [1]: https://github.com/Dantevg/WebStats/releases
