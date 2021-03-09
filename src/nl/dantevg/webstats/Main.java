@@ -7,6 +7,8 @@ import java.net.ServerSocket;
 
 public class Main extends JavaPlugin implements Runnable {
 	private int port;
+	private Thread thread;
+	private boolean active = true;
 	
 	// Gets run when the plugin is enabled on server startup
 	@Override
@@ -16,8 +18,18 @@ public class Main extends JavaPlugin implements Runnable {
 		port = getConfig().getInt("port");
 		
 		// Start server in a new thread, otherwise `serverSocket.accept()` will block the main thread
-		Thread thread = new Thread(this, "WebStats");
+		thread = new Thread(this, "WebStats");
 		thread.start();
+	}
+	
+	@Override
+	public void onDisable() {
+		active = false;
+		try {
+			thread.join(100); // Wait max 0.1s for the thread to stop
+		} catch (InterruptedException e) {
+			// Ignore
+		}
 	}
 	
 	// Gets run in the new thread created on server startup
@@ -28,7 +40,7 @@ public class Main extends JavaPlugin implements Runnable {
 			System.out.println("Web stats server started on port " + port);
 			
 			// Accept new connections
-			while(true){
+			while (active) {
 				// Only one connection at a time possible, I don't expect heavy traffic
 				Connection.start(serverSocket.accept());
 			}
