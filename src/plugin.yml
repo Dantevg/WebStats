@@ -1,7 +1,7 @@
 main: nl.dantevg.webstats.Main
 name: WebStats
-version: 1.2.2
-description: Exposes the scoreboard and other statistics to the web
+version: 1.3.1
+description: View the scoreboard and player online status on the web
 author: RedPolygon
 website: dantevg.nl/mods-plugins/WebStats
 softdepend: [Essentials]
