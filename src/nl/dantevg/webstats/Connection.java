@@ -24,7 +24,7 @@ public class Connection {
 			System.err.println("Failed to open I/O stream: " + e.getMessage());
 		} catch (URISyntaxException | NoSuchElementException e) {
 			System.err.println("Failed to parse URI: " + e.getMessage());
-			System.err.println("HTTP request line: " + firstLine);
+			System.err.println("IP: " + socket.getInetAddress().toString() + ", HTTP request line: " + firstLine);
 			HTTP.send(out, HTTP.STATUS_BAD_REQUEST, "");
 		} finally {
 			// Close input and output streams in the order they were defined
