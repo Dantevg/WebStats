@@ -1,0 +1,66 @@
+29.03 02:30:09 [Server] WARN Failed to parse URI: No line found
+29.03 02:30:09 [Server] WARN HTTP request line: 
+29.03 02:30:09 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:09 [Server] WARN HTTP request line: #ST
+29.03 02:30:10 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:10 [Server] WARN HTTP request line: nbeio
+29.03 02:30:12 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:12 [Server] WARN HTTP request line: 
+29.03 02:30:12 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:12 [Server] WARN HTTP request line: 
+29.03 02:30:13 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:13 [Server] WARN HTTP request line: ?(r????|
+29.03 02:30:15 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:15 [Server] WARN HTTP request line: versionbind
+29.03 02:30:16 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:16 [Server] WARN HTTP request line: 
+29.03 02:30:16 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:16 [Server] WARN HTTP request line: HELP
+29.03 02:30:16 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:16 [Server] WARN HTTP request line: SO?G???,???`~???{????w????<=(
+29.03 02:30:16 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:16 [Server] WARN HTTP request line: ieU??random1random2random3random4/
+29.03 02:30:17 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:17 [Server] WARN HTTP request line: qj0??
+29.03 02:30:20 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:20 [Server] WARN HTTP request line: l
+29.03 02:30:20 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:20 [Server] WARN HTTP request line: default
+29.03 02:30:20 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:20 [Server] WARN HTTP request line: 0?-c?$
+29.03 02:30:21 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:21 [Server] WARN HTTP request line: 0`?
+29.03 02:30:21 [Server] WARN Failed to parse URI: No path present in request URI
+29.03 02:30:21 [Server] WARN HTTP request line: OPTIONS sip:nm SIP/2.0
+29.03 02:30:23 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:23 [Server] WARN HTTP request line: TNMPTNME
+29.03 02:30:24 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:24 [Server] WARN HTTP request line: ?
+29.03 02:30:26 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:26 [Server] WARN HTTP request line: DmdT??
+29.03 02:30:27 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:27 [Server] WARN HTTP request line: :/@=/@
+29.03 02:30:29 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:29 [Server] WARN HTTP request line: JRMIK
+29.03 02:30:30 [Server] WARN Failed to parse URI: Illegal character in path at index 0: {AA-A-a-AAA-AAAAA}?_
+29.03 02:30:30 [Server] WARN HTTP request line: ?????MMS????NSPlayer/9...98; {AA-A-a-AAA-AAAAA}?_
+29.03 02:30:32 [Server] WARN Failed to parse URI: Illegal character in scheme name at index 0: :?(CONNECT_DATA=(COMMAND=version))
+29.03 02:30:32 [Server] WARN HTTP request line: Z6,? :?(CONNECT_DATA=(COMMAND=version))
+29.03 02:30:33 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:33 [Server] WARN HTTP request line: 4(?UMSSQLServerH
+29.03 02:30:35 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:35 [Server] WARN HTTP request line: 
+29.03 02:30:36 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:36 [Server] WARN HTTP request line: GIOP$abcdefget
+29.03 02:30:38 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:38 [Server] WARN HTTP request line: ?+<M?onebeio
+29.03 02:30:39 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:39 [Server] WARN HTTP request line: 
+29.03 02:30:41 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:41 [Server] WARN HTTP request line: ?_@7InitiatorName=iqn.1991-05.com.microsoft:beio-iscsi-probeSessionType=DiscoveryAuthMethod=None
+29.03 02:30:42 [Server] WARN Failed to parse URI: Illegal character in scheme name at index 0: .01.2.840.10008.1.1@1.2.840.10008.1.2P:Q@R1.2.826.0.1.3680043.2.1396.999UCharruaVista
+29.03 02:30:42 [Server] WARN HTTP request line: ?ANY-SCPFINDSCU1.2.840.10008.3.1.1.1 .01.2.840.10008.1.1@1.2.840.10008.1.2P:Q@R1.2.826.0.1.3680043.2.1396.999UCharruaVista
+29.03 02:30:44 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:44 [Server] WARN HTTP request line: 
+29.03 02:30:44 [Server] WARN Failed to parse URI: No request URI present in HTTP request
+29.03 02:30:44 [Server] WARN HTTP request line: I20100
