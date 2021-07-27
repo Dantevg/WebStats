@@ -1,20 +1,7 @@
-<pre>
 <?php
 
-require("data.php");
+require("database.php");
 require("convert.php");
-
-function convert($table, $config_item, $converters){
-	if(!array_key_exists("convert", $config_item)) return $table;
-	foreach($config_item["convert"] as $command){
-		if(!array_key_exists($command[0], $converters)){
-			echo "no such converter: ".$command[0]."<br>";
-			continue;
-		}
-		foreach($table as &$row) $row = $converters[$command[0]]($row, $config_item, $command);
-	}
-	return $table;
-}
 
 // Read config file
 $config_string = file_get_contents("config.json");
@@ -51,8 +38,6 @@ foreach($players as $player_name => $scores){
 }
 
 // Output
-// echo(json_encode($data));
-print_r($data);
+echo(json_encode($data));
 
 ?>
-</pre>
