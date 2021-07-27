@@ -8,9 +8,9 @@
 class WebStats {
 	static updateInterval = 10000
 	
-	constructor({table, ip, port, sortBy, descending}){
+	constructor({table, ip, port, connection, sortBy, descending}){
 		this.display = new Display(table, sortBy, descending)
-		this.connection = new Connection(ip, port)
+		this.connection = connection ?? Connection.json(ip, port)
 		
 		// Set online status update interval
 		if(WebStats.updateInterval > 0) this.startUpdateInterval(true)
