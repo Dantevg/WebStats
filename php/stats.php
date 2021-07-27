@@ -4,25 +4,14 @@
 require("data.php");
 require("convert.php");
 
-function convert_table($table, $config_item, $converters){
+function convert($table, $config_item, $converters){
 	if(!array_key_exists("convert", $config_item)) return $table;
-	foreach($config_item["convert"] as $converter){
-		if(!array_key_exists($converter, $converters)){
-			echo "no such converter: ".$converter."<br>";
+	foreach($config_item["convert"] as $command){
+		if(!array_key_exists($command[0], $converters)){
+			echo "no such converter: ".$command[0]."<br>";
 			continue;
 		}
-		foreach($table as &$row) $row = $converters[$converter]($row, $config_item);
-	}
-	return $table;
-}
-
-function rename_columns($table, $config_item){
-	if(!array_key_exists("renameColumns", $config_item)) return $table;
-	foreach($config_item["renameColumns"] as $from => $to){
-		foreach($table as &$row){
-			$row[$to] = $row[$from];
-			unset($row[$from]);
-		}
+		foreach($table as &$row) $row = $converters[$command[0]]($row, $config_item, $command);
 	}
 	return $table;
 }
@@ -37,8 +26,7 @@ $main_key = "player";
 $entries = array();
 foreach($config as $config_item){
 	$table = get_table($config_item["database"], $config_item["table"]);
-	$table = convert_table($table, $config_item, $converters);
-	$table = rename_columns($table, $config_item);
+	$table = convert($table, $config_item, $converters);
 	$entries = array_merge($entries, $table);
 }
 
@@ -63,8 +51,8 @@ foreach($players as $player_name => $scores){
 }
 
 // Output
-echo(json_encode($data));
-// print_r($data);
+// echo(json_encode($data));
+print_r($data);
 
 ?>
 </pre>
