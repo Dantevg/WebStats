@@ -34,12 +34,18 @@ class Data {
 	}
 	
 	filter(){
-		// Remove non-player entries and sort
-		this.scoreboard.entries = this.scoreboard.entries.filter(Data.isPlayer).sort(Intl.Collator().compare)
+		// Remove non-player / empty entries and sort
+		this.scoreboard.entries = this.scoreboard.entries
+			.filter(Data.isPlayer)
+			.filter(this.isNonemptyEntry.bind(this))
+			.sort(Intl.Collator().compare)
 		
 		// Remove empty objectives
 		this.scoreboard.scores = Data.filter(this.scoreboard.scores, Data.isNonemptyObjective)
 	}
+	
+	// Ignore all entries which have no scores (armour stand book fix)
+	isNonemptyEntry = entry => Object.entries(this.scores).filter(([_,score]) => score[entry]).length > 0
 	
 	// Only entries which don't start with '#' and don't contain only digits are marked as players
 	static isPlayer = entry => !entry.startsWith("#") && !entry.match(/^\d*$/)
@@ -50,6 +56,6 @@ class Data {
 	// Array-like filter function for objects
 	// https://stackoverflow.com/a/37616104
 	static filter = (obj, predicate) =>
-		Object.fromEntries( Object.entries(obj).filter(([_k,v]) => predicate(v)) )
+		Object.fromEntries( Object.entries(obj).filter(([_,v]) => predicate(v)) )
 	
 }
