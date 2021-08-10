@@ -4,14 +4,20 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main extends JavaPlugin implements Runnable {
+	public static Logger logger;
+	
 	private ServerSocket serverSocket;
 	private Thread thread;
 	
 	// Gets run when the plugin is enabled on server startup
 	@Override
 	public void onEnable() {
+		logger = getLogger();
+		
 		// Config
 		saveDefaultConfig();
 		int port = getConfig().getInt("port");
@@ -19,13 +25,13 @@ public class Main extends JavaPlugin implements Runnable {
 		try {
 			// Open server socket
 			serverSocket = new ServerSocket(port);
-			System.out.print("Web stats server started on port " + port);
+			logger.log(Level.INFO, "Web stats server started on port " + port);
 			
 			// Start server in a new thread, otherwise `serverSocket.accept()` will block the main thread
 			thread = new Thread(this, "WebStats");
 			thread.start();
 		} catch (IOException e) {
-			System.err.print("Failed to open socket: " + e.getMessage());
+			logger.log(Level.SEVERE, "Failed to open socket: " + e.getMessage(), e);
 		}
 	}
 	
@@ -36,7 +42,7 @@ public class Main extends JavaPlugin implements Runnable {
 		try {
 			serverSocket.close();
 		} catch (IOException e) {
-			System.err.print("Failed to close socket: " + e.getMessage());
+			logger.log(Level.WARNING, "Failed to close socket: " + e.getMessage(), e);
 		}
 		// Stop thread
 		try {
@@ -58,7 +64,7 @@ public class Main extends JavaPlugin implements Runnable {
 		} catch (IOException e) {
 			if(!serverSocket.isClosed()){
 				// Print error when the socket was not closed (otherwise just stop)
-				System.err.print("IO Exception: " + e.getMessage());
+				logger.log(Level.WARNING, "IO Exception: " + e.getMessage(), e);
 			}
 		}
 	}

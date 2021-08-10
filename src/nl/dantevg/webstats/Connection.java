@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.net.*;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
+import java.util.logging.Level;
 
 public class Connection {
 	public static void start(Socket socket) {
@@ -21,10 +22,10 @@ public class Connection {
 			route(HTTP.parseHeader(firstLine), out);
 			
 		} catch (IOException e) {
-			System.err.println("Failed to open I/O stream: " + e.getMessage());
+			Main.logger.log(Level.WARNING, "Failed to open I/O stream: " + e.getMessage(), e);
 		} catch (URISyntaxException | NoSuchElementException e) {
-			System.err.println("Failed to parse URI: " + e.getMessage());
-			System.err.println("IP: " + socket.getInetAddress().toString() + ", HTTP request line: " + firstLine);
+			Main.logger.log(Level.FINE, "Failed to parse URI: " + e.getMessage(), e);
+			Main.logger.log(Level.FINE, "IP: " + socket.getInetAddress().toString() + ", HTTP request line: " + firstLine);
 			HTTP.send(out, HTTP.STATUS_BAD_REQUEST, "");
 		} finally {
 			// Close input and output streams in the order they were defined
@@ -33,7 +34,7 @@ public class Connection {
 				in.close();
 				out.close();
 			} catch (NullPointerException | IOException e) {
-				System.err.println("Error closing stream: " + e.getMessage());
+				Main.logger.log(Level.WARNING, "Error closing stream: " + e.getMessage(), e);
 			}
 		}
 	}
