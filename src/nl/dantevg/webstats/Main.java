@@ -1,5 +1,6 @@
 package nl.dantevg.webstats;
 
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
@@ -8,7 +9,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Main extends JavaPlugin implements Runnable {
-	public static Logger logger;
+	protected static Logger logger;
+	protected static FileConfiguration config;
+	
+	protected static ScoreboardSource scoreboardSource;
+	protected static DatabaseSource databaseSource;
 	
 	private ServerSocket serverSocket;
 	private Thread thread;
@@ -17,10 +22,15 @@ public class Main extends JavaPlugin implements Runnable {
 	@Override
 	public void onEnable() {
 		logger = getLogger();
+		config = getConfig();
 		
 		// Config
 		saveDefaultConfig();
-		int port = getConfig().getInt("port");
+		int port = config.getInt("port");
+		
+		// Set sources
+		if (config.contains("objectives")) scoreboardSource = new ScoreboardSource();
+		if (config.contains("database")) databaseSource = new DatabaseSource();
 		
 		try {
 			// Open server socket
@@ -59,13 +69,15 @@ public class Main extends JavaPlugin implements Runnable {
 			while (!serverSocket.isClosed()) {
 				// Accept new connections
 				// Only one connection at a time possible, I don't expect heavy traffic
-				Connection.start(serverSocket.accept());
+				HTTPConnection.start(serverSocket.accept());
 			}
 		} catch (IOException e) {
-			if(!serverSocket.isClosed()){
+			if (!serverSocket.isClosed()) {
 				// Print error when the socket was not closed (otherwise just stop)
 				logger.log(Level.WARNING, "IO Exception: " + e.getMessage(), e);
 			}
+		} finally {
+			if (databaseSource != null) databaseSource.disconnect();
 		}
 	}
 	

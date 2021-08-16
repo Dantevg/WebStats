@@ -4,7 +4,22 @@
 # to the one set in the web page js script
 port: 8080
 
-# Objectives to use. When '*' is present, uses all objectives.
+# Scoreboard objectives to use. When '*' is present, uses all objectives.
 # (make sure to enclose the '*' in quotes)
 objectives:
   - '*'
+
+# Configuration for the MySQL database connectivity. Uncomment to use.
+# See ??? for info on how to format (TODO!)
+#database:
+#  hostname: localhost
+#  username: DATABASE USERNAME
+#  password: DATABASE PASSWORD
+#  config:
+#    - database: DATABASE NAME
+#      table: TABLE NAME
+#      convert: # Some examples, refer to documentation for explanations
+#        - [rename, from-column, to-column]
+#        - [json, column]
+#        - [key-value, key-column, value-column]
+#        - [uuid, column]

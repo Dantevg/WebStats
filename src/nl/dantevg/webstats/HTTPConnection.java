@@ -7,7 +7,7 @@ import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.logging.Level;
 
-public class Connection {
+public class HTTPConnection {
 	public static void start(Socket socket) {
 		Scanner in = null;
 		PrintWriter out = null;
@@ -44,10 +44,7 @@ public class Connection {
 		if (path == null) throw new NoSuchElementException("No path present in request URI");
 		switch (path) {
 			case "/stats.json":
-				HTTP.send(out, HTTP.STATUS_OK, Stats.getAll().toString());
-				break;
-			case "/scoreboard.json":
-				HTTP.send(out, HTTP.STATUS_OK, Stats.getScoreboard().toString());
+				HTTP.send(out, HTTP.STATUS_OK, Stats.getStats().toString());
 				break;
 			case "/online.json":
 				HTTP.send(out, HTTP.STATUS_OK, Stats.getOnline().toString());
