@@ -30,6 +30,8 @@ public class DatabaseConverter {
 		List<Map<String, String>> data = conn.getTable(table);
 		for (List<String> command : conversions) {
 			switch (command.get(0)) {
+				case "filter" -> filter(data, command);
+				case "remove" -> remove(data, command);
 				case "rename" -> rename(data, command);
 				case "key-value" -> key_value(data, command);
 				case "json" -> json(data, command);
@@ -38,6 +40,22 @@ public class DatabaseConverter {
 			}
 		}
 		return data;
+	}
+	
+	// [filter, column...]
+	private static void filter(List<Map<String, String>> data, List<String> command) {
+		for (Map<String, String> row : data) {
+			// key does not appear in argument list (or key is "filter")
+			row.entrySet().removeIf(entry -> command.indexOf(entry.getKey()) <= 0);
+		}
+	}
+	
+	// [remove, column...]
+	private static void remove(List<Map<String, String>> data, List<String> command) {
+		for (Map<String, String> row : data) {
+			// key does appear in argument list (or key is "filter")
+			row.entrySet().removeIf(entry -> command.indexOf(entry.getKey()) > 0);
+		}
 	}
 	
 	// [rename, from, to]
