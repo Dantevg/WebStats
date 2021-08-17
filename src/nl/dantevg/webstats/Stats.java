@@ -30,6 +30,11 @@ public class Stats {
 			entries.addAll(entriesScores.entries);
 			scores.putAll(entriesScores.scores);
 		}
+		if (Main.placeholderSource != null) {
+			EntriesScores entriesScores = Main.placeholderSource.getStats();
+			entries.addAll(entriesScores.entries);
+			scores.putAll(entriesScores.scores);
+		}
 		
 		JSONObject scoreboardJson = new JSONObject();
 		scoreboardJson.put("entries", entries);

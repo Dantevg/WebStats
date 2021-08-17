@@ -1,5 +1,6 @@
 package nl.dantevg.webstats;
 
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -14,6 +15,7 @@ public class Main extends JavaPlugin implements Runnable {
 	
 	protected static ScoreboardSource scoreboardSource;
 	protected static DatabaseSource databaseSource;
+	protected static PlaceholderSource placeholderSource;
 	
 	private ServerSocket serverSocket;
 	private Thread thread;
@@ -31,6 +33,13 @@ public class Main extends JavaPlugin implements Runnable {
 		// Set sources
 		if (config.contains("objectives")) scoreboardSource = new ScoreboardSource();
 		if (config.contains("database")) databaseSource = new DatabaseSource();
+		if (config.contains("placeholders")) {
+			if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
+				placeholderSource = new PlaceholderSource();
+			} else {
+				logger.log(Level.WARNING, "PlaceholderAPI not present but config contains placeholders (comment to remove this warning)");
+			}
+		}
 		
 		try {
 			// Open server socket
@@ -50,7 +59,7 @@ public class Main extends JavaPlugin implements Runnable {
 	public void onDisable() {
 		// Close socket
 		try {
-			serverSocket.close();
+			if (serverSocket != null) serverSocket.close();
 		} catch (IOException e) {
 			logger.log(Level.WARNING, "Failed to close socket: " + e.getMessage(), e);
 		}
