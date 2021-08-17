@@ -97,10 +97,10 @@ public class DatabaseConverter {
 		for (Map<String, String> row : data) {
 			String column = command.get(1);
 			UUID uuid = UUID.fromString(row.get(column));
-			row.remove(column);
 			String name = Bukkit.getOfflinePlayer(uuid).getName();
 			if (name == null) name = getPlayerNameOnline(uuid);
 			if (name != null) {
+				row.remove(column);
 				row.put("player", name);
 			} else {
 				Main.logger.log(Level.WARNING, "unable to get player name for UUID " + uuid.toString());
