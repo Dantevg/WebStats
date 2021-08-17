@@ -13,10 +13,14 @@ public class DatabaseSource {
 	private final Map<String, DatabaseConnection> connections = new HashMap<>();
 	private final List<DatabaseConverter> conversions = new ArrayList<>();
 	
-	public DatabaseSource() {
+	public DatabaseSource() throws ConfigurationException {
 		String hostname = Main.config.getString("database.hostname");
 		String username = Main.config.getString("database.username");
 		String password = Main.config.getString("database.password");
+		
+		if (hostname == null || username == null || password == null) {
+			throw new ConfigurationException("Invalid configuration: missing hostname, username or password");
+		}
 		
 		List<Map<?, ?>> configItems = Main.config.getMapList("database.config");
 		for (Map<?, ?> configItem : configItems) {

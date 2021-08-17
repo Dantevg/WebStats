@@ -45,6 +45,7 @@ public class DatabaseConnection {
 	
 	public List<Map<String, String>> getTable(String table) {
 		List<Map<String, String>> data = new ArrayList<>();
+		if (conn == null) return data;
 		try {
 			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + table);
 			ResultSet results = stmt.executeQuery();

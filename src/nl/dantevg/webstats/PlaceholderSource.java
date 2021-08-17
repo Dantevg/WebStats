@@ -3,6 +3,7 @@ package nl.dantevg.webstats;
 import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.ConfigurationSection;
 import org.json.simple.JSONObject;
 
 import java.util.*;
@@ -10,8 +11,12 @@ import java.util.*;
 public class PlaceholderSource {
 	private final Map<String, Object> placeholders;
 	
-	public PlaceholderSource() {
-		placeholders = Main.config.getConfigurationSection("placeholders").getValues(false);
+	public PlaceholderSource() throws ConfigurationException {
+		ConfigurationSection section = Main.config.getConfigurationSection("placeholders");
+		if (section == null) {
+			throw new ConfigurationException("Invalid configuration: placeholders should be a key-value map");
+		}
+		placeholders = section.getValues(false);
 	}
 	
 	private List<String> getEntries() {

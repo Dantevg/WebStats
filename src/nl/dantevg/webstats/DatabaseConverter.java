@@ -60,6 +60,10 @@ public class DatabaseConverter {
 	
 	// [rename, from, to]
 	private static void rename(List<Map<String, String>> data, List<String> command) {
+		if(command.size() < 3){
+			Main.logger.log(Level.WARNING, "Conversion command 'rename' needs 2 arguments");
+			return;
+		}
 		for (Map<String, String> row : data) {
 			String from = command.get(1), to = command.get(2);
 			row.put(to, row.get(from));
@@ -69,6 +73,10 @@ public class DatabaseConverter {
 	
 	// [key-value, key-column, value-column]
 	private static void key_value(List<Map<String, String>> data, List<String> command) {
+		if(command.size() < 3){
+			Main.logger.log(Level.WARNING, "Conversion command 'key-value' needs 2 arguments");
+			return;
+		}
 		for (Map<String, String> row : data) {
 			String key = command.get(1), value = command.get(2);
 			row.put(row.get(key), row.get(value));
@@ -79,13 +87,17 @@ public class DatabaseConverter {
 	
 	// [json, column]
 	private static void json(List<Map<String, String>> data, List<String> command) {
+		if(command.size() < 2){
+			Main.logger.log(Level.WARNING, "Conversion command 'json' needs 1 argument");
+			return;
+		}
 		for (Map<String, String> row : data) {
 			String column = command.get(1);
 			JSONParser parser = new JSONParser();
 			try {
 				row.putAll((JSONObject) parser.parse(row.get(column)));
 			} catch (ParseException e) {
-				Main.logger.log(Level.WARNING, "could not decode json data", e);
+				Main.logger.log(Level.WARNING, "Could not decode json data", e);
 			}
 			
 			row.remove(column);
@@ -94,6 +106,10 @@ public class DatabaseConverter {
 	
 	// [uuid, column]
 	private static void uuid(List<Map<String, String>> data, List<String> command) {
+		if(command.size() < 2){
+			Main.logger.log(Level.WARNING, "Conversion command 'uuid' needs 1 argument");
+			return;
+		}
 		for (Map<String, String> row : data) {
 			String column = command.get(1);
 			UUID uuid = UUID.fromString(row.get(column));
@@ -103,7 +119,7 @@ public class DatabaseConverter {
 				row.remove(column);
 				row.put("player", name);
 			} else {
-				Main.logger.log(Level.WARNING, "unable to get player name for UUID " + uuid.toString());
+				Main.logger.log(Level.WARNING, "Unable to get player name for UUID " + uuid.toString());
 			}
 		}
 	}
@@ -119,7 +135,7 @@ public class DatabaseConverter {
 			JSONArray names = (JSONArray) parser.parse(new InputStreamReader(conn.getInputStream()));
 			return (String) ((JSONObject) names.get(names.size() - 1)).get("name");
 		} catch (IOException | ParseException e) {
-			Main.logger.log(Level.WARNING, "unable to retrieve player name from Mojang API", e);
+			Main.logger.log(Level.WARNING, "Unable to retrieve player name from Mojang API", e);
 		}
 		return null;
 	}

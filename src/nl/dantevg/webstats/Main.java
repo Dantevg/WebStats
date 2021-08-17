@@ -32,10 +32,20 @@ public class Main extends JavaPlugin implements Runnable {
 		
 		// Set sources
 		if (config.contains("objectives")) scoreboardSource = new ScoreboardSource();
-		if (config.contains("database")) databaseSource = new DatabaseSource();
+		if (config.contains("database")) {
+			try {
+				databaseSource = new DatabaseSource();
+			} catch (ConfigurationException e) {
+				logger.log(Level.WARNING, "Invalid database configuration", e);
+			}
+		}
 		if (config.contains("placeholders")) {
 			if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
-				placeholderSource = new PlaceholderSource();
+				try {
+					placeholderSource = new PlaceholderSource();
+				} catch (ConfigurationException e) {
+					logger.log(Level.WARNING, "Invalid placeholder configuration", e);
+				}
 			} else {
 				logger.log(Level.WARNING, "PlaceholderAPI not present but config contains placeholders (comment to remove this warning)");
 			}
