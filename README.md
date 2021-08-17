@@ -1,5 +1,8 @@
 # WebStats
-Exposes scoreboard and player online/AFK status to a webpage.
+WebStats is a plugin that can gather player statistics from multiple sources
+and display it on a webpage. It can get data from the **scoreboard**, from any
+plugin that stores its data in a **database**, from **PlaceholderAPI** and
+player **online/AFK** status.
 
 ## Requirements
 - A Spigot Minecraft server
@@ -70,5 +73,8 @@ conversion functions available (with the arguments they take) are:
       in itself also a list of the command followed by its arguments. See the
       segment on database functionality for command-specific information. The
       `config.yml` contains an example usage which may be helpful.
+- `placeholders`: the configuration for the PlaceholderAPI connectivity. The
+  key of every entry here specifies the placeholder to use, the value sets the
+  displayed name.
 
 [1]: https://github.com/Dantevg/WebStats/releases

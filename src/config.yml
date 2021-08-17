@@ -1,4 +1,5 @@
 # Configuration file for WebStats
+# See https://github.com/Dantevg/WebStats#plugin-config-file for more info
 
 # Port to use for the service. Make sure that this port corresponds
 # to the one set in the web page js script
@@ -9,8 +10,7 @@ port: 8080
 objectives:
   - '*'
 
-# Configuration for the MySQL database connectivity. Uncomment to use.
-# See ??? for info on how to format (TODO!)
+# Configuration for the MySQL database connectivity (uncomment to use)
 #database:
 #  hostname: localhost
 #  username: DATABASE USERNAME
@@ -23,3 +23,7 @@ objectives:
 #        - [json, column]
 #        - [key-value, key-column, value-column]
 #        - [uuid, column]
+
+# Configuration for the PlaceholderAPI connectivity (uncomment to use)
+#placeholders:
+#  '%placeholder_name%': displayed name
