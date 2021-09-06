@@ -19,6 +19,11 @@ public class Stats {
 	public static JSONObject getStats() {
 		JSONArray entries = new JSONArray();
 		JSONObject scores = new JSONObject();
+		JSONArray columns = new JSONArray();
+		
+		if(Main.config.contains("columns")){
+			columns.addAll(Main.config.getList("columns"));
+		}
 		
 		if (Main.scoreboardSource != null) {
 			EntriesScores entriesScores = Main.scoreboardSource.getStats();
@@ -38,6 +43,7 @@ public class Stats {
 		
 		JSONObject scoreboardJson = new JSONObject();
 		scoreboardJson.put("entries", entries);
+		scoreboardJson.put("columns", columns);
 		scoreboardJson.put("scores", scores);
 		
 		JSONObject json = new JSONObject();

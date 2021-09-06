@@ -5,6 +5,11 @@
 # to the one set in the web page js script
 port: 8080
 
+# Only these columns will appear, in the order specified.
+# When commented out, all columns will be displayed, in alphabetical order (default)
+# The 'Player' column will always be displayed, as the first column.
+#columns: []
+
 # Scoreboard objectives to use. When '*' is present, uses all objectives.
 # (make sure to enclose the '*' in quotes)
 objectives:

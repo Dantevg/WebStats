@@ -8,12 +8,12 @@ class Display {
 	init(data){
 		this.data = data
 		
-		// Create header of objectives
+		// Create header of columns
 		let trHeader = document.createElement("tr")
 		this.appendTh(trHeader, "Player").setAttribute("colspan", 2)
 		this.table.append(trHeader)
-		for(const objective of this.data.objectives){
-			this.appendTh(trHeader, objective)
+		for(const column of this.data.columns){
+			this.appendTh(trHeader, column)
 		}
 		
 		// Create rows of (empty) entries
@@ -38,7 +38,7 @@ class Display {
 			status.classList.add("status")
 			
 			// Append empty elements for alignment
-			for(const objective of this.data.objectives){
+			for(const objective of this.data.columns){
 				let td = this.appendElement(tr, "td")
 				td.classList.add("empty")
 				td.setAttribute("objective", Display.quoteEscape(objective))

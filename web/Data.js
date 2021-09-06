@@ -2,14 +2,15 @@ class Data {
 	constructor(data){
 		this.scoreboard = data.scoreboard
 		this.players = data.online
+		this._columns = data.scoreboard.columns
 		this.filter()
 	}
 	
-	get objectives(){
-		if(this.objectivesmemo == undefined){
-			this.objectivesmemo = Object.keys(this.scoreboard.scores).sort()
+	get columns(){
+		if(this._columns == undefined){
+			this._columns = Object.keys(this.scoreboard.scores).sort()
 		}
-		return this.objectivesmemo
+		return this._columns
 	}
 	get entries(){ return this.scoreboard.entries }
 	get scores(){ return this.scoreboard.scores }
@@ -25,7 +26,7 @@ class Data {
 	
 	setScoreboard(scoreboard){
 		this.scoreboard = scoreboard
-		this.objectivesmemo = undefined // Reset memoised array
+		this._columns = scoreboard.columns // Reset memoised array
 	}
 	setOnlineStatus = online => this.players = online
 	setStats(data){
@@ -40,7 +41,7 @@ class Data {
 			.filter(this.isNonemptyEntry.bind(this))
 			.sort(Intl.Collator().compare)
 		
-		// Remove empty objectives
+		// Remove empty columns
 		this.scoreboard.scores = Data.filter(this.scoreboard.scores, Data.isNonemptyObjective)
 	}
 	
