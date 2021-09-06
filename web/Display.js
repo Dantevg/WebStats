@@ -70,13 +70,15 @@ class Display {
 		this.data.setOnlineStatus(online)
 		const rows = this.table.querySelectorAll("tr")
 		for(const row of rows){
+			const statusElement = row.querySelector("td .status")
+			if(!statusElement) continue
 			const entry = row.getAttribute("entry")
-			const statusElement = row.querySelector(".status")
-			if(statusElement){
-				statusElement.classList.toggle("online", this.data.isOnline(entry))
-				statusElement.classList.toggle("afk", this.data.isAFK(entry))
-				statusElement.setAttribute("title", this.data.getStatus(entry))
-			}
+			row.classList.remove("online", "afk", "offline")
+			
+			const status = this.data.getStatus(entry)
+			row.classList.add(status.toLowerCase())
+			statusElement.classList.add(status.toLowerCase())
+			statusElement.setAttribute("title", this.data.getStatus(entry))
 		}
 	}
 	
