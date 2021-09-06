@@ -5,6 +5,9 @@ import org.bukkit.entity.Player;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class Stats {
 	
 	public static JSONObject getOnline() {
@@ -17,7 +20,8 @@ public class Stats {
 	}
 	
 	public static JSONObject getStats() {
-		JSONArray entries = new JSONArray();
+		Set<String> entries = new HashSet<>();
+		JSONArray entriesJson = new JSONArray();
 		JSONObject scores = new JSONObject();
 		JSONArray columns = new JSONArray();
 		
@@ -42,7 +46,8 @@ public class Stats {
 		}
 		
 		JSONObject scoreboardJson = new JSONObject();
-		scoreboardJson.put("entries", entries);
+		entriesJson.addAll(entries);
+		scoreboardJson.put("entries", entriesJson);
 		scoreboardJson.put("columns", columns);
 		scoreboardJson.put("scores", scores);
 		

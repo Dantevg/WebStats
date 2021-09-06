@@ -6,10 +6,7 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.json.simple.JSONObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ScoreboardSource {
 	private final Scoreboard scoreboard;
@@ -22,8 +19,8 @@ public class ScoreboardSource {
 		allObjectives = objectivesFilter.contains("*");
 	}
 	
-	private List<String> getEntries() {
-		List<String> entries = new ArrayList<>();
+	private Set<String> getEntries() {
+		Set<String> entries = new HashSet<>();
 		entries.addAll(scoreboard.getEntries());
 		return entries;
 	}

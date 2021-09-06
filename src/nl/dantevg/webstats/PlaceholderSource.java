@@ -19,8 +19,8 @@ public class PlaceholderSource {
 		placeholders = section.getValues(false);
 	}
 	
-	private List<String> getEntries() {
-		List<String> entries = new ArrayList<>();
+	private Set<String> getEntries() {
+		Set<String> entries = new HashSet<>();
 		for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
 			entries.add(player.getName());
 		}
