@@ -30,13 +30,13 @@ public class DatabaseConverter {
 		List<Map<String, String>> data = conn.getTable(table);
 		for (List<String> command : conversions) {
 			switch (command.get(0)) {
-				case "filter" -> filter(data, command);
-				case "remove" -> remove(data, command);
-				case "rename" -> rename(data, command);
-				case "key-value" -> key_value(data, command);
-				case "json" -> json(data, command);
-				case "uuid" -> uuid(data, command);
-				default -> Main.logger.log(Level.WARNING, "Invalid conversion command '" + command.get(0) + "'");
+				case "filter": filter(data, command); break;
+				case "remove": remove(data, command); break;
+				case "rename": rename(data, command); break;
+				case "key-value": key_value(data, command); break;
+				case "json": json(data, command); break;
+				case "uuid": uuid(data, command); break;
+				default: Main.logger.log(Level.WARNING, "Invalid conversion command '" + command.get(0) + "'"); break;
 			}
 		}
 		return data;
