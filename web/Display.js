@@ -61,7 +61,7 @@ class Display {
 				if(!value) continue
 				td.classList.remove("empty")
 				td.setAttribute("value", value)
-				td.innerText = isNaN(value) ? value : Number(value)
+				td.innerText = isNaN(value) ? value : Number(value).toLocaleString()
 			}
 		}
 	}
