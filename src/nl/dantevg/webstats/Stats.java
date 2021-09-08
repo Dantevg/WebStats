@@ -12,9 +12,8 @@ public class Stats {
 	
 	public static JSONObject getOnline() {
 		JSONObject playersJson = new JSONObject();
-		boolean hasEssentials = Bukkit.getPluginManager().getPlugin("Essentials") != null;
 		for (Player p : Bukkit.getOnlinePlayers()) {
-			playersJson.put(p.getName(), (hasEssentials && AFKHelper.isAFK(p)) ? "afk" : true);
+			playersJson.put(p.getName(), (Main.hasEssentials && EssentialsHelper.isAFK(p)) ? "afk" : true);
 		}
 		return playersJson;
 	}

@@ -29,11 +29,17 @@ public class PlaceholderSource {
 	
 	private Map<String, JSONObject> getScores() {
 		Map<String, JSONObject> values = new HashMap<>();
+		// Also get players from EssentialsX's userMap, for offline servers
+		Set<OfflinePlayer> players = (!Bukkit.getOnlineMode() && Main.hasEssentials)
+				? EssentialsHelper.getOfflinePlayers()
+				: new HashSet<>();
+		players.addAll(Arrays.asList(Bukkit.getOfflinePlayers()));
+		
 		for (Map.Entry<String, Object> entry : placeholders.entrySet()) {
 			String placeholder = entry.getKey();
 			String placeholderName = (String) entry.getValue();
 			JSONObject scores = new JSONObject();
-			for (OfflinePlayer player : Bukkit.getOfflinePlayers()) {
+			for (OfflinePlayer player : players) {
 				scores.put(player.getName(), PlaceholderAPI.setPlaceholders(player, placeholder));
 			}
 			values.put(placeholderName, scores);

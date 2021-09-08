@@ -17,6 +17,8 @@ public class Main extends JavaPlugin implements Runnable {
 	protected static DatabaseSource databaseSource;
 	protected static PlaceholderSource placeholderSource;
 	
+	protected static boolean hasEssentials;
+	
 	private ServerSocket serverSocket;
 	private Thread thread;
 	
@@ -25,6 +27,8 @@ public class Main extends JavaPlugin implements Runnable {
 	public void onEnable() {
 		logger = getLogger();
 		config = getConfig();
+		
+		hasEssentials = Bukkit.getPluginManager().getPlugin("Essentials") != null;
 		
 		// Config
 		saveDefaultConfig();
