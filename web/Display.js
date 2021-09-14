@@ -74,6 +74,7 @@ class Display {
 			if(!statusElement) continue
 			const entry = row.getAttribute("entry")
 			row.classList.remove("online", "afk", "offline")
+			statusElement.classList.remove("online", "afk", "offline")
 			
 			const status = this.data.getStatus(entry)
 			row.classList.add(status.toLowerCase())
