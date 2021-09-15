@@ -1,4 +1,4 @@
-main: nl.dantevg.webstats.Main
+main: nl.dantevg.webstats.WebStats
 name: WebStats
 version: 1.4.1
 api-version: 1.15
