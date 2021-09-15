@@ -4,7 +4,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
-import org.json.simple.JSONObject;
 
 import java.util.*;
 
@@ -20,19 +19,17 @@ public class ScoreboardSource {
 	}
 	
 	private Set<String> getEntries() {
-		Set<String> entries = new HashSet<>();
-		entries.addAll(scoreboard.getEntries());
-		return entries;
+		return new HashSet<>(scoreboard.getEntries());
 	}
 	
-	private Map<String, JSONObject> getScores() {
-		Map<String, JSONObject> objectives = new HashMap<>();
+	private Map<String, Map<String, Object>> getScores() {
+		Map<String, Map<String, Object>> objectives = new HashMap<>();
 		for (Objective objective : scoreboard.getObjectives()) {
 			// Filter objectives
 			if (!allObjectives && !objectivesFilter.contains(objective.getDisplayName())) continue;
 			
 			// Get player scores
-			JSONObject scores = new JSONObject();
+			Map<String, Object> scores = new HashMap<>();
 			for (String entry : scoreboard.getEntries()) {
 				Score s = objective.getScore(entry);
 				if (s.isScoreSet()) scores.put(entry, s.getScore());

@@ -4,7 +4,6 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
-import org.json.simple.JSONObject;
 
 import java.util.*;
 
@@ -27,8 +26,8 @@ public class PlaceholderSource {
 		return entries;
 	}
 	
-	private Map<String, JSONObject> getScores() {
-		Map<String, JSONObject> values = new HashMap<>();
+	private Map<String, Map<String, Object>> getScores() {
+		Map<String, Map<String, Object>> values = new HashMap<>();
 		// Also get players from EssentialsX's userMap, for offline servers
 		Set<OfflinePlayer> players = (!Bukkit.getOnlineMode() && WebStats.hasEssentials)
 				? EssentialsHelper.getOfflinePlayers()
@@ -38,7 +37,7 @@ public class PlaceholderSource {
 		for (Map.Entry<String, Object> entry : placeholders.entrySet()) {
 			String placeholder = entry.getKey();
 			String placeholderName = (String) entry.getValue();
-			JSONObject scores = new JSONObject();
+			Map<String, Object> scores = new HashMap<>();
 			for (OfflinePlayer player : players) {
 				scores.put(player.getName(), PlaceholderAPI.setPlaceholders(player, placeholder));
 			}

@@ -2,31 +2,21 @@ package nl.dantevg.webstats;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class Stats {
-	
-	public static JSONObject getOnline() {
-		JSONObject playersJson = new JSONObject();
+	public static Map<String, Object> getOnline() {
+		Map<String, Object> players = new HashMap<>();
 		for (Player p : Bukkit.getOnlinePlayers()) {
-			playersJson.put(p.getName(), (WebStats.hasEssentials && EssentialsHelper.isAFK(p)) ? "afk" : true);
+			players.put(p.getName(), (WebStats.hasEssentials && EssentialsHelper.isAFK(p)) ? "afk" : true);
 		}
-		return playersJson;
+		return players;
 	}
 	
-	public static JSONObject getStats() {
+	public static StatData.Stats getStats() {
 		Set<String> entries = new HashSet<>();
-		JSONArray entriesJson = new JSONArray();
-		JSONObject scores = new JSONObject();
-		JSONArray columns = new JSONArray();
-		
-		if(WebStats.config.contains("columns")){
-			columns.addAll(WebStats.config.getList("columns"));
-		}
+		Map<String, Object> scores = new HashMap<>();
 		
 		if (WebStats.scoreboardSource != null) {
 			EntriesScores entriesScores = WebStats.scoreboardSource.getStats();
@@ -44,17 +34,16 @@ public class Stats {
 			scores.putAll(entriesScores.scores);
 		}
 		
-		JSONObject scoreboardJson = new JSONObject();
-		entriesJson.addAll(entries);
-		scoreboardJson.put("entries", entriesJson);
-		scoreboardJson.put("columns", columns);
-		scoreboardJson.put("scores", scores);
-		
-		JSONObject json = new JSONObject();
-		json.put("scoreboard", scoreboardJson);
-		json.put("online", getOnline());
-		
-		return json;
+		if (WebStats.config.contains("columns")) {
+			List<String> columns = new ArrayList<>(WebStats.config.getStringList("columns"));
+			return new StatData.Stats(entries, columns, scores);
+		} else {
+			return new StatData.Stats(entries, scores);
+		}
+	}
+	
+	public static StatData getAll() {
+		return new StatData(getOnline(), getStats());
 	}
 	
 }

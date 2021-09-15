@@ -1,14 +1,12 @@
 package nl.dantevg.webstats;
 
-import org.json.simple.JSONObject;
-
 import java.util.*;
 
 public class EntriesScores {
 	public Set<String> entries;
-	public Map<String, JSONObject> scores;
+	public Map<String, Map<String, Object>> scores;
 	
-	public EntriesScores(Set<String> entries, Map<String, JSONObject> scores) {
+	public EntriesScores(Set<String> entries, Map<String, Map<String, Object>> scores) {
 		this.entries = entries;
 		this.scores = scores;
 	}

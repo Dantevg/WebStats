@@ -1,13 +1,12 @@
 package nl.dantevg.webstats;
 
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 import org.bukkit.Bukkit;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
@@ -60,7 +59,7 @@ public class DatabaseConverter {
 	
 	// [rename, from, to]
 	private static void rename(List<Map<String, String>> data, List<String> command) {
-		if(command.size() < 3){
+		if (command.size() < 3) {
 			WebStats.logger.log(Level.WARNING, "Conversion command 'rename' needs 2 arguments");
 			return;
 		}
@@ -73,7 +72,7 @@ public class DatabaseConverter {
 	
 	// [key-value, key-column, value-column]
 	private static void key_value(List<Map<String, String>> data, List<String> command) {
-		if(command.size() < 3){
+		if (command.size() < 3) {
 			WebStats.logger.log(Level.WARNING, "Conversion command 'key-value' needs 2 arguments");
 			return;
 		}
@@ -87,26 +86,26 @@ public class DatabaseConverter {
 	
 	// [json, column]
 	private static void json(List<Map<String, String>> data, List<String> command) {
-		if(command.size() < 2){
+		if (command.size() < 2) {
 			WebStats.logger.log(Level.WARNING, "Conversion command 'json' needs 1 argument");
 			return;
 		}
+		Type collectionType = new TypeToken<Map<String, String>>() {}.getType();
+		Gson gson = new Gson();
 		for (Map<String, String> row : data) {
 			String column = command.get(1);
-			JSONParser parser = new JSONParser();
 			try {
-				row.putAll((JSONObject) parser.parse(row.get(column)));
-			} catch (ParseException e) {
+				row.putAll(gson.fromJson(row.get(column), collectionType));
+			} catch (JsonSyntaxException e) {
 				WebStats.logger.log(Level.WARNING, "Could not decode json data", e);
 			}
-			
 			row.remove(column);
 		}
 	}
 	
 	// [uuid, column]
 	private static void uuid(List<Map<String, String>> data, List<String> command) {
-		if(command.size() < 2){
+		if (command.size() < 2) {
 			WebStats.logger.log(Level.WARNING, "Conversion command 'uuid' needs 1 argument");
 			return;
 		}
@@ -129,12 +128,13 @@ public class DatabaseConverter {
 			URL url = new URL("https://api.mojang.com/user/profiles/" + uuid.toString() + "/names");
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 			conn.setRequestMethod("GET");
-			JSONParser parser = new JSONParser();
-			// Data comes in from mojang API so casting *should* be fine?
+			// Data comes in from mojang API so un-checked "getAs..." *should* not result in exceptions?
 			// Structure: array of objects containing fields "name" and optionally "changedToAt"
-			JSONArray names = (JSONArray) parser.parse(new InputStreamReader(conn.getInputStream()));
-			return (String) ((JSONObject) names.get(names.size() - 1)).get("name");
-		} catch (IOException | ParseException e) {
+			JsonArray names = new JsonParser()
+					.parse(new InputStreamReader(conn.getInputStream()))
+					.getAsJsonArray();
+			return names.get(names.size() - 1).getAsJsonObject().get("name").getAsString();
+		} catch (IOException e) {
 			WebStats.logger.log(Level.WARNING, "Unable to retrieve player name from Mojang API", e);
 		}
 		return null;

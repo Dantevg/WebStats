@@ -44,7 +44,7 @@ public class HTTPConnection {
 		if (path == null) throw new NoSuchElementException("No path present in request URI");
 		switch (path) {
 			case "/stats.json":
-				HTTP.send(out, HTTP.STATUS_OK, Stats.getStats().toString());
+				HTTP.send(out, HTTP.STATUS_OK, Stats.getAll().toString());
 				break;
 			case "/online.json":
 				HTTP.send(out, HTTP.STATUS_OK, Stats.getOnline().toString());

@@ -1,7 +1,5 @@
 package nl.dantevg.webstats;
 
-import org.json.simple.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +60,7 @@ public class DatabaseSource {
 			data.entries.add(playerName);
 			for (Map.Entry<String, String> values : player.getValue().entrySet()) {
 				String statName = values.getKey();
-				data.scores.putIfAbsent(statName, new JSONObject());
+				data.scores.putIfAbsent(statName, new HashMap<>());
 				data.scores.get(statName).put(playerName, values.getValue());
 			}
 		}
@@ -73,4 +71,5 @@ public class DatabaseSource {
 	public void disconnect() {
 		for (DatabaseConnection conn : connections.values()) conn.disconnect();
 	}
+	
 }
