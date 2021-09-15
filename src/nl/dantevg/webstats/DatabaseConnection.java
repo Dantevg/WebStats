@@ -27,19 +27,19 @@ public class DatabaseConnection {
 			if (conn == null) {
 				conn = DriverManager.getConnection("jdbc:mysql://"
 						+ hostname + "/" + dbname, username, password);
-				Main.logger.log(Level.INFO, "Connected to database " + dbname);
+				WebStats.logger.log(Level.INFO, "Connected to database " + dbname);
 			}
 		} catch (SQLException e) {
-			Main.logger.log(Level.WARNING, "Could not connect to database " + dbname, e);
+			WebStats.logger.log(Level.WARNING, "Could not connect to database " + dbname, e);
 		}
 	}
 	
 	public void disconnect() {
 		try {
 			if (conn != null && !conn.isClosed()) conn.close();
-			Main.logger.log(Level.INFO, "Disconnected from database " + dbname);
+			WebStats.logger.log(Level.INFO, "Disconnected from database " + dbname);
 		} catch (SQLException e) {
-			Main.logger.log(Level.WARNING, "Could not disconnect from database " + dbname, e);
+			WebStats.logger.log(Level.WARNING, "Could not disconnect from database " + dbname, e);
 		}
 	}
 	
@@ -59,7 +59,7 @@ public class DatabaseConnection {
 				data.add(row);
 			}
 		} catch (SQLException e) {
-			Main.logger.log(Level.WARNING, "Could not query database " + dbname, e);
+			WebStats.logger.log(Level.WARNING, "Could not query database " + dbname, e);
 		}
 		return data;
 	}

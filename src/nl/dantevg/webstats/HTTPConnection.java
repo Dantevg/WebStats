@@ -22,10 +22,10 @@ public class HTTPConnection {
 			route(HTTP.parseHeader(firstLine), out);
 			
 		} catch (IOException e) {
-			Main.logger.log(Level.WARNING, "Failed to open I/O stream: " + e.getMessage(), e);
+			WebStats.logger.log(Level.WARNING, "Failed to open I/O stream: " + e.getMessage(), e);
 		} catch (URISyntaxException | NoSuchElementException e) {
-			Main.logger.log(Level.FINE, "Failed to parse URI: " + e.getMessage(), e);
-			Main.logger.log(Level.FINE, "IP: " + socket.getInetAddress().toString() + ", HTTP request line: " + firstLine);
+			WebStats.logger.log(Level.FINE, "Failed to parse URI: " + e.getMessage(), e);
+			WebStats.logger.log(Level.FINE, "IP: " + socket.getInetAddress().toString() + ", HTTP request line: " + firstLine);
 			HTTP.send(out, HTTP.STATUS_BAD_REQUEST, "");
 		} finally {
 			// Close input and output streams in the order they were defined
@@ -34,7 +34,7 @@ public class HTTPConnection {
 				in.close();
 				out.close();
 			} catch (NullPointerException | IOException e) {
-				Main.logger.log(Level.WARNING, "Error closing stream: " + e.getMessage(), e);
+				WebStats.logger.log(Level.WARNING, "Error closing stream: " + e.getMessage(), e);
 			}
 		}
 	}

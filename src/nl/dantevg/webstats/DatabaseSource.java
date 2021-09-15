@@ -14,15 +14,15 @@ public class DatabaseSource {
 	private final List<DatabaseConverter> conversions = new ArrayList<>();
 	
 	public DatabaseSource() throws ConfigurationException {
-		String hostname = Main.config.getString("database.hostname");
-		String username = Main.config.getString("database.username");
-		String password = Main.config.getString("database.password");
+		String hostname = WebStats.config.getString("database.hostname");
+		String username = WebStats.config.getString("database.username");
+		String password = WebStats.config.getString("database.password");
 		
 		if (hostname == null || username == null || password == null) {
 			throw new ConfigurationException("Invalid configuration: missing hostname, username or password");
 		}
 		
-		List<Map<?, ?>> configItems = Main.config.getMapList("database.config");
+		List<Map<?, ?>> configItems = WebStats.config.getMapList("database.config");
 		for (Map<?, ?> configItem : configItems) {
 			String dbname = (String) configItem.get("database");
 			DatabaseConnection conn;

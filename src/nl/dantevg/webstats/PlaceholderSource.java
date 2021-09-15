@@ -12,7 +12,7 @@ public class PlaceholderSource {
 	private final Map<String, Object> placeholders;
 	
 	public PlaceholderSource() throws ConfigurationException {
-		ConfigurationSection section = Main.config.getConfigurationSection("placeholders");
+		ConfigurationSection section = WebStats.config.getConfigurationSection("placeholders");
 		if (section == null) {
 			throw new ConfigurationException("Invalid configuration: placeholders should be a key-value map");
 		}
@@ -30,7 +30,7 @@ public class PlaceholderSource {
 	private Map<String, JSONObject> getScores() {
 		Map<String, JSONObject> values = new HashMap<>();
 		// Also get players from EssentialsX's userMap, for offline servers
-		Set<OfflinePlayer> players = (!Bukkit.getOnlineMode() && Main.hasEssentials)
+		Set<OfflinePlayer> players = (!Bukkit.getOnlineMode() && WebStats.hasEssentials)
 				? EssentialsHelper.getOfflinePlayers()
 				: new HashSet<>();
 		players.addAll(Arrays.asList(Bukkit.getOfflinePlayers()));

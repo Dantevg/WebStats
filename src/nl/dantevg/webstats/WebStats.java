@@ -9,7 +9,7 @@ import java.net.ServerSocket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class Main extends JavaPlugin implements Runnable {
+public class WebStats extends JavaPlugin implements Runnable {
 	protected static Logger logger;
 	protected static FileConfiguration config;
 	

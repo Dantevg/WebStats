@@ -13,7 +13,7 @@ public class Stats {
 	public static JSONObject getOnline() {
 		JSONObject playersJson = new JSONObject();
 		for (Player p : Bukkit.getOnlinePlayers()) {
-			playersJson.put(p.getName(), (Main.hasEssentials && EssentialsHelper.isAFK(p)) ? "afk" : true);
+			playersJson.put(p.getName(), (WebStats.hasEssentials && EssentialsHelper.isAFK(p)) ? "afk" : true);
 		}
 		return playersJson;
 	}
@@ -24,22 +24,22 @@ public class Stats {
 		JSONObject scores = new JSONObject();
 		JSONArray columns = new JSONArray();
 		
-		if(Main.config.contains("columns")){
-			columns.addAll(Main.config.getList("columns"));
+		if(WebStats.config.contains("columns")){
+			columns.addAll(WebStats.config.getList("columns"));
 		}
 		
-		if (Main.scoreboardSource != null) {
-			EntriesScores entriesScores = Main.scoreboardSource.getStats();
+		if (WebStats.scoreboardSource != null) {
+			EntriesScores entriesScores = WebStats.scoreboardSource.getStats();
 			entries.addAll(entriesScores.entries);
 			scores.putAll(entriesScores.scores);
 		}
-		if (Main.databaseSource != null) {
-			EntriesScores entriesScores = Main.databaseSource.getStats();
+		if (WebStats.databaseSource != null) {
+			EntriesScores entriesScores = WebStats.databaseSource.getStats();
 			entries.addAll(entriesScores.entries);
 			scores.putAll(entriesScores.scores);
 		}
-		if (Main.placeholderSource != null) {
-			EntriesScores entriesScores = Main.placeholderSource.getStats();
+		if (WebStats.placeholderSource != null) {
+			EntriesScores entriesScores = WebStats.placeholderSource.getStats();
 			entries.addAll(entriesScores.entries);
 			scores.putAll(entriesScores.scores);
 		}

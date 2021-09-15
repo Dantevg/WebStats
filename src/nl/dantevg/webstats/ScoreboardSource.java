@@ -15,7 +15,7 @@ public class ScoreboardSource {
 	
 	public ScoreboardSource() {
 		scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
-		objectivesFilter = Main.config.getStringList("objectives");
+		objectivesFilter = WebStats.config.getStringList("objectives");
 		allObjectives = objectivesFilter.contains("*");
 	}
 	
