@@ -1,4 +1,6 @@
-package nl.dantevg.webstats;
+package nl.dantevg.webstats.database;
+
+import nl.dantevg.webstats.WebStats;
 
 import java.sql.*;
 import java.util.ArrayList;

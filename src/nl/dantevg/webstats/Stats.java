@@ -15,30 +15,17 @@ public class Stats {
 	}
 	
 	public static StatData.Stats getStats() {
-		Set<String> entries = new HashSet<>();
-		Map<String, Object> scores = new HashMap<>();
+		EntriesScores entriesScores = new EntriesScores();
 		
-		if (WebStats.scoreboardSource != null) {
-			EntriesScores entriesScores = WebStats.scoreboardSource.getStats();
-			entries.addAll(entriesScores.entries);
-			scores.putAll(entriesScores.scores);
-		}
-		if (WebStats.databaseSource != null) {
-			EntriesScores entriesScores = WebStats.databaseSource.getStats();
-			entries.addAll(entriesScores.entries);
-			scores.putAll(entriesScores.scores);
-		}
-		if (WebStats.placeholderSource != null) {
-			EntriesScores entriesScores = WebStats.placeholderSource.getStats();
-			entries.addAll(entriesScores.entries);
-			scores.putAll(entriesScores.scores);
-		}
+		if (WebStats.scoreboardSource != null) entriesScores.add(WebStats.scoreboardSource.getStats());
+		if (WebStats.databaseSource != null) entriesScores.add(WebStats.databaseSource.getStats());
+		if (WebStats.placeholderSource != null) entriesScores.add(WebStats.placeholderSource.getStats());
 		
 		if (WebStats.config.contains("columns")) {
 			List<String> columns = new ArrayList<>(WebStats.config.getStringList("columns"));
-			return new StatData.Stats(entries, columns, scores);
+			return new StatData.Stats(entriesScores, columns);
 		} else {
-			return new StatData.Stats(entries, scores);
+			return new StatData.Stats(entriesScores);
 		}
 	}
 	

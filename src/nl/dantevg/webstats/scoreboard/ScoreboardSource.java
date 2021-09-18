@@ -1,5 +1,7 @@
-package nl.dantevg.webstats;
+package nl.dantevg.webstats.scoreboard;
 
+import nl.dantevg.webstats.EntriesScores;
+import nl.dantevg.webstats.WebStats;
 import org.bukkit.Bukkit;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;

@@ -15,4 +15,10 @@ public class EntriesScores {
 		this.entries = new HashSet<>();
 		this.scores = new HashMap<>();
 	}
+	
+	public void add(EntriesScores that) {
+		entries.addAll(that.entries);
+		scores.putAll(that.scores);
+	}
+	
 }

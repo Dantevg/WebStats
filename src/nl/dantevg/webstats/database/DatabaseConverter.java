@@ -1,7 +1,8 @@
-package nl.dantevg.webstats;
+package nl.dantevg.webstats.database;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
+import nl.dantevg.webstats.WebStats;
 import org.bukkit.Bukkit;
 
 import java.io.IOException;

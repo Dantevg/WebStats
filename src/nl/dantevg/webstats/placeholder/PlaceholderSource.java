@@ -1,6 +1,8 @@
-package nl.dantevg.webstats;
+package nl.dantevg.webstats.placeholder;
 
 import me.clip.placeholderapi.PlaceholderAPI;
+import nl.dantevg.webstats.*;
+import nl.dantevg.webstats.ConfigurationException;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;

@@ -1,4 +1,8 @@
-package nl.dantevg.webstats;
+package nl.dantevg.webstats.database;
+
+import nl.dantevg.webstats.ConfigurationException;
+import nl.dantevg.webstats.EntriesScores;
+import nl.dantevg.webstats.WebStats;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,5 +1,8 @@
 package nl.dantevg.webstats;
 
+import nl.dantevg.webstats.database.DatabaseSource;
+import nl.dantevg.webstats.placeholder.PlaceholderSource;
+import nl.dantevg.webstats.scoreboard.ScoreboardSource;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -10,14 +13,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class WebStats extends JavaPlugin implements Runnable {
-	protected static Logger logger;
-	protected static FileConfiguration config;
-	
 	protected static ScoreboardSource scoreboardSource;
 	protected static DatabaseSource databaseSource;
 	protected static PlaceholderSource placeholderSource;
 	
-	protected static boolean hasEssentials;
+	public static Logger logger;
+	public static FileConfiguration config;
+	public static boolean hasEssentials;
 	
 	private ServerSocket serverSocket;
 	private Thread thread;
