@@ -41,7 +41,8 @@ public class PlaceholderSource {
 			String placeholderName = (String) entry.getValue();
 			Map<String, Object> scores = new HashMap<>();
 			for (OfflinePlayer player : players) {
-				scores.put(player.getName(), PlaceholderAPI.setPlaceholders(player, placeholder));
+				String name = player.getName();
+				if(name != null) scores.put(name, PlaceholderAPI.setPlaceholders(player, placeholder));
 			}
 			values.put(placeholderName, scores);
 		}
