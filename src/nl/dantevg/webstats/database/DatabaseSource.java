@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 public class DatabaseSource {
 	private static final String MAIN_KEY = "player";
@@ -32,13 +33,14 @@ public class DatabaseSource {
 				conn = connections.get(dbname);
 			} else {
 				conn = new DatabaseConnection(hostname, username, password, dbname);
-				connections.put(dbname, conn);
-				conn.connect();
+				if(conn.connect()) connections.put(dbname, conn);
 			}
 			conversions.add(new DatabaseConverter(
 					conn, (String) configItem.get("table"),
 					(List<List<String>>) configItem.get("convert")));
 		}
+		
+		WebStats.logger.log(Level.INFO, "Enabled database source");
 	}
 	
 	public EntriesScores getStats() {
@@ -59,20 +61,18 @@ public class DatabaseSource {
 		
 		// Transpose again to stats
 		EntriesScores data = new EntriesScores();
-		for (Map.Entry<String, Map<String, String>> player : players.entrySet()) {
-			String playerName = player.getKey();
+		players.forEach((playerName, scores) -> {
 			data.entries.add(playerName);
-			for (Map.Entry<String, String> values : player.getValue().entrySet()) {
-				String statName = values.getKey();
+			scores.forEach((statName, score) -> {
 				data.scores.putIfAbsent(statName, new HashMap<>());
-				data.scores.get(statName).put(playerName, values.getValue());
-			}
-		}
+				data.scores.get(statName).put(playerName, score);
+			});
+		});
 		
 		return data;
 	}
 	
-	public void disconnect() {
+	public void disable() {
 		for (DatabaseConnection conn : connections.values()) conn.disconnect();
 	}
 	

@@ -32,3 +32,7 @@ objectives:
 # Configuration for the PlaceholderAPI connectivity (uncomment to use)
 #placeholders:
 #  '%placeholder_name%': displayed name
+
+# The database name to store placeholders in, for when players go offline. (uncomment to use)
+# Make sure to specify the database hostname, username and password above
+#store-placeholders-database: WebStats_placeholders

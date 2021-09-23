@@ -8,6 +8,7 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 
 import java.util.*;
+import java.util.logging.Level;
 
 public class ScoreboardSource {
 	private final Scoreboard scoreboard;
@@ -18,6 +19,8 @@ public class ScoreboardSource {
 		scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
 		objectivesFilter = WebStats.config.getStringList("objectives");
 		allObjectives = objectivesFilter.contains("*");
+		
+		WebStats.logger.log(Level.INFO, "Enabled scoreboard source");
 	}
 	
 	private Set<String> getEntries() {

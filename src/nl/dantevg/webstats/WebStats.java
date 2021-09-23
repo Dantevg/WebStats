@@ -38,11 +38,11 @@ public class WebStats extends JavaPlugin implements Runnable {
 		
 		// Set sources
 		if (config.contains("objectives")) scoreboardSource = new ScoreboardSource();
-		if (config.contains("database")) {
+		if (config.contains("database.config")) {
 			try {
 				databaseSource = new DatabaseSource();
 			} catch (ConfigurationException e) {
-				logger.log(Level.WARNING, "Invalid database configuration", e);
+				logger.log(Level.SEVERE, "Invalid database configuration", e);
 			}
 		}
 		if (config.contains("placeholders")) {
@@ -50,7 +50,7 @@ public class WebStats extends JavaPlugin implements Runnable {
 				try {
 					placeholderSource = new PlaceholderSource();
 				} catch (ConfigurationException e) {
-					logger.log(Level.WARNING, "Invalid placeholder configuration", e);
+					logger.log(Level.SEVERE, "Invalid placeholder configuration", e);
 				}
 			} else {
 				logger.log(Level.WARNING, "PlaceholderAPI not present but config contains placeholders (comment to remove this warning)");
@@ -85,6 +85,9 @@ public class WebStats extends JavaPlugin implements Runnable {
 		} catch (InterruptedException e) {
 			// Ignore
 		}
+		
+		if (databaseSource != null) databaseSource.disable();
+		if (placeholderSource != null) placeholderSource.disable();
 	}
 	
 	// Gets run in the new thread created on server startup
@@ -101,8 +104,6 @@ public class WebStats extends JavaPlugin implements Runnable {
 				// Print error when the socket was not closed (otherwise just stop)
 				logger.log(Level.WARNING, "IO Exception: " + e.getMessage(), e);
 			}
-		} finally {
-			if (databaseSource != null) databaseSource.disconnect();
 		}
 	}
 	

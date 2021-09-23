@@ -24,24 +24,28 @@ public class DatabaseConnection {
 		this.dbname = dbname;
 	}
 	
-	public void connect() {
+	public boolean connect() {
 		try {
 			if (conn == null) {
 				conn = DriverManager.getConnection("jdbc:mysql://"
 						+ hostname + "/" + dbname, username, password);
 				WebStats.logger.log(Level.INFO, "Connected to database " + dbname);
 			}
+			return true;
 		} catch (SQLException e) {
 			WebStats.logger.log(Level.WARNING, "Could not connect to database " + dbname, e);
+			return false;
 		}
 	}
 	
-	public void disconnect() {
+	public boolean disconnect() {
 		try {
 			if (conn != null && !conn.isClosed()) conn.close();
 			WebStats.logger.log(Level.INFO, "Disconnected from database " + dbname);
+			return true;
 		} catch (SQLException e) {
 			WebStats.logger.log(Level.WARNING, "Could not disconnect from database " + dbname, e);
+			return false;
 		}
 	}
 	

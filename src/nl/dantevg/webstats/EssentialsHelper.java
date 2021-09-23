@@ -6,7 +6,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 // This is in a separate class to make the Essentials plugin optional
@@ -16,8 +15,8 @@ public class EssentialsHelper {
 	}
 	
 	public static Set<OfflinePlayer> getOfflinePlayers(){
-		Set<UUID> uuids = Essentials.getPlugin(Essentials.class).getUserMap().getAllUniqueUsers();
-		return uuids.stream().map(Bukkit::getOfflinePlayer).collect(Collectors.toSet());
+		return Essentials.getPlugin(Essentials.class).getUserMap().getAllUniqueUsers()
+				.stream().map(Bukkit::getOfflinePlayer).collect(Collectors.toSet());
 	}
 	
 }
