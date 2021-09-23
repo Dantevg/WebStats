@@ -1,5 +1,7 @@
 package nl.dantevg.webstats;
 
+import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.*;
@@ -44,10 +46,10 @@ public class HTTPConnection {
 		if (path == null) throw new NoSuchElementException("No path present in request URI");
 		switch (path) {
 			case "/stats.json":
-				HTTP.send(out, HTTP.STATUS_OK, Stats.getAll().toString());
+				HTTP.send(out, HTTP.STATUS_OK, new Gson().toJson(Stats.getAll()));
 				break;
 			case "/online.json":
-				HTTP.send(out, HTTP.STATUS_OK, Stats.getOnline().toString());
+				HTTP.send(out, HTTP.STATUS_OK, new Gson().toJson(Stats.getOnline()));
 				break;
 			default:
 				HTTP.send(out, HTTP.STATUS_NOT_FOUND, "");
