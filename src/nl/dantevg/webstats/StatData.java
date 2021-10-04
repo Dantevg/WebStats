@@ -10,7 +10,7 @@ import java.util.Set;
 public class StatData {
 	Map<String, Object> online;
 	@SerializedName("scoreboard")
-	Stats stats;
+	public Stats stats;
 	
 	public StatData(Map<String, Object> online, Stats stats) {
 		this.online = online;
@@ -23,9 +23,9 @@ public class StatData {
 	}
 	
 	public static class Stats {
-		Set<String> entries;
-		List<String> columns;
-		Map<String, Map<String, Object>> scores;
+		public Set<String> entries;
+		public List<String> columns;
+		public Map<String, Map<String, Object>> scores;
 		
 		public Stats(EntriesScores entriesScores, List<String> columns) {
 			this.entries = entriesScores.entries;
