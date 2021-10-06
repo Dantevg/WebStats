@@ -25,7 +25,7 @@ Include the source files:
 Initialise WebStats after page load: (put this in a `<script>` tag in `<head>`)
 ```js
 // You can set the update interval (in ms) *before* initialising WebStats (optional, default 10000)
-WebStats.updateInterval = 0 // Set to 0 to disable auto-updating online player list
+WebStats.updateInterval = 0 // Set to 0 to disable auto-updating
 
 window.onload = () => {
 	new WebStats({
