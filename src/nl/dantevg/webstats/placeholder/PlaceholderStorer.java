@@ -68,8 +68,7 @@ public class PlaceholderStorer {
 	}
 	
 	private boolean isFirstUse() {
-		try (PreparedStatement stmt = conn.prepareStatement("SELECT 1 FROM " + TABLE_NAME + " LIMIT 1;");
-			 ResultSet resultSet = stmt.executeQuery()) {
+		try (ResultSet resultSet = conn.getMetaData().getTables(null, null, TABLE_NAME, null)) {
 			return !resultSet.next();
 		} catch (SQLException e) {
 			WebStats.logger.log(Level.WARNING, "Could not query placeholder database " + dbname, e);
@@ -84,6 +83,7 @@ public class PlaceholderStorer {
 				+ "value VARCHAR(255), "
 				+ "PRIMARY KEY(uuid, placeholder));")) {
 			stmt.executeUpdate();
+			WebStats.logger.log(Level.INFO, "Created new placeholder table");
 		} catch (SQLException e) {
 			WebStats.logger.log(Level.SEVERE, "Could not initialise placeholder database " + dbname, e);
 		}
@@ -91,7 +91,7 @@ public class PlaceholderStorer {
 	
 	private void load() {
 		try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + TABLE_NAME + ";");
-			 ResultSet resultSet = stmt.executeQuery()) {
+		     ResultSet resultSet = stmt.executeQuery()) {
 			while (resultSet.next()) {
 				UUID uuid = UUID.fromString(resultSet.getString("uuid"));
 				String placeholder = resultSet.getString("placeholder");
@@ -104,7 +104,7 @@ public class PlaceholderStorer {
 	}
 	
 	private void update() {
-		for (OfflinePlayer player : placeholderSource.getEntriesPlayers()) {
+		for (OfflinePlayer player : placeholderSource.getEntriesAsPlayers()) {
 			placeholderSource.getScoresForPlayer(player).forEach((String placeholder, String value) ->
 					data.put(player.getUniqueId(), placeholder, value));
 		}
@@ -115,29 +115,34 @@ public class PlaceholderStorer {
 		Map<String, String> scores = placeholderSource.getScoresForPlayer(player);
 		UUID uuid = player.getUniqueId();
 		
+		if(scores.isEmpty()) return;
+		
 		// Store in instance
 		scores.forEach((placeholder, value) -> data.put(uuid, placeholder, value));
 		
 		// Store in database
-		if (conn != null) {
-			String uuidStr = uuid.toString();
-			try (PreparedStatement stmt = conn.prepareStatement("INSERT INTO " + TABLE_NAME + " VALUES (?, ?, ?);")) {
-				for (Map.Entry<String, String> entry : scores.entrySet()) {
-					stmt.setString(1, uuidStr);
-					stmt.setString(2, entry.getKey());
-					stmt.setString(3, entry.getValue());
-					stmt.addBatch();
-				}
-				stmt.executeUpdate();
-			} catch (SQLException e) {
-				WebStats.logger.log(Level.SEVERE, "Could not update placeholder database " + dbname, e);
+		if (conn == null) return;
+		
+		String uuidStr = uuid.toString();
+		try (PreparedStatement stmt = conn.prepareStatement("REPLACE INTO " + TABLE_NAME + " VALUES (?, ?, ?);")) {
+			for (Map.Entry<String, String> entry : scores.entrySet()) {
+				stmt.setString(1, uuidStr);
+				stmt.setString(2, entry.getKey());
+				stmt.setString(3, entry.getValue());
+				stmt.addBatch();
 			}
+			stmt.executeUpdate();
+		} catch (SQLException e) {
+			WebStats.logger.log(Level.SEVERE, "Could not update placeholder database " + dbname, e);
 		}
+		
+		WebStats.logger.log(Level.INFO, "Saved placeholders for player " + player.getName());
 	}
 	
 	// Store placeholder data for all players
 	public void saveAll() {
-		for (OfflinePlayer player : placeholderSource.getEntriesPlayers()) save(player);
+		for (OfflinePlayer player : placeholderSource.getEntriesAsPlayers()) save(player);
+		WebStats.logger.log(Level.INFO, "Saved all placeholders");
 	}
 	
 	public String getScore(UUID uuid, String placeholder) {

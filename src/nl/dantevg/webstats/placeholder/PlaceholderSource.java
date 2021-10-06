@@ -29,7 +29,7 @@ public class PlaceholderSource {
 		WebStats.logger.log(Level.INFO, "Enabled placeholder source");
 	}
 	
-	Set<OfflinePlayer> getEntriesPlayers() {
+	Set<OfflinePlayer> getEntriesAsPlayers() {
 		// Also get players from EssentialsX's userMap, for offline servers
 		Set<OfflinePlayer> entries = (!Bukkit.getOnlineMode() && WebStats.hasEssentials)
 				? EssentialsHelper.getOfflinePlayers()
@@ -39,7 +39,7 @@ public class PlaceholderSource {
 	}
 	
 	private Set<String> getEntries() {
-		return getEntriesPlayers().stream()   // all entries as OfflinePlayers
+		return getEntriesAsPlayers().stream()   // all entries as OfflinePlayers
 				.map(OfflinePlayer::getName)  // OfflinePlayer -> String
 				.filter(Objects::nonNull)     // remove null names
 				.collect(Collectors.toSet());
@@ -47,7 +47,7 @@ public class PlaceholderSource {
 	
 	private Map<String, Map<String, Object>> getScores() {
 		Map<String, Map<String, Object>> values = new HashMap<>();
-		Set<OfflinePlayer> players = getEntriesPlayers();
+		Set<OfflinePlayer> players = getEntriesAsPlayers();
 		
 		placeholders.forEach((placeholder, placeholderName) -> {
 			Map<String, Object> scores = new HashMap<>();
@@ -55,12 +55,12 @@ public class PlaceholderSource {
 				String name = player.getName();
 				if (name == null) continue;
 				String score = PlaceholderAPI.setPlaceholders(player, placeholder);
-				if (score.equals("") || score.equalsIgnoreCase(placeholder)) {
+				if (!isPlaceholderSet(placeholder, score) && storer != null) {
 					// If the placeholder was not substituted correctly, try the stored value
-					score = storer.getScore(player.getUniqueId(), placeholder);
+					score = storer.getScore(player.getUniqueId(), (String) placeholderName);
 				}
 				// Only add the score if it is not empty
-				if (score != null && !score.equals("")) scores.put(name, score);
+				if (isPlaceholderSet(placeholder, score)) scores.put(name, score);
 			}
 			values.put((String) placeholderName, scores);
 		});
@@ -72,8 +72,10 @@ public class PlaceholderSource {
 		String name = player.getName();
 		if (name == null) return scores;
 		
-		placeholders.forEach((placeholder, placeholderName) ->
-				scores.put((String) placeholderName, PlaceholderAPI.setPlaceholders(player, placeholder)));
+		placeholders.forEach((placeholder, placeholderName) -> {
+			String score = PlaceholderAPI.setPlaceholders(player, placeholder);
+			if(isPlaceholderSet(placeholder, score)) scores.put((String) placeholderName, score);
+		});
 		
 		return scores;
 	}
@@ -84,6 +86,12 @@ public class PlaceholderSource {
 	
 	public void disable() {
 		if (storer != null) storer.disconnect();
+	}
+	
+	public static boolean isPlaceholderSet(String placeholder, String value) {
+		return value != null
+				&& !value.equals("")
+				&& !value.equalsIgnoreCase(placeholder);
 	}
 	
 }
