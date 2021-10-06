@@ -38,6 +38,9 @@ window.onload = () => {
 }
 ```
 
+There is an example `html` file and `css` file available in `web/example`
+which you can use as a basis.
+
 ## MySQL database functionality
 Since version 1.4, the plugin also supports getting data from a MySQL database.
 Because plugins can use wildly different formats to store their data, WebStat's
