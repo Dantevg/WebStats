@@ -115,7 +115,7 @@ public class PlaceholderStorer {
 		Map<String, String> scores = placeholderSource.getScoresForPlayer(player);
 		UUID uuid = player.getUniqueId();
 		
-		if(scores.isEmpty()) return;
+		if (scores.isEmpty()) return;
 		
 		// Store in instance
 		scores.forEach((placeholder, value) -> data.put(uuid, placeholder, value));

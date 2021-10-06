@@ -1,5 +1,5 @@
 /* 
-	WebStats version 1.4
+	WebStats version 1.5
 	https://github.com/Dantevg/WebStats
 	
 	by RedPolygon

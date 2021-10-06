@@ -74,7 +74,7 @@ public class PlaceholderSource {
 		
 		placeholders.forEach((placeholder, placeholderName) -> {
 			String score = PlaceholderAPI.setPlaceholders(player, placeholder);
-			if(isPlaceholderSet(placeholder, score)) scores.put((String) placeholderName, score);
+			if (isPlaceholderSet(placeholder, score)) scores.put((String) placeholderName, score);
 		});
 		
 		return scores;
