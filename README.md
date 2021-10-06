@@ -59,6 +59,10 @@ conversion functions available (with the arguments they take) are:
 ## Plugin config file
 - `port`: the port number to use. Make sure the plugin can use the port,
   you may need to open the port in your server's control panel first.
+- `columns`: a list of columns, to specify a custom column order. Columns not
+  present in this list will be hidden (you don't need to specify the 'player'
+  column; it is always present, and always as the first column). By default,
+  all columns are displayed in alphabetical order.
 - `objectives`: the list of scoreboard objectives to send to the webpage.
   `*` means all objectives.
 - `database`: the configuration for the MySQL database connectivity:
@@ -76,5 +80,10 @@ conversion functions available (with the arguments they take) are:
 - `placeholders`: the configuration for the PlaceholderAPI connectivity. The
   key of every entry here specifies the placeholder to use, the value sets the
   displayed name.
+- `store-placeholders-database`: the name of the database to use for storing
+  offline players' placeholders (many placeholderAPI sources don't have data
+  for offline players). When you use this, you need to set the `hostname`,
+  `username` and `password` fields under the `database` config. (see above,
+  you can leave the `config` option commented out)
 
 [1]: https://github.com/Dantevg/WebStats/releases
