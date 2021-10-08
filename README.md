@@ -1,3 +1,4 @@
+![icon](icon.png)
 # WebStats
 WebStats is a plugin that can gather player statistics from multiple sources
 and display it on a webpage. It can get data from the **scoreboard**, from any
