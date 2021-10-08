@@ -4,6 +4,10 @@ and display it on a webpage. It can get data from the **scoreboard**, from any
 plugin that stores its data in a **database**, from **PlaceholderAPI** and
 player **online/AFK** status.
 
+[View demo page here](https://dantevg.nl/mods-plugins/WebStats/demo)
+
+![a screenshot of our server a while ago](screenshot%202.png)
+
 ## Requirements
 - A Spigot Minecraft server
 - A web server (note: the plugin will not work over https, so make sure the
@@ -60,33 +64,82 @@ conversion functions available (with the arguments they take) are:
   the column to `player`.
 
 ## Plugin config file
-- `port`: the port number to use. Make sure the plugin can use the port,
-  you may need to open the port in your server's control panel first.
-- `columns`: a list of columns, to specify a custom column order. Columns not
-  present in this list will be hidden (you don't need to specify the 'player'
-  column; it is always present, and always as the first column). By default,
-  all columns are displayed in alphabetical order.
-- `objectives`: the list of scoreboard objectives to send to the webpage.
-  `*` means all objectives.
-- `database`: the configuration for the MySQL database connectivity:
-  - `hostname`: if you use the database on the same server as your Minecraft
-    server, this will be `localhost`. Otherwise, this is the IP or URL to the
-    database server.
-  - `username` and `password`: you know what to do.
-  - `config`: a list of database-table configurations. Each item contains:
-    - `database`: the name of the database to use.
-    - `table`: the name of the table within the database to use.
-    - `convert`: a list of conversion commands. Each item (each command) is
-      in itself also a list of the command followed by its arguments. See the
-      segment on database functionality for command-specific information. The
-      `config.yml` contains an example usage which may be helpful.
-- `placeholders`: the configuration for the PlaceholderAPI connectivity. The
-  key of every entry here specifies the placeholder to use, the value sets the
-  displayed name.
-- `store-placeholders-database`: the name of the database to use for storing
-  offline players' placeholders (many placeholderAPI sources don't have data
-  for offline players). When you use this, you need to set the `hostname`,
-  `username` and `password` fields under the `database` config. (see above,
-  you can leave the `config` option commented out)
+At first startup, the config file is created. Be sure to also look there as it
+contains the default values and the format in which the file is expected. By
+default it only enables the scoreboard source, and it will use all objectives.
+
+### port
+The port number to use. Make sure the plugin can use the port, you may need to
+open the port in your server's control panel first.
+> Example:
+> ```yaml
+> port: 8080
+> ```
+
+### columns
+A list of columnn names, to specify a custom column order. Columns not present
+in this list will be hidden (you don't need to specify the 'player' column; it
+is always present, and always as the first column). By default, all columns
+are displayed in alphabetical order.
+> Example: this will only display the columns with names *Mine Diamond*,
+> *Biome* and *Deaths*, in that order. (these names correspond to scoreboard
+> objectives / placeholder names / database items defined in their respective
+> configuration sections)
+> ```yaml
+> columns: [Mine Diamond, Biome, Deaths]
+> ```
+> ![](config-columns.png)
+
+### objectives
+The list of scoreboard objectives to collect. `*` means all objectives.
+> Example: this will add the scoreboard objectives called *Deaths* and
+> *Mine Diamond*
+> ```yaml
+> objectives: [Deaths, Mine Diamond]
+> ```
+
+### database
+The configuration for the MySQL database connectivity:
+- `hostname`: if you use the database on the same server as your Minecraft
+  server, this will be `localhost`. Otherwise, this is the IP or URL to the
+  database server.
+- `username` and `password`: you know what to do.
+- `config`: a list of database-table configurations. Each item contains:
+  - `database`: the name of the database to use.
+  - `table`: the name of the table within the database to use.
+  - `convert`: a list of conversion commands. Each item (each command) is
+    in itself also a list of the command followed by its arguments. See the
+    segment on database functionality for command-specific information. The
+    `config.yml` contains an example usage which may be helpful.
+
+### placeholders
+The configuration for the PlaceholderAPI connectivity. The key of every entry
+here specifies the placeholder to use, the value sets the displayed name.
+> Example: This will add a column called *Biome* from the placeholder
+> `%player_biome%`
+> ```yaml
+> placeholders:
+>   '%player_biome%': Biome
+> ```
+
+### store-placeholders-database
+The name of the database to use for storing offline players' placeholders
+(many placeholderAPI sources don't have data for offline players). When you
+use this, you need to set the `hostname`, `username` and `password` fields
+under the `database` config. (see above, you can leave the `config` option
+commented out)
+> Example: this is what our configuration looks like (with PebbleHost). If you
+> have created a database called *customer_12345_mydatabase* with
+> corresponding username and password, this will store the placeholder values
+> of offline players in a table called *WebStats_placeholders* (it will create
+> this table automatically)
+> ```yaml
+> database:
+>   hostname: localhost
+>   username: customer_12345_mydatabase
+>   password: 'GYEXMn7dA$11Nvb9pWZt' # not my password, don't worry
+> 
+> store-placeholders-database: customer_12345_mydatabase
+> ```
 
 [1]: https://github.com/Dantevg/WebStats/releases
