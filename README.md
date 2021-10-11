@@ -1,4 +1,4 @@
-![icon](icon.png)
+![](img/banner.png)
 # WebStats
 WebStats is a plugin that can gather player statistics from multiple sources
 and display it on a webpage. It can get data from the **scoreboard**, from any
@@ -7,7 +7,7 @@ player **online/AFK** status.
 
 [View demo page here](https://dantevg.nl/mods-plugins/WebStats/demo)
 
-![a screenshot of our server a while ago](screenshot%202.png)
+![a screenshot of our server a while ago](img/screenshot.png)
 
 ## Requirements
 - A Spigot Minecraft server
@@ -89,7 +89,7 @@ are displayed in alphabetical order.
 > ```yaml
 > columns: [Mine Diamond, Biome, Deaths]
 > ```
-> ![](config-columns.png)
+> ![](img/config-columns.png)
 
 ### objectives
 The list of scoreboard objectives to collect. `*` means all objectives.
