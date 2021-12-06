@@ -36,7 +36,7 @@ public class PlaceholderStorer {
 		}
 		try {
 			conn = DriverManager.getConnection("jdbc:mysql://"
-					+ hostname + "/" + dbname, username, password);
+					+ hostname + "/" + dbname + "?autoReconnect=true", username, password);
 			WebStats.logger.log(Level.INFO, "Connected to placeholder database " + dbname);
 		} catch (SQLException e) {
 			WebStats.logger.log(Level.SEVERE, "Could not connect to placeholder database " + dbname, e);
@@ -132,11 +132,10 @@ public class PlaceholderStorer {
 				stmt.addBatch();
 			}
 			stmt.executeUpdate();
+			WebStats.logger.log(Level.INFO, "Saved placeholders for player " + player.getName());
 		} catch (SQLException e) {
 			WebStats.logger.log(Level.SEVERE, "Could not update placeholder database " + dbname, e);
 		}
-		
-		WebStats.logger.log(Level.INFO, "Saved placeholders for player " + player.getName());
 	}
 	
 	// Store placeholder data for all players
