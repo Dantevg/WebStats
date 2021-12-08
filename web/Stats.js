@@ -6,14 +6,13 @@
 */
 
 class WebStats {
-	static updateInterval = 10000
-	
 	constructor(config){
 		this.display = new Display(config)
 		this.connection = config.connection ?? Connection.json(config.ip, config.port)
+		this.updateInterval = config.updateInterval ?? 10000
 		
 		// Set online status update interval
-		if(WebStats.updateInterval > 0) this.startUpdateInterval(true)
+		if(this.updateInterval > 0) this.startUpdateInterval(true)
 		document.addEventListener("visibilitychange", () => document.hidden
 			? this.stopUpdateInterval() : this.startUpdateInterval())
 		
@@ -40,7 +39,7 @@ class WebStats {
 		
 		// Re-show if displayCount is set
 		document.querySelector("input.webstats-option#hide-offline").addEventListener("change", (e) => {
-			if(display.displayCount > 0){
+			if(this.display.displayCount > 0){
 				this.display.hideOffline = e.target.checked
 				this.display.show()
 			}
@@ -70,7 +69,7 @@ class WebStats {
 	}
 	
 	startUpdateInterval(first){
-		this.interval = setInterval(this.update.bind(this), WebStats.updateInterval)
+		this.interval = setInterval(this.update.bind(this), this.updateInterval)
 		if(!first) this.update()
 	}
 	

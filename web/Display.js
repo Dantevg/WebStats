@@ -134,13 +134,13 @@ class Display {
 	show(){
 		this.table.innerHTML = ""
 		this.table.append(this.headerElem)
-		const min = (this.currentPage-1) * this.displayCount
-		const max = (this.displayCount < 0)
-			? this.rows.length
-			: this.currentPage * this.displayCount
 		const scores = this.hideOffline
 			? this.data.scores.filter(row => this.data.isOnline(row[1]))
 			: this.data.scores
+		const min = (this.currentPage-1) * this.displayCount
+		const max = (this.displayCount > 0)
+			? Math.min(this.currentPage * this.displayCount, scores.length)
+			: scores.length
 		for(let i = min; i < max; i++){
 			this.table.append(this.rows[scores[i][0]])
 		}
