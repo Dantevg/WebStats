@@ -8,9 +8,9 @@
 class WebStats {
 	static updateInterval = 10000
 	
-	constructor({table, ip, port, connection, sortBy, descending}){
-		this.display = new Display(table, sortBy, descending)
-		this.connection = connection ?? Connection.json(ip, port)
+	constructor(config){
+		this.display = new Display(config)
+		this.connection = config.connection ?? Connection.json(config.ip, config.port)
 		
 		// Set online status update interval
 		if(WebStats.updateInterval > 0) this.startUpdateInterval(true)
@@ -19,6 +19,33 @@ class WebStats {
 		
 		// Get data and init
 		this.connection.getStats().then(data => this.init(data))
+		
+		// Get saved toggles from cookies
+		const cookies = document.cookie.split("; ") ?? []
+		cookies.filter(str => str.length > 0).forEach(cookie => {
+			const [property, value] = cookie.match(/[^=]+/g)
+			document.documentElement.classList.toggle(property, value == "true")
+			const el = document.querySelector("input.webstats-option#" + property)
+			if(el) el.checked = (value == "true")
+		})
+		
+		// On config option toggle, set the html element's class and store cookie
+		document.querySelectorAll("input.webstats-option").forEach(el =>
+			el.addEventListener("change", () => {
+				document.documentElement.classList.toggle(el.id, el.checked)
+				// Set a cookie which expires in 10 years
+				document.cookie = `${el.id}=${el.checked}; max-age=${60*60*24*365*10}`
+			})
+		)
+		
+		// Re-show if displayCount is set
+		document.querySelector("input.webstats-option#hide-offline").addEventListener("change", (e) => {
+			if(display.displayCount > 0){
+				this.display.hideOffline = e.target.checked
+				this.display.show()
+			}
+		})
+		this.display.hideOffline = document.querySelector("input.webstats-option#hide-offline").checked
 	}
 	
 	init(data){

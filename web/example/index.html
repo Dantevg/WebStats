@@ -13,22 +13,6 @@
 	<link rel="stylesheet" href="style.css">
 	
 	<script>
-		/* === START EXTRA FEATURES === */
-		
-		// Set the class of the <html> element for a toggle
-		setConfigClass = (property, checked) =>
-			document.documentElement.classList.toggle(property, checked)
-		
-		// Set the checkbox checked-ness for a toggle
-		setConfigCheckbox = (property, checked) => {
-			const el = document.querySelector("input.webstats-option#" + property)
-			if(el) el.checked = checked
-		}
-		
-		/* === END EXTRA FEATURES === */
-		
-		/* === START BASIC FEATURES === */
-		
 		// You can set the update interval (in ms) *before* initialising WebStats (optional, default 10000)
 		WebStats.updateInterval = 10000 // Set to 0 to disable auto-updating
 		
@@ -41,27 +25,6 @@
 				sortBy: "Player",   // The initial sorted objective (optional, default "Player")
 				descending: false,  // The initial sorting direction (optional, default false)
 			})
-			
-			/* === END BASIC FEATURES === */
-			
-			/* === START EXTRA FEATURES === */
-			
-			// Get saved toggles from cookies
-			const cookies = document.cookie.split("; ") ?? []
-			cookies.filter(str => str.length > 0).forEach(cookie => {
-				const [property, value] = cookie.match(/[^=]+/g)
-				setConfigClass(property, value == "true")
-				setConfigCheckbox(property, value == "true")
-			})
-			
-			// On config option toggle, set the <html> element's class and store cookie
-			document.querySelectorAll("input.webstats-option").forEach(el =>
-				el.onchange = (e) => {
-					setConfigClass(el.id, e.target.checked)
-					// Set a cookie which expires in 10 years
-					document.cookie = `${el.id}=${e.target.checked}; max-age=${60*60*24*365*10}`
-				}
-			)
 		})
 	</script>
 </head>

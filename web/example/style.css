@@ -35,13 +35,13 @@ td:not(.empty)[objective=Player] {
 	padding-left: 40px;
 }
 
-td:not(.empty):first-of-type {
+td.skin {
 	padding: 0px !important;
 	background: transparent;
 	z-index: 10;
 }
 
-td:not(.empty):first-of-type img {
+td.skin img {
 	height: 100%;
 	-ms-interpolation-mode: nearest-neighbor;
 		image-rendering: -webkit-optimize-contrast;

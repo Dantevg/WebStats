@@ -1,20 +1,27 @@
 class Display {
-	constructor(table, sortBy = "Player", descending = false){
+	constructor({table, sortBy = "Player", descending = false, showSkins = true, displayCount = 100}){
 		this.table = table
 		this.sortBy = sortBy
 		this.descending = descending
+		this.showSkins = showSkins
+		this.displayCount = displayCount
+		this.hideOffline = false
+		this.currentPage = 1
 	}
 	
 	init(data){
 		this.data = data
 		
 		// Create header of columns
-		let trHeader = document.createElement("tr")
-		this.appendTh(trHeader, "Player").setAttribute("colspan", 2)
-		this.table.append(trHeader)
+		this.headerElem = document.createElement("tr")
+		const playerHeader = this.appendTh(this.headerElem, "Player")
+		if(this.showSkins) playerHeader.setAttribute("colspan", 2)
+		this.table.append(this.headerElem)
 		for(const column of this.data.columns){
-			this.appendTh(trHeader, column)
+			this.appendTh(this.headerElem, column)
 		}
+		
+		this.rows = []
 		
 		// Create rows of (empty) entries
 		for(const entry of this.data.entries){
@@ -22,11 +29,13 @@ class Display {
 			tr.setAttribute("entry", Display.quoteEscape(entry))
 			
 			// Append skin image
-			let img = this.appendElement(tr, "td")
-			this.appendImg(img, "https://www.mc-heads.net/avatar/" + entry + ".png")
-				.setAttribute("alt", entry)
-			img.classList.add("sticky")
-			img.setAttribute("title", entry)
+			if(this.showSkins){
+				let img = this.appendElement(tr, "td")
+				this.appendImg(img, "https://www.mc-heads.net/avatar/" + entry + ".png")
+					.setAttribute("alt", entry)
+				img.classList.add("sticky", "skin")
+				img.setAttribute("title", entry)
+			}
 			
 			// Append player name
 			let name = this.appendTextElement(tr, "td", entry)
@@ -43,7 +52,7 @@ class Display {
 				td.classList.add("empty")
 				td.setAttribute("objective", Display.quoteEscape(objective))
 			}
-			this.table.append(tr)
+			this.rows.push(tr)
 		}
 		
 		// Fill entries
@@ -52,13 +61,11 @@ class Display {
 	
 	updateScoreboard(scoreboard){
 		this.data.setScoreboard(scoreboard)
-		const rows = this.table.querySelectorAll("tr")
-		for(const row of rows){
-			const entry = row.getAttribute("entry")
-			for(const td of row.querySelectorAll("td")){
-				const objective = td.getAttribute("objective")
-				const value = this.data.scores[objective]?.[entry]
+		for(const row of this.data.scores){
+			for(const column of this.data.columns){
+				const value = row[this.data.columns_[column]]
 				if(!value) continue
+				const td = this.rows[row[0]].querySelector(`td[objective=${column}]`)
 				td.classList.remove("empty")
 				td.setAttribute("value", value)
 				td.innerText = isNaN(value) ? value : Number(value).toLocaleString()
@@ -68,8 +75,7 @@ class Display {
 	
 	updateOnlineStatus(online){
 		this.data.setOnlineStatus(online)
-		const rows = this.table.querySelectorAll("tr")
-		for(const row of rows){
+		for(const row of this.rows){
 			const statusElement = row.querySelector("td .status")
 			if(!statusElement) continue
 			const entry = row.getAttribute("entry")
@@ -81,6 +87,7 @@ class Display {
 			statusElement.classList.add(status.toLowerCase())
 			statusElement.setAttribute("title", this.data.getStatus(entry))
 		}
+		if(this.displayCount > 0) this.show()
 	}
 	
 	updateStats(data){
@@ -118,23 +125,31 @@ class Display {
 		return img
 	}
 	
-	// Sort a HTML table element
-	sort(by, descending){
-		// Get table rows and sort
-		let rows = Array.from(this.table.querySelectorAll("tr"))
-		let header = rows.shift() // Don't sort header with data
-		rows = rows.sort((a, b) =>
-			Display.compare(descending,
-				a.querySelector("td[objective='" + Display.quoteEscape(by) + "']").getAttribute("value") ?? "",
-				b.querySelector("td[objective='" + Display.quoteEscape(by) + "']").getAttribute("value") ?? ""
-			))
-		
-		// Replace table contents with sorted variant
+	changePage(page){
+		this.currentPage = page
+		this.show()
+	}
+	
+	// Re-display table contents
+	show(){
 		this.table.innerHTML = ""
-		this.table.append(header)
-		for(const row of rows){
-			this.table.append(row)
+		this.table.append(this.headerElem)
+		const min = (this.currentPage-1) * this.displayCount
+		const max = (this.displayCount < 0)
+			? this.rows.length
+			: this.currentPage * this.displayCount
+		const scores = this.hideOffline
+			? this.data.scores.filter(row => this.data.isOnline(row[1]))
+			: this.data.scores
+		for(let i = min; i < max; i++){
+			this.table.append(this.rows[scores[i][0]])
 		}
+	}
+	
+	// Sort a HTML table element
+	sort(by = this.sortBy, descending = this.descending){
+		this.data.sort(by, descending)
+		this.show()
 	}
 	
 	// When a table header is clicked, sort by that header
@@ -142,7 +157,8 @@ class Display {
 		let objective = e.target.innerText
 		this.descending = (objective === this.sortBy) ? !this.descending : true
 		this.sortBy = objective
-		this.sort(objective, this.descending)
+		this.currentPage = 1
+		this.sort()
 		
 		// Set URL query string, for sharing
 		window.history.replaceState({}, "",
@@ -152,14 +168,5 @@ class Display {
 	
 	// Replace single quotes by '&quot;' (html-escape)
 	static quoteEscape = string => string.replace(/'/g, "&quot;")
-	
-	// When a and b are both numbers, compare as numbers. Otherwise, case-insensitive compare as string
-	static compare(descending, a, b){
-		if(Number(a) && Number(b)){
-			return (descending ? -1 : 1) * (a - b)
-		}else{
-			return (descending ? -1 : 1) * a.localeCompare(b, undefined, {sensitivity: "base"})
-		}
-	}
 	
 }
