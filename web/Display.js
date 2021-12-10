@@ -12,6 +12,15 @@ class Display {
 	init(data){
 		this.data = data
 		
+		// Set pagination controls
+		if(this.displayCount > 0){
+			this.initPagination()
+		}else{
+			// Hide pagination controls when pagination is disabled
+			const paginationSpanElem = document.querySelector("span.webstats-pagination")
+			if(paginationSpanElem) paginationSpanElem.style.display = "none"
+		}
+		
 		// Create header of columns
 		this.headerElem = document.createElement("tr")
 		const playerHeader = this.appendTh(this.headerElem, "Player")
@@ -59,6 +68,30 @@ class Display {
 		this.updateStats(data)
 	}
 	
+	initPagination(){
+		this.maxPage = Math.ceil(this.data.entries.length / this.displayCount)
+		
+		// Page selector
+		const selectElem = document.querySelector("select.webstats-pagination")
+		if(selectElem){
+			selectElem.onchange = (e) => this.changePage(Number(e.target.value))
+			for(let i = 1; i <= this.maxPage; i++){
+				const optionElem = document.createElement("option")
+				optionElem.innerText = i
+				selectElem.append(optionElem)
+			}
+		} else console.warn("WebStats: no/invalid page control elements")
+		
+		// "Prev" and "Next" buttons
+		const prevButton = document.querySelector("button.webstats-pagination[name=prev]")
+		if(prevButton) prevButton.onclick = () => this.changePage(this.currentPage-1)
+		else console.warn("WebStats: no/invalid page control elements")
+		
+		const nextButton = document.querySelector("button.webstats-pagination[name=next]")
+		if(nextButton) nextButton.onclick = () => this.changePage(this.currentPage+1)
+		else console.warn("WebStats: no/invalid page control elements")
+	}
+	
 	updateScoreboard(scoreboard){
 		this.data.setScoreboard(scoreboard)
 		for(const row of this.data.scores){
@@ -87,6 +120,7 @@ class Display {
 			statusElement.classList.add(status.toLowerCase())
 			statusElement.setAttribute("title", this.data.getStatus(entry))
 		}
+		// Re-display if pagination is enabled
 		if(this.displayCount > 0) this.show()
 	}
 	
@@ -125,9 +159,14 @@ class Display {
 		return img
 	}
 	
-	changePage(page){
+	// Change the page, re-display if `show` is not false and set page controls
+	changePage(page, show){
+		page = Math.max(1, Math.min(page, this.maxPage))
 		this.currentPage = page
-		this.show()
+		if(show != false) this.show()
+		
+		const selectElem = document.querySelector("select.webstats-pagination")
+		if(selectElem) selectElem.value = String(page)
 	}
 	
 	// Re-display table contents
@@ -157,7 +196,7 @@ class Display {
 		let objective = e.target.innerText
 		this.descending = (objective === this.sortBy) ? !this.descending : true
 		this.sortBy = objective
-		this.currentPage = 1
+		this.changePage(1, false)
 		this.sort()
 		
 		// Set URL query string, for sharing

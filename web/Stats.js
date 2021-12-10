@@ -37,14 +37,17 @@ class WebStats {
 			})
 		)
 		
-		// Re-show if displayCount is set
-		document.querySelector("input.webstats-option#hide-offline").addEventListener("change", (e) => {
-			if(this.display.displayCount > 0){
-				this.display.hideOffline = e.target.checked
-				this.display.show()
-			}
-		})
-		this.display.hideOffline = document.querySelector("input.webstats-option#hide-offline").checked
+		const optionHideOffline = document.querySelector("input.webstats-option#hide-offline")
+		if(optionHideOffline){
+			// Re-show if displayCount is set
+			optionHideOffline.addEventListener("change", (e) => {
+				if(this.display.displayCount > 0){
+					this.display.hideOffline = e.target.checked
+					this.display.show()
+				}
+			})
+			this.display.hideOffline = optionHideOffline.checked
+		}
 	}
 	
 	init(data){
