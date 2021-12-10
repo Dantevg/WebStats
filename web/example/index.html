@@ -13,17 +13,19 @@
 	<link rel="stylesheet" href="style.css">
 	
 	<script>
-		// You can set the update interval (in ms) *before* initialising WebStats (optional, default 10000)
-		WebStats.updateInterval = 10000 // Set to 0 to disable auto-updating
-		
 		// Will be executed after page is loaded
 		window.addEventListener("load", () => {
 			const stats = new WebStats({
-				table: document.getElementById("webstats-table"), // The <table> element to use (required)
-				ip: "203.0.113.42", // The IP of the server (required)
-				port: 8080,         // The port set in the config.yml on the server (required)
-				sortBy: "Player",   // The initial sorted objective (optional, default "Player")
-				descending: false,  // The initial sorting direction (optional, default false)
+				// requried:
+				table: document.getElementById("webstats-table"), // The <table> element to use
+				ip: "203.0.113.42",    // The IP of the server
+				port: 8080,            // The port set in the config.yml on the server
+				// optional:
+				updateInterval: 10000, // Set to 0 to disable auto-updating (in ms, default 10000)
+				sortBy: "Player",      // The initial sorted objective (default "Player")
+				descending: false,     // The initial sorting direction (default false)
+				showSkins: true,       // Whether to show player heads (default true)
+				displayCount: 100,     // Max rows to show on one page (default 100, set to -1 to disable pagination)
 			})
 		})
 	</script>
@@ -39,6 +41,12 @@
 			<!-- toggle hiding offline players -->
 			<input type="checkbox" name="hide-offline" id="hide-offline" class="webstats-option">
 			<label for="hide-offline">Hide offline players</label>
+		</span>
+		<span class="webstats-pagination">
+			<!-- pagination controls -->
+			<button name="prev" class="webstats-pagination">Prev</button>
+			<select name="page" class="webstats-pagination"></select>
+			<button name="next" class="webstats-pagination">Next</button>
 		</span>
 		
 		<!-- the table which will be populated by WebStats -->

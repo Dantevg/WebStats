@@ -10,6 +10,8 @@ class Data {
 		this.columns_ = {Player: 1}
 		this.columns.forEach((val, idx) => this.columns_[val] = idx + 2)
 		
+		this.filter()
+		
 		this.scores = []
 		for(const entryName of this.entries){
 			const entry = []
@@ -19,8 +21,6 @@ class Data {
 				entry.push(this.scoreboard.scores[columnName][entryName])
 			}
 		}
-		
-		this.filter()
 	}
 	
 	get entries(){ return this.scoreboard.entries }

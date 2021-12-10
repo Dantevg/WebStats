@@ -98,7 +98,7 @@ class Display {
 			for(const column of this.data.columns){
 				const value = row[this.data.columns_[column]]
 				if(!value) continue
-				const td = this.rows[row[0]].querySelector(`td[objective=${column}]`)
+				const td = this.rows[row[0]].querySelector(`td[objective='${column}']`)
 				td.classList.remove("empty")
 				td.setAttribute("value", value)
 				td.innerText = isNaN(value) ? value : Number(value).toLocaleString()

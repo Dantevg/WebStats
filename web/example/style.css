@@ -118,6 +118,10 @@ main {
 	transition: width 0.2s;
 }
 
+main > span {
+	margin-right: 10px;
+}
+
 /* MEDIA DIRECTIVES */
 @media (prefers-color-scheme: dark) {
 	:root {
