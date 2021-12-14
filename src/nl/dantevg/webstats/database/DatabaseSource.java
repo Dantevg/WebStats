@@ -17,6 +17,8 @@ public class DatabaseSource {
 	private final List<DatabaseConverter> conversions = new ArrayList<>();
 	
 	public DatabaseSource() throws ConfigurationException {
+		WebStats.logger.log(Level.INFO, "Enabling database source");
+		
 		String hostname = WebStats.config.getString("database.hostname");
 		String username = WebStats.config.getString("database.username");
 		String password = WebStats.config.getString("database.password");
@@ -39,8 +41,6 @@ public class DatabaseSource {
 					conn, (String) configItem.get("table"),
 					(List<List<String>>) configItem.get("convert")));
 		}
-		
-		WebStats.logger.log(Level.INFO, "Enabled database source");
 	}
 	
 	public EntriesScores getStats() {

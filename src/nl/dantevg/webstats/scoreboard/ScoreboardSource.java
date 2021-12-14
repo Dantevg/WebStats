@@ -16,11 +16,11 @@ public class ScoreboardSource {
 	private final boolean allObjectives;
 	
 	public ScoreboardSource() {
+		WebStats.logger.log(Level.INFO, "Enabling scoreboard source");
+		
 		scoreboard = Bukkit.getScoreboardManager().getMainScoreboard();
 		objectivesFilter = WebStats.config.getStringList("objectives");
 		allObjectives = objectivesFilter.contains("*");
-		
-		WebStats.logger.log(Level.INFO, "Enabled scoreboard source");
 	}
 	
 	private Set<String> getEntries() {

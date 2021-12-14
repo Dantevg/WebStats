@@ -28,7 +28,7 @@ public class DatabaseConnection {
 		try {
 			if (conn == null) {
 				conn = DriverManager.getConnection("jdbc:mysql://"
-						+ hostname + "/" + dbname, username, password);
+						+ hostname + "/" + dbname + "?autoReconnect=true", username, password);
 				WebStats.logger.log(Level.INFO, "Connected to database " + dbname);
 			}
 			return true;
