@@ -1,6 +1,7 @@
 package nl.dantevg.webstats.placeholder;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import nl.dantevg.webstats.ConfigurationException;
 import nl.dantevg.webstats.WebStats;
 import org.bukkit.Bukkit;
@@ -85,7 +86,8 @@ public class PlaceholderStorer {
 				+ "value VARCHAR(255), "
 				+ "PRIMARY KEY(uuid, placeholder));")) {
 			stmt.executeUpdate();
-			WebStats.logger.log(Level.INFO, "Created new placeholder table");
+			WebStats.logger.log(Level.INFO, "Created new placeholder table "
+					+ TABLE_NAME + " in placeholder database " + dbname);
 		} catch (SQLException e) {
 			WebStats.logger.log(Level.SEVERE, "Could not initialise placeholder database " + dbname, e);
 		}
@@ -93,15 +95,18 @@ public class PlaceholderStorer {
 	
 	private void load() {
 		try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + TABLE_NAME + ";");
-			 ResultSet resultSet = stmt.executeQuery()) {
+		     ResultSet resultSet = stmt.executeQuery()) {
+			int nRows = 0;
 			while (resultSet.next()) {
 				UUID uuid = UUID.fromString(resultSet.getString("uuid"));
 				String placeholder = resultSet.getString("placeholder");
 				String value = resultSet.getString("value");
 				data.put(uuid, placeholder, value);
-				WebStats.logger.log(Level.INFO, "Loaded " + uuid.toString()
-						+ ": " + placeholder + " = " + value);
+				nRows++;
+				WebStats.logger.log(Level.CONFIG, String.format("Loaded %s (%s): %s = %s",
+						uuid.toString(), Bukkit.getOfflinePlayer(uuid).getName(), placeholder, value));
 			}
+			WebStats.logger.log(Level.INFO, "Loaded " + nRows + " rows from database");
 		} catch (SQLException e) {
 			WebStats.logger.log(Level.SEVERE, "Could not query placeholder database " + dbname, e);
 		}
@@ -109,23 +114,27 @@ public class PlaceholderStorer {
 	
 	private void update() {
 		for (OfflinePlayer player : placeholderSource.getEntriesAsPlayers()) {
-			placeholderSource.getScoresForPlayer(player).forEach((String placeholder, String value) ->
-					data.put(player.getUniqueId(), placeholder, value));
+			placeholderSource.getScoresForPlayer(player).forEach((String placeholder, String value) -> {
+				data.put(player.getUniqueId(), placeholder, value);
+				WebStats.logger.log(Level.CONFIG, String.format("Updated %s (%s): %s = %s",
+						player.getUniqueId().toString(), player.getName(), placeholder, value));
+			});
 		}
 	}
 	
 	// Store placeholder data for player
-	public void save(OfflinePlayer player) {
+	// Returns the amount of scores it saved to the database for this player
+	public int save(OfflinePlayer player) {
 		Map<String, String> scores = placeholderSource.getScoresForPlayer(player);
 		UUID uuid = player.getUniqueId();
 		
-		if (scores.isEmpty()) return;
+		if (scores.isEmpty()) return 0;
 		
 		// Store in instance
 		scores.forEach((placeholder, value) -> data.put(uuid, placeholder, value));
 		
 		// Store in database
-		if (conn == null) return;
+		if (conn == null) return 0;
 		
 		String uuidStr = uuid.toString();
 		try (PreparedStatement stmt = conn.prepareStatement("REPLACE INTO " + TABLE_NAME + " VALUES (?, ?, ?);")) {
@@ -134,18 +143,24 @@ public class PlaceholderStorer {
 				stmt.setString(2, entry.getKey());
 				stmt.setString(3, entry.getValue());
 				stmt.addBatch();
+				WebStats.logger.log(Level.CONFIG, String.format("Saving %s (%s): %s = %s",
+						uuidStr, Bukkit.getOfflinePlayer(uuid).getName(), entry.getKey(), entry.getValue()));
 			}
 			stmt.executeUpdate();
-			WebStats.logger.log(Level.INFO, "Saved placeholders for player " + player.getName());
+			WebStats.logger.log(Level.INFO, "Saved " + scores.size()
+					+ " placeholders for player " + player.getName());
+			return scores.size();
 		} catch (SQLException e) {
 			WebStats.logger.log(Level.SEVERE, "Could not update placeholder database " + dbname, e);
+			return 0;
 		}
 	}
 	
 	// Store placeholder data for all players
 	public void saveAll() {
-		for (OfflinePlayer player : placeholderSource.getEntriesAsPlayers()) save(player);
-		WebStats.logger.log(Level.INFO, "Saved all placeholders");
+		int nRows = 0;
+		for (OfflinePlayer player : placeholderSource.getEntriesAsPlayers()) nRows += save(player);
+		WebStats.logger.log(Level.INFO, "Saved all placeholders (" + nRows + " rows) to database");
 	}
 	
 	public String getScore(UUID uuid, String placeholder) {
@@ -157,7 +172,18 @@ public class PlaceholderStorer {
 			String status = (conn != null && !conn.isClosed())
 					? (conn.isValid(1) ? "valid" : "invalid")
 					: "closed";
-			return "Database connection: " + status;
+			
+			List<String> loadedScores = new ArrayList<>();
+			for (Table.Cell<UUID, String, String> cell : data.cellSet()) {
+				UUID uuid = cell.getRowKey();
+				if (uuid == null) continue;
+				String playerName = Bukkit.getOfflinePlayer(uuid).getName();
+				loadedScores.add(String.format("%s (%s): %s = %s",
+						uuid.toString(), playerName, cell.getColumnKey(), cell.getValue()));
+			}
+			
+			return "Placeholder storer database connection: " + status
+					+ "\nLoaded placeholders:\n" + String.join("\n", loadedScores);
 		} catch (SQLException e) {
 			return ""; // Happens only if timeout is < 0, but timeout is 1 here
 		}

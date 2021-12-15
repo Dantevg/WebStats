@@ -1,8 +1,12 @@
 main: nl.dantevg.webstats.WebStats
 name: WebStats
-version: 1.5.0
+version: 1.5.1-dev3
 api-version: 1.13
 description: Display the scoreboard, PlaceholderAPI and other plugin statistics on the web
 author: RedPolygon
 website: dantevg.nl/mods-plugins/WebStats
 softdepend: [Essentials, PlaceholderAPI]
+commands: 
+  webstats:
+    description: WebStats debug command
+    usage: "Usage: /<command> debug"

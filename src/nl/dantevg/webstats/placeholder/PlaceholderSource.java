@@ -45,6 +45,8 @@ public class PlaceholderSource {
 				.collect(Collectors.toSet());
 	}
 	
+	// Get all scores for all players from PlaceholderAPI
+	// Alternatively find stored scores from PlaceholderStorer
 	private Map<String, Map<String, Object>> getScores() {
 		Map<String, Map<String, Object>> values = new HashMap<>();
 		Set<OfflinePlayer> players = getEntriesAsPlayers();
@@ -67,6 +69,8 @@ public class PlaceholderSource {
 		return values;
 	}
 	
+	// Get scores for single player from PlaceholderAPI
+	// This method does NOT try to find stored scores from PlaceholderStorer
 	Map<String, String> getScoresForPlayer(OfflinePlayer player) {
 		Map<String, String> scores = new HashMap<>();
 		String name = player.getName();

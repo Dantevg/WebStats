@@ -20,8 +20,9 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
 		if (args.length == 1 && args[0].equalsIgnoreCase("debug")) {
 			List<String> lines = new ArrayList<>();
 			lines.add(webstats.debug());
-			if(WebStats.placeholderSource != null) lines.add(WebStats.placeholderSource.debug());
+			if (WebStats.placeholderSource != null) lines.add(WebStats.placeholderSource.debug());
 			sender.sendMessage(String.join("\n", lines));
+			return true;
 		}
 		
 		return false;
