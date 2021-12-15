@@ -23,45 +23,17 @@ class Display {
 		
 		// Create header of columns
 		this.headerElem = document.createElement("tr")
-		const playerHeader = this.appendTh(this.headerElem, "Player")
-		if(this.showSkins) playerHeader.setAttribute("colspan", 2)
 		this.table.append(this.headerElem)
+		Display.appendTh(this.headerElem, "Player", this.thClick.bind(this),
+			this.showSkins ? 2 : undefined)
 		for(const column of this.data.columns){
-			this.appendTh(this.headerElem, column)
+			Display.appendTh(this.headerElem, column, this.thClick.bind(this))
 		}
 		
-		this.rows = []
-		
 		// Create rows of (empty) entries
+		this.rows = []
 		for(const entry of this.data.entries){
-			let tr = document.createElement("tr")
-			tr.setAttribute("entry", Display.quoteEscape(entry))
-			
-			// Append skin image
-			if(this.showSkins){
-				let img = this.appendElement(tr, "td")
-				this.appendImg(img, "https://www.mc-heads.net/avatar/" + entry + ".png")
-					.setAttribute("alt", entry)
-				img.classList.add("sticky", "skin")
-				img.setAttribute("title", entry)
-			}
-			
-			// Append player name
-			let name = this.appendTextElement(tr, "td", entry)
-			name.setAttribute("objective", "Player")
-			name.setAttribute("value", entry)
-			
-			// Prepend online/afk status
-			let status = this.prependElement(name, "div")
-			status.classList.add("status")
-			
-			// Append empty elements for alignment
-			for(const objective of this.data.columns){
-				let td = this.appendElement(tr, "td")
-				td.classList.add("empty")
-				td.setAttribute("objective", Display.quoteEscape(objective))
-			}
-			this.rows.push(tr)
+			this.appendEntry(entry)
 		}
 		
 		// Fill entries
@@ -90,6 +62,37 @@ class Display {
 		const nextButton = document.querySelector("button.webstats-pagination[name=next]")
 		if(nextButton) nextButton.onclick = () => this.changePage(this.currentPage+1)
 		else console.warn("WebStats: no/invalid page control elements")
+	}
+	
+	appendEntry(entry){
+		let tr = document.createElement("tr")
+		tr.setAttribute("entry", Display.quoteEscape(entry))
+		
+		// Append skin image
+		if(this.showSkins){
+			let img = Display.appendElement(tr, "td")
+			Display.appendImg(img, "https://www.mc-heads.net/avatar/" + entry + ".png")
+				.setAttribute("alt", entry)
+			img.classList.add("sticky", "skin")
+			img.setAttribute("title", entry)
+		}
+		
+		// Append player name
+		let name = Display.appendTextElement(tr, "td", entry)
+		name.setAttribute("objective", "Player")
+		name.setAttribute("value", entry)
+		
+		// Prepend online/afk status
+		let status = Display.prependElement(name, "div")
+		status.classList.add("status")
+		
+		// Append empty elements for alignment
+		for(const objective of this.data.columns){
+			let td = Display.appendElement(tr, "td")
+			td.classList.add("empty")
+			td.setAttribute("objective", Display.quoteEscape(objective))
+		}
+		this.rows.push(tr)
 	}
 	
 	updateScoreboard(scoreboard){
@@ -127,36 +130,6 @@ class Display {
 	updateStats(data){
 		this.updateScoreboard(data.scoreboard)
 		this.updateOnlineStatus(data.online)
-	}
-	
-	appendElement(base, type){
-		let el = document.createElement(type)
-		base.append(el)
-		return el
-	}
-	
-	prependElement(base, type){
-		let el = document.createElement(type)
-		base.prepend(el)
-		return el
-	}
-	
-	appendTextElement(base, type, name){
-		let el = this.appendElement(base, type)
-		el.innerText = name
-		return el
-	}
-	
-	appendTh(base, name){
-		let th = this.appendTextElement(base, "th", name)
-		th.onclick = this.thClick.bind(this)
-		return th
-	}
-	
-	appendImg(base, src){
-		let img = this.appendElement(base, "img")
-		img.src = src
-		return img
 	}
 	
 	// Change the page, re-display if `show` is not false and set page controls
@@ -207,5 +180,36 @@ class Display {
 	
 	// Replace single quotes by '&quot;' (html-escape)
 	static quoteEscape = string => string.replace(/'/g, "&quot;")
+	
+	static appendElement(base, type){
+		let el = document.createElement(type)
+		base.append(el)
+		return el
+	}
+	
+	static prependElement(base, type){
+		let el = document.createElement(type)
+		base.prepend(el)
+		return el
+	}
+	
+	static appendTextElement(base, type, name){
+		let el = Display.appendElement(base, type)
+		el.innerText = name
+		return el
+	}
+	
+	static appendTh(base, name, onclick, colspan){
+		let th = Display.appendTextElement(base, "th", name)
+		th.onclick = onclick
+		if(colspan != undefined) th.setAttribute("colspan", colspan)
+		return th
+	}
+	
+	static appendImg(base, src){
+		let img = Display.appendElement(base, "img")
+		img.src = src
+		return img
+	}
 	
 }
