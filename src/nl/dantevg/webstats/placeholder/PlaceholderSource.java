@@ -16,6 +16,8 @@ public class PlaceholderSource {
 	private PlaceholderStorer storer;
 	
 	public PlaceholderSource() throws ConfigurationException {
+		WebStats.logger.log(Level.INFO, "Enabling placeholder source");
+		
 		ConfigurationSection section = WebStats.config.getConfigurationSection("placeholders");
 		if (section == null) {
 			throw new ConfigurationException("Invalid configuration: placeholders should be a key-value map");
@@ -25,8 +27,6 @@ public class PlaceholderSource {
 		if (WebStats.config.contains("store-placeholders-database")) {
 			storer = new PlaceholderStorer(this);
 		}
-		
-		WebStats.logger.log(Level.INFO, "Enabled placeholder source");
 	}
 	
 	Set<OfflinePlayer> getEntriesAsPlayers() {

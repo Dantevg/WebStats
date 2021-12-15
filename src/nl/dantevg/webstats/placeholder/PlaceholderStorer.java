@@ -20,6 +20,8 @@ public class PlaceholderStorer {
 	private Connection conn;
 	
 	public PlaceholderStorer(PlaceholderSource placeholderSource) throws ConfigurationException {
+		WebStats.logger.log(Level.INFO, "Enabling placeholder storer");
+		
 		this.placeholderSource = placeholderSource;
 		
 		// Register events

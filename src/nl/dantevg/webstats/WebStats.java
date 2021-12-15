@@ -67,13 +67,15 @@ public class WebStats extends JavaPlugin implements Runnable {
 		try {
 			// Open server socket
 			serverSocket = new ServerSocket(port);
-			logger.log(Level.INFO, "Web stats server started on port " + port);
+			logger.log(Level.INFO, "WebStats server started on port " + port);
 			
 			// Start server in a new thread, otherwise `serverSocket.accept()` will block the main thread
 			thread = new Thread(this, "WebStats");
 			thread.start();
 		} catch (IOException e) {
-			logger.log(Level.SEVERE, "Failed to open socket: " + e.getMessage(), e);
+			logger.log(Level.SEVERE, "Failed to open socket with port "
+					+ port + ": " + e.getMessage(), e);
+			getPluginLoader().disablePlugin(this);
 		}
 	}
 	
@@ -89,12 +91,12 @@ public class WebStats extends JavaPlugin implements Runnable {
 		
 		// Stop thread
 		try {
-			thread.join(100); // Wait max 0.1s for the thread to stop
+			if(thread != null) thread.join(100); // Wait max 0.1s for the thread to stop
 		} catch (InterruptedException e) {
 			logger.log(Level.WARNING, "Failed to stop thread: " + e.getMessage());
 		}
 		
-		// Disable sources
+		// Let sources close connections
 		if (databaseSource != null) databaseSource.disable();
 		if (placeholderSource != null) placeholderSource.disable();
 	}
