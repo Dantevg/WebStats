@@ -91,15 +91,17 @@ public class PlaceholderStorer {
 	
 	private void load() {
 		try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + TABLE_NAME + ";");
-		     ResultSet resultSet = stmt.executeQuery()) {
+			 ResultSet resultSet = stmt.executeQuery()) {
 			while (resultSet.next()) {
 				UUID uuid = UUID.fromString(resultSet.getString("uuid"));
 				String placeholder = resultSet.getString("placeholder");
 				String value = resultSet.getString("value");
 				data.put(uuid, placeholder, value);
+				WebStats.logger.log(Level.INFO, "Loaded " + uuid.toString()
+						+ ": " + placeholder + " = " + value);
 			}
 		} catch (SQLException e) {
-			WebStats.logger.log(Level.WARNING, "Could not query placeholder database " + dbname, e);
+			WebStats.logger.log(Level.SEVERE, "Could not query placeholder database " + dbname, e);
 		}
 	}
 	
@@ -146,6 +148,17 @@ public class PlaceholderStorer {
 	
 	public String getScore(UUID uuid, String placeholder) {
 		return data.get(uuid, placeholder);
+	}
+	
+	protected String debug() {
+		try {
+			String status = (conn != null && !conn.isClosed())
+					? (conn.isValid(1) ? "valid" : "invalid")
+					: "closed";
+			return "Database connection: " + status;
+		} catch (SQLException e) {
+			return ""; // Happens only if timeout is < 0, but timeout is 1 here
+		}
 	}
 	
 }

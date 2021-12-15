@@ -9,6 +9,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,6 +37,11 @@ public class WebStats extends JavaPlugin implements Runnable {
 		// Config
 		saveDefaultConfig();
 		int port = config.getInt("port");
+		
+		// Register debug command
+		DebugCommand debugCommand = new DebugCommand(this);
+		getCommand("webstats").setExecutor(debugCommand);
+		getCommand("webstats").setTabCompleter(debugCommand);
 		
 		// Set sources
 		if (config.contains("objectives")) scoreboardSource = new ScoreboardSource();
@@ -79,13 +86,15 @@ public class WebStats extends JavaPlugin implements Runnable {
 		} catch (IOException e) {
 			logger.log(Level.WARNING, "Failed to close socket: " + e.getMessage(), e);
 		}
+		
 		// Stop thread
 		try {
 			thread.join(100); // Wait max 0.1s for the thread to stop
 		} catch (InterruptedException e) {
-			// Ignore
+			logger.log(Level.WARNING, "Failed to stop thread: " + e.getMessage());
 		}
 		
+		// Disable sources
 		if (databaseSource != null) databaseSource.disable();
 		if (placeholderSource != null) placeholderSource.disable();
 	}
@@ -105,6 +114,33 @@ public class WebStats extends JavaPlugin implements Runnable {
 				logger.log(Level.WARNING, "IO Exception: " + e.getMessage(), e);
 			}
 		}
+	}
+	
+	private String getVersion() {
+		return "WebStats " + getDescription().getVersion();
+	}
+	
+	private String getSources() {
+		List<String> sources = new ArrayList<>();
+		if (WebStats.scoreboardSource != null) sources.add("scoreboard");
+		if (WebStats.placeholderSource != null) sources.add("PlaceholderAPI");
+		if (WebStats.databaseSource != null) sources.add("database");
+		return "Active sources: " + String.join(", ", sources);
+	}
+	
+	private String getThreadStatus() {
+		return "Thread status: " + (thread.isAlive() ? "alive" : "dead");
+	}
+	
+	private String getSocketStatus() {
+		return "Socket status: " + (serverSocket.isClosed() ? "closed" : "open");
+	}
+	
+	protected String debug() {
+		return getVersion() + "\n"
+				+ getSources() + "\n"
+				+ getThreadStatus() + "\n"
+				+ getSocketStatus();
 	}
 	
 }

@@ -94,4 +94,8 @@ public class PlaceholderSource {
 				&& !value.equalsIgnoreCase(placeholder);
 	}
 	
+	public String debug() {
+		return (storer != null) ? storer.debug() : "";
+	}
+	
 }
