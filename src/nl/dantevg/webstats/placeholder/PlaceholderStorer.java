@@ -146,7 +146,7 @@ public class PlaceholderStorer {
 				WebStats.logger.log(Level.CONFIG, String.format("Saving %s (%s): %s = %s",
 						uuidStr, Bukkit.getOfflinePlayer(uuid).getName(), entry.getKey(), entry.getValue()));
 			}
-			stmt.executeUpdate();
+			stmt.executeBatch();
 			WebStats.logger.log(Level.INFO, "Saved " + scores.size()
 					+ " placeholders for player " + player.getName());
 			return scores.size();
