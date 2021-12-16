@@ -41,10 +41,7 @@ class WebStats {
 		if(optionHideOffline){
 			// Re-show if displayCount is set
 			optionHideOffline.addEventListener("change", (e) => {
-				if(this.display.displayCount > 0){
-					this.display.hideOffline = e.target.checked
-					this.display.show()
-				}
+				if(this.display.displayCount > 0) this.display.changeHideOffline(e.target.checked)
 			})
 			this.display.hideOffline = optionHideOffline.checked
 		}

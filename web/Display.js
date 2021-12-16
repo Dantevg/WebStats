@@ -44,24 +44,45 @@ class Display {
 		this.maxPage = Math.ceil(this.data.entries.length / this.displayCount)
 		
 		// Page selector
-		const selectElem = document.querySelector("select.webstats-pagination")
-		if(selectElem){
-			selectElem.onchange = (e) => this.changePage(Number(e.target.value))
+		this.selectElem = document.querySelector("select.webstats-pagination")
+		if(this.selectElem) this.selectElem.onchange = (e) => this.changePage(Number(e.target.value))
+		else console.warn("WebStats: no/invalid page control elements")
+		
+		// "Prev" button
+		this.prevButton = document.querySelector("button.webstats-pagination[name=prev]")
+		if(this.prevButton) this.prevButton.onclick = () => this.changePage(this.currentPage-1)
+		else console.warn("WebStats: no/invalid page control elements")
+		
+		// "Next" button
+		this.nextButton = document.querySelector("button.webstats-pagination[name=next]")
+		if(this.nextButton) this.nextButton.onclick = () => this.changePage(this.currentPage+1)
+		else console.warn("WebStats: no/invalid page control elements")
+		
+		this.updatePagination()
+	}
+	
+	updatePagination(){
+		const entries = this.hideOffline
+			? this.data.entries.filter(entry => this.data.isOnline(entry))
+			: this.data.entries
+		this.maxPage = Math.ceil(entries.length / this.displayCount)
+		
+		// Page selector
+		if(this.selectElem){
+			this.selectElem.innerHTML = ""
 			for(let i = 1; i <= this.maxPage; i++){
 				const optionElem = document.createElement("option")
 				optionElem.innerText = i
-				selectElem.append(optionElem)
+				this.selectElem.append(optionElem)
 			}
-		} else console.warn("WebStats: no/invalid page control elements")
+			this.selectElem.value = String(this.currentPage)
+		}
 		
-		// "Prev" and "Next" buttons
-		const prevButton = document.querySelector("button.webstats-pagination[name=prev]")
-		if(prevButton) prevButton.onclick = () => this.changePage(this.currentPage-1)
-		else console.warn("WebStats: no/invalid page control elements")
+		// "Prev" button
+		if(this.prevButton) this.prevButton.toggleAttribute("disabled", this.currentPage <= 1)
 		
-		const nextButton = document.querySelector("button.webstats-pagination[name=next]")
-		if(nextButton) nextButton.onclick = () => this.changePage(this.currentPage+1)
-		else console.warn("WebStats: no/invalid page control elements")
+		// "Next" button
+		if(this.nextButton) this.nextButton.toggleAttribute("disabled", this.currentPage >= this.maxPage)
 	}
 	
 	appendEntry(entry){
@@ -142,8 +163,13 @@ class Display {
 		this.currentPage = page
 		if(show != false) this.show()
 		
-		const selectElem = document.querySelector("select.webstats-pagination")
-		if(selectElem) selectElem.value = String(page)
+		this.updatePagination()
+	}
+	
+	changeHideOffline(hideOffline){
+		this.hideOffline = hideOffline
+		this.updatePagination()
+		this.changePage(1)
 	}
 	
 	// Re-display table contents
