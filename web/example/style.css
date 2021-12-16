@@ -42,6 +42,7 @@ td.skin {
 }
 
 td.skin img {
+	width: 50px;
 	height: 100%;
 	-ms-interpolation-mode: nearest-neighbor;
 		image-rendering: -webkit-optimize-contrast;
@@ -49,6 +50,7 @@ td.skin img {
 		image-rendering: -o-pixelated;
 		image-rendering: pixelated;
 	display: block;
+	transition: width 0.2s;
 }
 
 html.compact td:not(.empty){
@@ -58,6 +60,10 @@ html.compact td:not(.empty){
 
 html.compact td:not(.empty)[objective=Player]{
 	padding-left: 30px;
+}
+
+html.compact td.skin img {
+	width: 30px;
 }
 
 .sticky {

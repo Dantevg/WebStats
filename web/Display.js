@@ -72,7 +72,6 @@ class Display {
 		if(this.showSkins){
 			let img = Display.appendElement(tr, "td")
 			Display.appendImg(img, "")
-				.setAttribute("alt", entry)
 			img.classList.add("sticky", "skin")
 			img.setAttribute("title", entry)
 		}
