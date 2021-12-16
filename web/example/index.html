@@ -33,23 +33,23 @@
 <body>
 	<main>
 		<span>
-			<!-- toggle compact view -->
+			<!-- toggle compact view (optional) -->
 			<input type="checkbox" name="compact" id="compact" class="webstats-option">
 			<label for="compact">Compact</label>
 		</span>
 		<span>
-			<!-- toggle hiding offline players -->
+			<!-- toggle hiding offline players (optional) -->
 			<input type="checkbox" name="hide-offline" id="hide-offline" class="webstats-option">
 			<label for="hide-offline">Hide offline players</label>
 		</span>
 		<span class="webstats-pagination">
-			<!-- pagination controls -->
+			<!-- pagination controls (optional) -->
 			<button name="prev" class="webstats-pagination">Prev</button>
 			<select name="page" class="webstats-pagination"></select>
 			<button name="next" class="webstats-pagination">Next</button>
 		</span>
 		
-		<!-- the table which will be populated by WebStats -->
+		<!-- the table which will be populated by WebStats (required) -->
 		<table id="webstats-table"></table>
 	</main>
 </body>
