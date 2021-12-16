@@ -71,7 +71,7 @@ class Display {
 		// Append skin image
 		if(this.showSkins){
 			let img = Display.appendElement(tr, "td")
-			Display.appendImg(img, "https://www.mc-heads.net/avatar/" + entry + ".png")
+			Display.appendImg(img, "")
 				.setAttribute("alt", entry)
 			img.classList.add("sticky", "skin")
 			img.setAttribute("title", entry)
@@ -93,6 +93,11 @@ class Display {
 			td.setAttribute("objective", Display.quoteEscape(objective))
 		}
 		this.rows.push(tr)
+	}
+	
+	setSkin(entry, row){
+		const img = row.getElementsByTagName("img")[0]
+		if(img) img.src = `https://www.mc-heads.net/avatar/${entry}.png`
 	}
 	
 	updateScoreboard(scoreboard){
@@ -154,6 +159,7 @@ class Display {
 			? Math.min(this.currentPage * this.displayCount, scores.length)
 			: scores.length
 		for(let i = min; i < max; i++){
+			if(this.showSkins) this.setSkin(scores[i][1], this.rows[scores[i][0]])
 			this.table.append(this.rows[scores[i][0]])
 		}
 	}
