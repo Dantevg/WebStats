@@ -33,7 +33,7 @@ class WebStats {
 			el.addEventListener("change", () => {
 				document.documentElement.classList.toggle(el.id, el.checked)
 				// Set a cookie which expires in 10 years
-				document.cookie = `${el.id}=${el.checked}; max-age=${60*60*24*365*10}`
+				document.cookie = `${el.id}=${el.checked}; max-age=${60*60*24*365*10}; SameSite=Lax`
 			})
 		)
 		
