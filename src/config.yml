@@ -1,12 +1,12 @@
 # Configuration file for WebStats
-# See https://github.com/Dantevg/WebStats#plugin-config-file for more info
+# See https://github.com/Dantevg/WebStats/wiki/Config-file for more info
 
-# Port to use for the service. Make sure that this port corresponds
-# to the one set in the web page js script
+# Port to use for the web server. Make sure that this port corresponds
+# to the one set in the web page js script.
 port: 8080
 
 # Only these columns will appear, in the order specified.
-# When commented out, all columns will be displayed, in alphabetical order (default)
+# When commented out, all columns will be displayed, in alphabetical order (default).
 # The 'Player' column will always be displayed, as the first column.
 #columns: []
 
@@ -15,12 +15,12 @@ port: 8080
 objectives:
   - '*'
 
-# Configuration for the MySQL database connectivity (uncomment to use)
+# Database credentials for MySQL database connectivity and placeholder storer
 #database:
 #  hostname: localhost
 #  username: DATABASE USERNAME
 #  password: DATABASE PASSWORD
-#  config:
+#  config: # uncomment from here to use MySQL database connectivity
 #    - database: DATABASE NAME
 #      table: TABLE NAME
 #      convert: # Some examples, refer to documentation for explanations
