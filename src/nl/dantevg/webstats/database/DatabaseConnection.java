@@ -3,10 +3,7 @@ package nl.dantevg.webstats.database;
 import nl.dantevg.webstats.WebStats;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 
 public class DatabaseConnection {
@@ -24,13 +21,18 @@ public class DatabaseConnection {
 		this.dbname = dbname;
 	}
 	
+	public String getDBName() {
+		return dbname;
+	}
+	
 	public boolean connect() {
 		try {
-			if (conn == null) {
-				conn = DriverManager.getConnection("jdbc:mysql://"
-						+ hostname + "/" + dbname + "?autoReconnect=true", username, password);
-				WebStats.logger.log(Level.INFO, "Connected to database " + dbname);
-			}
+			// Close old invalid connection if present
+			if (conn != null && !conn.isClosed()) conn.close();
+			conn = DriverManager.getConnection(
+					"jdbc:mysql://" + hostname + "/" + dbname + "?autoReconnect=true",
+					username, password);
+			WebStats.logger.log(Level.INFO, "Connected to database " + dbname);
 			return true;
 		} catch (SQLException e) {
 			WebStats.logger.log(Level.WARNING, "Could not connect to database " + dbname, e);
@@ -41,6 +43,7 @@ public class DatabaseConnection {
 	public boolean disconnect() {
 		try {
 			if (conn != null && !conn.isClosed()) conn.close();
+			conn = null;
 			WebStats.logger.log(Level.INFO, "Disconnected from database " + dbname);
 			return true;
 		} catch (SQLException e) {
@@ -49,25 +52,13 @@ public class DatabaseConnection {
 		}
 	}
 	
-	public List<Map<String, String>> getTable(String table) {
-		List<Map<String, String>> data = new ArrayList<>();
-		if (conn == null) return data;
-		try {
-			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + table);
-			ResultSet results = stmt.executeQuery();
-			ResultSetMetaData meta = results.getMetaData();
-			int nColumns = meta.getColumnCount();
-			while (results.next()) {
-				Map<String, String> row = new HashMap<>();
-				for (int i = 1; i <= nColumns; i++) {
-					row.put(meta.getColumnLabel(i), results.getString(i));
-				}
-				data.add(row);
-			}
-		} catch (SQLException e) {
-			WebStats.logger.log(Level.WARNING, "Could not query database " + dbname, e);
-		}
-		return data;
+	public Connection getConnection() throws SQLException {
+		if (!isConnected()) connect();
+		return conn;
+	}
+	
+	private boolean isConnected() throws SQLException {
+		return conn != null && !conn.isClosed() && conn.isValid(1);
 	}
 	
 }

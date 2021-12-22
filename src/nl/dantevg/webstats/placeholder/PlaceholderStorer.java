@@ -16,6 +16,9 @@ public class PlaceholderStorer {
 	
 	private final PlaceholderSource placeholderSource;
 	private final String dbname;
+	private final String connURI;
+	private final String username;
+	private final String password;
 	private final HashBasedTable<UUID, String, String> data = HashBasedTable.create();
 	
 	private Connection conn;
@@ -30,16 +33,17 @@ public class PlaceholderStorer {
 		
 		// Connect to database
 		String hostname = WebStats.config.getString("database.hostname");
-		String username = WebStats.config.getString("database.username");
-		String password = WebStats.config.getString("database.password");
+		username = WebStats.config.getString("database.username");
+		password = WebStats.config.getString("database.password");
 		dbname = WebStats.config.getString("store-placeholders-database");
 		
 		if (hostname == null || username == null || password == null || dbname == null) {
 			throw new ConfigurationException("Invalid configuration: missing hostname, username, password or database name");
 		}
+		
+		connURI = "jdbc:mysql://" + hostname + "/" + dbname + "?autoReconnect=true";
 		try {
-			conn = DriverManager.getConnection("jdbc:mysql://"
-					+ hostname + "/" + dbname + "?autoReconnect=true", username, password);
+			connect();
 			WebStats.logger.log(Level.INFO, "Connected to placeholder database " + dbname);
 		} catch (SQLException e) {
 			WebStats.logger.log(Level.SEVERE, "Could not connect to placeholder database " + dbname, e);
@@ -56,12 +60,29 @@ public class PlaceholderStorer {
 		update();
 	}
 	
+	// Returns whether the connection to the database is valid
+	private boolean isConnected() throws SQLException {
+		return conn != null && !conn.isClosed() && conn.isValid(1);
+	}
+	
+	private Connection getConnection() throws SQLException {
+		if (!isConnected()) connect();
+		return conn;
+	}
+	
+	private void connect() throws SQLException {
+		// Close old invalid connection if present
+		if(conn != null && !conn.isClosed()) conn.close();
+		conn = DriverManager.getConnection(connURI, username, password);
+	}
+	
 	public boolean disconnect() {
 		// since this is called when the server closes,
 		// save all data to persistent database storage now
 		saveAll();
 		try {
 			if (conn != null && !conn.isClosed()) conn.close();
+			conn = null;
 			WebStats.logger.log(Level.INFO, "Disconnected from placeholder database " + dbname);
 			return true;
 		} catch (SQLException e) {
@@ -71,7 +92,8 @@ public class PlaceholderStorer {
 	}
 	
 	private boolean isFirstUse() {
-		try (ResultSet resultSet = conn.getMetaData().getTables(null, null, TABLE_NAME, null)) {
+		try (ResultSet resultSet = getConnection().getMetaData()
+				.getTables(null, null, TABLE_NAME, null)) {
 			return !resultSet.next();
 		} catch (SQLException e) {
 			WebStats.logger.log(Level.WARNING, "Could not query placeholder database " + dbname, e);
@@ -80,7 +102,8 @@ public class PlaceholderStorer {
 	}
 	
 	private void init() {
-		try (PreparedStatement stmt = conn.prepareStatement("CREATE TABLE " + TABLE_NAME
+		try (PreparedStatement stmt = getConnection().prepareStatement("CREATE TABLE "
+				+ TABLE_NAME
 				+ " (uuid VARCHAR(36) NOT NULL, "
 				+ "placeholder VARCHAR(255) NOT NULL, "
 				+ "value VARCHAR(255), "
@@ -94,7 +117,8 @@ public class PlaceholderStorer {
 	}
 	
 	private void load() {
-		try (PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + TABLE_NAME + ";");
+		try (PreparedStatement stmt = getConnection()
+				.prepareStatement("SELECT * FROM " + TABLE_NAME + ";");
 		     ResultSet resultSet = stmt.executeQuery()) {
 			int nRows = 0;
 			while (resultSet.next()) {
@@ -137,7 +161,8 @@ public class PlaceholderStorer {
 		if (conn == null) return 0;
 		
 		String uuidStr = uuid.toString();
-		try (PreparedStatement stmt = conn.prepareStatement("REPLACE INTO " + TABLE_NAME + " VALUES (?, ?, ?);")) {
+		try (PreparedStatement stmt = getConnection()
+				.prepareStatement("REPLACE INTO " + TABLE_NAME + " VALUES (?, ?, ?);")) {
 			for (Map.Entry<String, String> entry : scores.entrySet()) {
 				stmt.setString(1, uuidStr);
 				stmt.setString(2, entry.getKey());
@@ -169,9 +194,7 @@ public class PlaceholderStorer {
 	
 	protected String debug() {
 		try {
-			String status = (conn != null && !conn.isClosed())
-					? (conn.isValid(1) ? "valid" : "invalid")
-					: "closed";
+			String status = isConnected() ? "connected" : "closed";
 			
 			List<String> loadedScores = new ArrayList<>();
 			for (Table.Cell<UUID, String, String> cell : data.cellSet()) {

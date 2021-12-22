@@ -10,9 +10,11 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.*;
 import java.util.logging.Level;
 
 public class DatabaseConverter {
@@ -27,7 +29,7 @@ public class DatabaseConverter {
 	}
 	
 	public List<Map<String, String>> getValues() {
-		List<Map<String, String>> data = conn.getTable(table);
+		List<Map<String, String>> data = getTable(table);
 		for (List<String> command : conversions) {
 			switch (command.get(0)) {
 				case "filter": filter(data, command); break;
@@ -38,6 +40,27 @@ public class DatabaseConverter {
 				case "uuid": uuid(data, command); break;
 				default: WebStats.logger.log(Level.WARNING, "Invalid conversion command '" + command.get(0) + "'"); break;
 			}
+		}
+		return data;
+	}
+	
+	private List<Map<String, String>> getTable(String table) {
+		List<Map<String, String>> data = new ArrayList<>();
+		if (conn == null) return data;
+		try (PreparedStatement stmt = conn.getConnection()
+				.prepareStatement("SELECT * FROM " + table);
+		     ResultSet results = stmt.executeQuery()){
+			ResultSetMetaData meta = results.getMetaData();
+			int nColumns = meta.getColumnCount();
+			while (results.next()) {
+				Map<String, String> row = new HashMap<>();
+				for (int i = 1; i <= nColumns; i++) {
+					row.put(meta.getColumnLabel(i), results.getString(i));
+				}
+				data.add(row);
+			}
+		} catch (SQLException e) {
+			WebStats.logger.log(Level.WARNING, "Could not query database " + conn.getDBName(), e);
 		}
 		return data;
 	}
@@ -93,8 +116,8 @@ public class DatabaseConverter {
 		}
 		Type collectionType = new TypeToken<Map<String, String>>() {}.getType();
 		Gson gson = new Gson();
+		String column = command.get(1);
 		for (Map<String, String> row : data) {
-			String column = command.get(1);
 			try {
 				row.putAll(gson.fromJson(row.get(column), collectionType));
 			} catch (JsonSyntaxException e) {

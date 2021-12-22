@@ -39,7 +39,7 @@ public class PlaceholderSource {
 	}
 	
 	private Set<String> getEntries() {
-		return getEntriesAsPlayers().stream()   // all entries as OfflinePlayers
+		return getEntriesAsPlayers().stream() // all entries as OfflinePlayers
 				.map(OfflinePlayer::getName)  // OfflinePlayer -> String
 				.filter(Objects::nonNull)     // remove null names
 				.collect(Collectors.toSet());

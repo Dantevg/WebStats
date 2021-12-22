@@ -67,7 +67,7 @@ public class WebStats extends JavaPlugin implements Runnable {
 		try {
 			// Open server socket
 			serverSocket = new ServerSocket(port);
-			logger.log(Level.INFO, "WebStats server started on port " + port);
+			logger.log(Level.INFO, "Web server started on port " + port);
 			
 			// Start server in a new thread, otherwise `serverSocket.accept()` will block the main thread
 			thread = new Thread(this, "WebStats");
