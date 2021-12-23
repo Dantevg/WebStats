@@ -3,7 +3,6 @@ package nl.dantevg.webstats.database;
 import nl.dantevg.webstats.WebStats;
 
 import java.sql.*;
-import java.util.*;
 import java.util.logging.Level;
 
 public class DatabaseConnection {
@@ -27,8 +26,7 @@ public class DatabaseConnection {
 	
 	public boolean connect() {
 		try {
-			// Close old invalid connection if present
-			if (conn != null && !conn.isClosed()) conn.close();
+			closeConnection(); // Close old invalid connection if present
 			conn = DriverManager.getConnection(
 					"jdbc:mysql://" + hostname + "/" + dbname + "?autoReconnect=true",
 					username, password);
@@ -42,8 +40,7 @@ public class DatabaseConnection {
 	
 	public boolean disconnect() {
 		try {
-			if (conn != null && !conn.isClosed()) conn.close();
-			conn = null;
+			closeConnection();
 			WebStats.logger.log(Level.INFO, "Disconnected from database " + dbname);
 			return true;
 		} catch (SQLException e) {
@@ -57,8 +54,13 @@ public class DatabaseConnection {
 		return conn;
 	}
 	
-	private boolean isConnected() throws SQLException {
+	public boolean isConnected() throws SQLException {
 		return conn != null && !conn.isClosed() && conn.isValid(1);
+	}
+	
+	private void closeConnection() throws SQLException {
+		if (conn != null && !conn.isClosed()) conn.close();
+		conn = null;
 	}
 	
 }

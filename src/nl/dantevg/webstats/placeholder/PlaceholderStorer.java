@@ -4,6 +4,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import nl.dantevg.webstats.ConfigurationException;
 import nl.dantevg.webstats.WebStats;
+import nl.dantevg.webstats.database.DatabaseConnection;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 
@@ -15,13 +16,9 @@ public class PlaceholderStorer {
 	private static final String TABLE_NAME = "WebStats_placeholders";
 	
 	private final PlaceholderSource placeholderSource;
-	private final String dbname;
-	private final String connURI;
-	private final String username;
-	private final String password;
 	private final HashBasedTable<UUID, String, String> data = HashBasedTable.create();
 	
-	private Connection conn;
+	private final DatabaseConnection conn;
 	
 	public PlaceholderStorer(PlaceholderSource placeholderSource) throws ConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling placeholder storer");
@@ -33,22 +30,16 @@ public class PlaceholderStorer {
 		
 		// Connect to database
 		String hostname = WebStats.config.getString("database.hostname");
-		username = WebStats.config.getString("database.username");
-		password = WebStats.config.getString("database.password");
-		dbname = WebStats.config.getString("store-placeholders-database");
+		String username = WebStats.config.getString("database.username");
+		String password = WebStats.config.getString("database.password");
+		String dbname = WebStats.config.getString("store-placeholders-database");
 		
 		if (hostname == null || username == null || password == null || dbname == null) {
 			throw new ConfigurationException("Invalid configuration: missing hostname, username, password or database name");
 		}
 		
-		connURI = "jdbc:mysql://" + hostname + "/" + dbname + "?autoReconnect=true";
-		try {
-			connect();
-			WebStats.logger.log(Level.INFO, "Connected to placeholder database " + dbname);
-		} catch (SQLException e) {
-			WebStats.logger.log(Level.SEVERE, "Could not connect to placeholder database " + dbname, e);
-			return;
-		}
+		conn = new DatabaseConnection(hostname, username, password, dbname);
+		if (!conn.connect()) return;
 		
 		// Create table on first use
 		if (isFirstUse()) init();
@@ -60,49 +51,25 @@ public class PlaceholderStorer {
 		update();
 	}
 	
-	// Returns whether the connection to the database is valid
-	private boolean isConnected() throws SQLException {
-		return conn != null && !conn.isClosed() && conn.isValid(1);
-	}
-	
-	private Connection getConnection() throws SQLException {
-		if (!isConnected()) connect();
-		return conn;
-	}
-	
-	private void connect() throws SQLException {
-		// Close old invalid connection if present
-		if(conn != null && !conn.isClosed()) conn.close();
-		conn = DriverManager.getConnection(connURI, username, password);
-	}
-	
 	public boolean disconnect() {
 		// since this is called when the server closes,
 		// save all data to persistent database storage now
 		saveAll();
-		try {
-			if (conn != null && !conn.isClosed()) conn.close();
-			conn = null;
-			WebStats.logger.log(Level.INFO, "Disconnected from placeholder database " + dbname);
-			return true;
-		} catch (SQLException e) {
-			WebStats.logger.log(Level.WARNING, "Could not disconnect from placeholder database " + dbname, e);
-			return false;
-		}
+		return conn.disconnect();
 	}
 	
 	private boolean isFirstUse() {
-		try (ResultSet resultSet = getConnection().getMetaData()
+		try (ResultSet resultSet = conn.getConnection().getMetaData()
 				.getTables(null, null, TABLE_NAME, null)) {
 			return !resultSet.next();
 		} catch (SQLException e) {
-			WebStats.logger.log(Level.WARNING, "Could not query placeholder database " + dbname, e);
+			WebStats.logger.log(Level.WARNING, "Could not query placeholder database " + conn.getDBName(), e);
 		}
 		return false;
 	}
 	
 	private void init() {
-		try (PreparedStatement stmt = getConnection().prepareStatement("CREATE TABLE "
+		try (PreparedStatement stmt = conn.getConnection().prepareStatement("CREATE TABLE "
 				+ TABLE_NAME
 				+ " (uuid VARCHAR(36) NOT NULL, "
 				+ "placeholder VARCHAR(255) NOT NULL, "
@@ -110,16 +77,16 @@ public class PlaceholderStorer {
 				+ "PRIMARY KEY(uuid, placeholder));")) {
 			stmt.executeUpdate();
 			WebStats.logger.log(Level.INFO, "Created new placeholder table "
-					+ TABLE_NAME + " in placeholder database " + dbname);
+					+ TABLE_NAME + " in placeholder database " + conn.getDBName());
 		} catch (SQLException e) {
-			WebStats.logger.log(Level.SEVERE, "Could not initialise placeholder database " + dbname, e);
+			WebStats.logger.log(Level.SEVERE, "Could not initialise placeholder database " + conn.getDBName(), e);
 		}
 	}
 	
 	private void load() {
-		try (PreparedStatement stmt = getConnection()
+		try (PreparedStatement stmt = conn.getConnection()
 				.prepareStatement("SELECT * FROM " + TABLE_NAME + ";");
-		     ResultSet resultSet = stmt.executeQuery()) {
+			 ResultSet resultSet = stmt.executeQuery()) {
 			int nRows = 0;
 			while (resultSet.next()) {
 				UUID uuid = UUID.fromString(resultSet.getString("uuid"));
@@ -132,7 +99,7 @@ public class PlaceholderStorer {
 			}
 			WebStats.logger.log(Level.INFO, "Loaded " + nRows + " rows from database");
 		} catch (SQLException e) {
-			WebStats.logger.log(Level.SEVERE, "Could not query placeholder database " + dbname, e);
+			WebStats.logger.log(Level.SEVERE, "Could not query placeholder database " + conn.getDBName(), e);
 		}
 	}
 	
@@ -158,10 +125,8 @@ public class PlaceholderStorer {
 		scores.forEach((placeholder, value) -> data.put(uuid, placeholder, value));
 		
 		// Store in database
-		if (conn == null) return 0;
-		
 		String uuidStr = uuid.toString();
-		try (PreparedStatement stmt = getConnection()
+		try (PreparedStatement stmt = conn.getConnection()
 				.prepareStatement("REPLACE INTO " + TABLE_NAME + " VALUES (?, ?, ?);")) {
 			for (Map.Entry<String, String> entry : scores.entrySet()) {
 				stmt.setString(1, uuidStr);
@@ -176,7 +141,7 @@ public class PlaceholderStorer {
 					+ " placeholders for player " + player.getName());
 			return scores.size();
 		} catch (SQLException e) {
-			WebStats.logger.log(Level.SEVERE, "Could not update placeholder database " + dbname, e);
+			WebStats.logger.log(Level.SEVERE, "Could not update placeholder database " + conn.getDBName(), e);
 			return 0;
 		}
 	}
@@ -194,7 +159,7 @@ public class PlaceholderStorer {
 	
 	protected String debug() {
 		try {
-			String status = isConnected() ? "connected" : "closed";
+			String status = conn.isConnected() ? "connected" : "closed";
 			
 			List<String> loadedScores = new ArrayList<>();
 			for (Table.Cell<UUID, String, String> cell : data.cellSet()) {
