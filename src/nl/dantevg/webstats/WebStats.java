@@ -91,7 +91,10 @@ public class WebStats extends JavaPlugin implements Runnable {
 		
 		// Stop thread
 		try {
-			if(thread != null) thread.join(100); // Wait max 0.1s for the thread to stop
+			if (thread != null) {
+				thread.interrupt();
+				thread.join();
+			}
 		} catch (InterruptedException e) {
 			logger.log(Level.WARNING, "Failed to stop thread: " + e.getMessage());
 		}
@@ -105,7 +108,7 @@ public class WebStats extends JavaPlugin implements Runnable {
 	@Override
 	public void run() {
 		try {
-			while (!serverSocket.isClosed()) {
+			while (!serverSocket.isClosed() && !thread.isInterrupted()) {
 				// Accept new connections
 				// Only one connection at a time possible, I don't expect heavy traffic
 				HTTPConnection.start(serverSocket.accept());
