@@ -6,6 +6,7 @@ import nl.dantevg.webstats.scoreboard.ScoreboardSource;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -121,11 +122,11 @@ public class WebStats extends JavaPlugin implements Runnable {
 		}
 	}
 	
-	private String getVersion() {
+	private @NotNull String getVersion() {
 		return "WebStats " + getDescription().getVersion();
 	}
 	
-	private String getSources() {
+	private @NotNull String getSources() {
 		List<String> sources = new ArrayList<>();
 		if (WebStats.scoreboardSource != null) sources.add("scoreboard");
 		if (WebStats.placeholderSource != null) sources.add("PlaceholderAPI");
@@ -133,15 +134,15 @@ public class WebStats extends JavaPlugin implements Runnable {
 		return "Active sources: " + String.join(", ", sources);
 	}
 	
-	private String getThreadStatus() {
+	private @NotNull String getThreadStatus() {
 		return "Thread status: " + (thread.isAlive() ? "alive" : "dead");
 	}
 	
-	private String getSocketStatus() {
+	private @NotNull String getSocketStatus() {
 		return "Socket status: " + (serverSocket.isClosed() ? "closed" : "open");
 	}
 	
-	protected String debug() {
+	protected @NotNull String debug() {
 		return getVersion() + "\n"
 				+ getSources() + "\n"
 				+ getThreadStatus() + "\n"

@@ -1,6 +1,7 @@
 package nl.dantevg.webstats.database;
 
 import nl.dantevg.webstats.WebStats;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.*;
 import java.util.logging.Level;
@@ -11,7 +12,7 @@ public class DatabaseConnection {
 	private final String password;
 	private final String dbname;
 	
-	private Connection conn;
+	private @Nullable Connection conn;
 	
 	public DatabaseConnection(String hostname, String username, String password, String dbname) {
 		this.hostname = hostname;
@@ -49,7 +50,7 @@ public class DatabaseConnection {
 		}
 	}
 	
-	public Connection getConnection() throws SQLException {
+	public @Nullable Connection getConnection() throws SQLException {
 		if (!isConnected()) connect();
 		return conn;
 	}

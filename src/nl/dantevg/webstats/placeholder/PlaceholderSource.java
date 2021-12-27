@@ -6,6 +6,8 @@ import nl.dantevg.webstats.ConfigurationException;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -29,7 +31,7 @@ public class PlaceholderSource {
 		}
 	}
 	
-	Set<OfflinePlayer> getEntriesAsPlayers() {
+	@NotNull Set<OfflinePlayer> getEntriesAsPlayers() {
 		// Also get players from EssentialsX's userMap, for offline servers
 		Set<OfflinePlayer> entries = (!Bukkit.getOnlineMode() && WebStats.hasEssentials)
 				? EssentialsHelper.getOfflinePlayers()
@@ -47,7 +49,7 @@ public class PlaceholderSource {
 	
 	// Get all scores for all players from PlaceholderAPI
 	// Alternatively find stored scores from PlaceholderStorer
-	private Map<String, Map<String, Object>> getScores() {
+	private @NotNull Map<String, Map<String, Object>> getScores() {
 		Map<String, Map<String, Object>> values = new HashMap<>();
 		Set<OfflinePlayer> players = getEntriesAsPlayers();
 		
@@ -71,7 +73,7 @@ public class PlaceholderSource {
 	
 	// Get scores for single player from PlaceholderAPI
 	// This method does NOT try to find stored scores from PlaceholderStorer
-	Map<String, String> getScoresForPlayer(OfflinePlayer player) {
+	@NotNull Map<String, String> getScoresForPlayer(@NotNull OfflinePlayer player) {
 		Map<String, String> scores = new HashMap<>();
 		String name = player.getName();
 		if (name == null) return scores;
@@ -84,7 +86,7 @@ public class PlaceholderSource {
 		return scores;
 	}
 	
-	public EntriesScores getStats() {
+	public @NotNull EntriesScores getStats() {
 		return new EntriesScores(getEntries(), getScores());
 	}
 	
@@ -92,13 +94,13 @@ public class PlaceholderSource {
 		if (storer != null) storer.disconnect();
 	}
 	
-	public static boolean isPlaceholderSet(String placeholder, String value) {
+	public static boolean isPlaceholderSet(String placeholder, @Nullable String value) {
 		return value != null
 				&& !value.equals("")
 				&& !value.equalsIgnoreCase(placeholder);
 	}
 	
-	public String debug() {
+	public @NotNull String debug() {
 		return (storer != null) ? storer.debug() : "";
 	}
 	

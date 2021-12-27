@@ -3,6 +3,7 @@ package nl.dantevg.webstats.database;
 import nl.dantevg.webstats.ConfigurationException;
 import nl.dantevg.webstats.EntriesScores;
 import nl.dantevg.webstats.WebStats;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +44,7 @@ public class DatabaseSource {
 		}
 	}
 	
-	public EntriesScores getStats() {
+	public @NotNull EntriesScores getStats() {
 		// Get and convert each database/table combination
 		List<Map<String, String>> entries = new ArrayList<>();
 		for (DatabaseConverter conversion : conversions) {

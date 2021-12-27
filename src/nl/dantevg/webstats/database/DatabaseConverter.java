@@ -4,6 +4,8 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import nl.dantevg.webstats.WebStats;
 import org.bukkit.Bukkit;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -28,7 +30,7 @@ public class DatabaseConverter {
 		this.conversions = conversions;
 	}
 	
-	public List<Map<String, String>> getValues() {
+	public @NotNull List<Map<String, String>> getValues() {
 		List<Map<String, String>> data = getTable(table);
 		for (List<String> command : conversions) {
 			switch (command.get(0)) {
@@ -44,7 +46,7 @@ public class DatabaseConverter {
 		return data;
 	}
 	
-	private List<Map<String, String>> getTable(String table) {
+	private @NotNull List<Map<String, String>> getTable(String table) {
 		List<Map<String, String>> data = new ArrayList<>();
 		if (conn == null) return data;
 		try (PreparedStatement stmt = conn.getConnection()
@@ -59,14 +61,14 @@ public class DatabaseConverter {
 				}
 				data.add(row);
 			}
-		} catch (SQLException e) {
+		} catch (SQLException | NullPointerException e) {
 			WebStats.logger.log(Level.WARNING, "Could not query database " + conn.getDBName(), e);
 		}
 		return data;
 	}
 	
 	// [filter, column...]
-	private static void filter(List<Map<String, String>> data, List<String> command) {
+	private static void filter(@NotNull List<Map<String, String>> data, @NotNull List<String> command) {
 		for (Map<String, String> row : data) {
 			// key does not appear in argument list (or key is "filter")
 			row.entrySet().removeIf(entry -> command.indexOf(entry.getKey()) <= 0);
@@ -74,7 +76,7 @@ public class DatabaseConverter {
 	}
 	
 	// [remove, column...]
-	private static void remove(List<Map<String, String>> data, List<String> command) {
+	private static void remove(@NotNull List<Map<String, String>> data, @NotNull List<String> command) {
 		for (Map<String, String> row : data) {
 			// key does appear in argument list (or key is "filter")
 			row.entrySet().removeIf(entry -> command.indexOf(entry.getKey()) > 0);
@@ -82,7 +84,7 @@ public class DatabaseConverter {
 	}
 	
 	// [rename, from, to]
-	private static void rename(List<Map<String, String>> data, List<String> command) {
+	private static void rename(@NotNull List<Map<String, String>> data, @NotNull List<String> command) {
 		if (command.size() < 3) {
 			WebStats.logger.log(Level.WARNING, "Conversion command 'rename' needs 2 arguments");
 			return;
@@ -95,7 +97,7 @@ public class DatabaseConverter {
 	}
 	
 	// [key-value, key-column, value-column]
-	private static void key_value(List<Map<String, String>> data, List<String> command) {
+	private static void key_value(@NotNull List<Map<String, String>> data, @NotNull List<String> command) {
 		if (command.size() < 3) {
 			WebStats.logger.log(Level.WARNING, "Conversion command 'key-value' needs 2 arguments");
 			return;
@@ -109,7 +111,7 @@ public class DatabaseConverter {
 	}
 	
 	// [json, column]
-	private static void json(List<Map<String, String>> data, List<String> command) {
+	private static void json(@NotNull List<Map<String, String>> data, @NotNull List<String> command) {
 		if (command.size() < 2) {
 			WebStats.logger.log(Level.WARNING, "Conversion command 'json' needs 1 argument");
 			return;
@@ -128,7 +130,7 @@ public class DatabaseConverter {
 	}
 	
 	// [uuid, column]
-	private static void uuid(List<Map<String, String>> data, List<String> command) {
+	private static void uuid(@NotNull List<Map<String, String>> data, @NotNull List<String> command) {
 		if (command.size() < 2) {
 			WebStats.logger.log(Level.WARNING, "Conversion command 'uuid' needs 1 argument");
 			return;
@@ -147,7 +149,7 @@ public class DatabaseConverter {
 		}
 	}
 	
-	private static String getPlayerNameOnline(UUID uuid) {
+	private static @Nullable String getPlayerNameOnline(@NotNull UUID uuid) {
 		try {
 			URL url = new URL("https://api.mojang.com/user/profiles/" + uuid.toString() + "/names");
 			HttpURLConnection conn = (HttpURLConnection) url.openConnection();

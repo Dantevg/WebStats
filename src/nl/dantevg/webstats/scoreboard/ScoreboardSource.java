@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.logging.Level;
@@ -23,11 +24,11 @@ public class ScoreboardSource {
 		allObjectives = objectivesFilter.contains("*");
 	}
 	
-	private Set<String> getEntries() {
+	private @NotNull Set<String> getEntries() {
 		return new HashSet<>(scoreboard.getEntries());
 	}
 	
-	private Map<String, Map<String, Object>> getScores() {
+	private @NotNull Map<String, Map<String, Object>> getScores() {
 		Map<String, Map<String, Object>> objectives = new HashMap<>();
 		for (Objective objective : scoreboard.getObjectives()) {
 			// Filter objectives
@@ -45,7 +46,7 @@ public class ScoreboardSource {
 		return objectives;
 	}
 	
-	public EntriesScores getStats() {
+	public @NotNull EntriesScores getStats() {
 		return new EntriesScores(getEntries(), getScores());
 	}
 	

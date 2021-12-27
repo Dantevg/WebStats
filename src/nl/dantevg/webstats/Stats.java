@@ -2,11 +2,12 @@ package nl.dantevg.webstats;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 public class Stats {
-	public static Map<String, Object> getOnline() {
+	public static @NotNull Map<String, Object> getOnline() {
 		Map<String, Object> players = new HashMap<>();
 		for (Player p : Bukkit.getOnlinePlayers()) {
 			players.put(p.getName(), (WebStats.hasEssentials && EssentialsHelper.isAFK(p)) ? "afk" : true);
@@ -14,7 +15,7 @@ public class Stats {
 		return players;
 	}
 	
-	public static StatData.Stats getStats() {
+	public static @NotNull StatData.Stats getStats() {
 		EntriesScores entriesScores = new EntriesScores();
 		
 		if (WebStats.scoreboardSource != null) entriesScores.add(WebStats.scoreboardSource.getStats());
@@ -29,7 +30,7 @@ public class Stats {
 		}
 	}
 	
-	public static StatData getAll() {
+	public static @NotNull StatData getAll() {
 		return new StatData(getOnline(), getStats());
 	}
 	

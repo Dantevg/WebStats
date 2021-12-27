@@ -1,6 +1,7 @@
 package nl.dantevg.webstats;
 
 import com.google.gson.Gson;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -10,7 +11,7 @@ import java.util.Scanner;
 import java.util.logging.Level;
 
 public class HTTPConnection {
-	public static void start(Socket socket) {
+	public static void start(@NotNull Socket socket) {
 		Scanner in = null;
 		PrintWriter out = null;
 		String firstLine = "";
@@ -41,7 +42,7 @@ public class HTTPConnection {
 		}
 	}
 	
-	private static void route(URI uri, PrintWriter out) throws NoSuchElementException {
+	private static void route(@NotNull URI uri, @NotNull PrintWriter out) throws NoSuchElementException {
 		String path = uri.getPath();
 		if (path == null) throw new NoSuchElementException("No path present in request URI");
 		switch (path) {

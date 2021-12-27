@@ -1,5 +1,7 @@
 package nl.dantevg.webstats;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.*;
 
 public class EntriesScores {
@@ -16,7 +18,7 @@ public class EntriesScores {
 		this.scores = new HashMap<>();
 	}
 	
-	public void add(EntriesScores that) {
+	public void add(@NotNull EntriesScores that) {
 		entries.addAll(that.entries);
 		scores.putAll(that.scores);
 	}

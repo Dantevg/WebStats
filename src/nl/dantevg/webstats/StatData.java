@@ -2,6 +2,7 @@ package nl.dantevg.webstats;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
@@ -27,13 +28,13 @@ public class StatData {
 		public List<String> columns;
 		public Map<String, Map<String, Object>> scores;
 		
-		public Stats(EntriesScores entriesScores, List<String> columns) {
+		public Stats(@NotNull EntriesScores entriesScores, List<String> columns) {
 			this.entries = entriesScores.entries;
 			this.columns = columns;
 			this.scores = entriesScores.scores;
 		}
 		
-		public Stats(EntriesScores entriesScores) {
+		public Stats(@NotNull EntriesScores entriesScores) {
 			this.entries = entriesScores.entries;
 			this.scores = entriesScores.scores;
 		}

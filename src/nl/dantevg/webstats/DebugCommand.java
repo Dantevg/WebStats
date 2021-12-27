@@ -4,6 +4,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ public class DebugCommand implements CommandExecutor, TabCompleter {
 	}
 	
 	@Override
-	public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
+	public @NotNull List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
 		List<String> completions = new ArrayList<>();
 		if (args.length == 1) {
 			completions.add("debug");

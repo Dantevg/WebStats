@@ -7,6 +7,7 @@ import nl.dantevg.webstats.WebStats;
 import nl.dantevg.webstats.database.DatabaseConnection;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.*;
 import java.util.*;
@@ -18,7 +19,7 @@ public class PlaceholderStorer {
 	private final PlaceholderSource placeholderSource;
 	private final HashBasedTable<UUID, String, String> data = HashBasedTable.create();
 	
-	private final DatabaseConnection conn;
+	private final @NotNull DatabaseConnection conn;
 	
 	public PlaceholderStorer(PlaceholderSource placeholderSource) throws ConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling placeholder storer");
@@ -86,7 +87,7 @@ public class PlaceholderStorer {
 	private void load() {
 		try (PreparedStatement stmt = conn.getConnection()
 				.prepareStatement("SELECT * FROM " + TABLE_NAME + ";");
-			 ResultSet resultSet = stmt.executeQuery()) {
+		     ResultSet resultSet = stmt.executeQuery()) {
 			int nRows = 0;
 			while (resultSet.next()) {
 				UUID uuid = UUID.fromString(resultSet.getString("uuid"));
@@ -115,7 +116,7 @@ public class PlaceholderStorer {
 	
 	// Store placeholder data for player
 	// Returns the amount of scores it saved to the database for this player
-	public int save(OfflinePlayer player) {
+	public int save(@NotNull OfflinePlayer player) {
 		Map<String, String> scores = placeholderSource.getScoresForPlayer(player);
 		UUID uuid = player.getUniqueId();
 		
@@ -153,11 +154,11 @@ public class PlaceholderStorer {
 		WebStats.logger.log(Level.INFO, "Saved all placeholders (" + nRows + " rows) to database");
 	}
 	
-	public String getScore(UUID uuid, String placeholder) {
+	public @NotNull String getScore(UUID uuid, String placeholder) {
 		return data.get(uuid, placeholder);
 	}
 	
-	protected String debug() {
+	protected @NotNull String debug() {
 		try {
 			String status = conn.isConnected() ? "connected" : "closed";
 			
