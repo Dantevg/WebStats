@@ -1,8 +1,10 @@
 /* 
-	WebStats version 1.5
+	WebStats version 1.6
 	https://github.com/Dantevg/WebStats
 	
 	by RedPolygon
+	
+	Licence: MIT
 */
 
 class WebStats {
