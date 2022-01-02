@@ -34,8 +34,8 @@ public class PlaceholderSource {
 	@NotNull Set<OfflinePlayer> getEntriesAsPlayers() {
 		// Also get players from EssentialsX's userMap, for offline servers
 		Set<OfflinePlayer> entries = (!Bukkit.getOnlineMode() && WebStats.hasEssentials)
-				? EssentialsHelper.getOfflinePlayers()
-				: new HashSet<>();
+				? EssentialsHelper.getOfflinePlayers() : null;
+		if (entries == null) entries = new HashSet<>();
 		entries.addAll(Arrays.asList(Bukkit.getOfflinePlayers()));
 		return entries;
 	}

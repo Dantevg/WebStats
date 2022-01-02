@@ -8,6 +8,7 @@ import nl.dantevg.webstats.database.DatabaseConnection;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.sql.*;
 import java.util.*;
@@ -154,7 +155,7 @@ public class PlaceholderStorer {
 		WebStats.logger.log(Level.INFO, "Saved all placeholders (" + nRows + " rows) to database");
 	}
 	
-	public @NotNull String getScore(UUID uuid, String placeholder) {
+	public @Nullable String getScore(UUID uuid, String placeholder) {
 		return data.get(uuid, placeholder);
 	}
 	
