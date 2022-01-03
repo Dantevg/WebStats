@@ -9,27 +9,8 @@
 
 class Data {
 	constructor(data){
-		this.scoreboard = data.scoreboard
-		this.players = data.online
-		this.columns = data.scoreboard.columns
-			?? Object.keys(data.scoreboard.scores).sort()
-		
-		// Reverse-map column names to indices
-		// (index 0 contains the original index, before sorting)
-		this.columns_ = {Player: 1}
-		this.columns.forEach((val, idx) => this.columns_[val] = idx + 2)
-		
-		this.filter()
-		
-		this.scores = []
-		for(const entryName of this.entries){
-			const entry = []
-			entry.push(this.scores.push(entry) - 1)
-			entry.push(entryName)
-			for(const columnName of this.columns){
-				entry.push(this.scoreboard.scores[columnName]?.[entryName] ?? 0)
-			}
-		}
+		this.setOnlineStatus(data.online)
+		this.setScoreboard(data.scoreboard)
 	}
 	
 	get entries(){ return this.scoreboard.entries }
@@ -46,8 +27,25 @@ class Data {
 		this.scoreboard = scoreboard
 		this.columns = scoreboard.columns
 			?? Object.keys(scoreboard.scores).sort()
+		
+		this.filter()
+		
+		this.scores = []
+		for(const entryName of this.entries){
+			const entry = []
+			entry.push(this.scores.push(entry) - 1)
+			entry.push(entryName)
+			for(const columnName of this.columns){
+				entry.push(this.scoreboard.scores[columnName]?.[entryName] ?? 0)
+			}
+		}
+		
+		// Reverse-map column names to indices
+		// (index 0 contains the original index, before sorting)
+		this.columns_ = {Player: 1}
+		this.columns.forEach((val, idx) => this.columns_[val] = idx + 2)
 	}
-	setOnlineStatus = online => this.players = online
+	setOnlineStatus(online){ this.players = online }
 	setStats(data){
 		this.setScoreboard(data.scoreboard)
 		this.setOnlineStatus(data.online)
