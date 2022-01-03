@@ -18,7 +18,7 @@ class Data {
 			entry.push(this.scores.push(entry) - 1)
 			entry.push(entryName)
 			for(const columnName of this.columns){
-				entry.push(this.scoreboard.scores[columnName][entryName])
+				entry.push(this.scoreboard.scores[columnName]?.[entryName] ?? 0)
 			}
 		}
 	}

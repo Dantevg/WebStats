@@ -27,7 +27,7 @@ class Data {
 			entry.push(this.scores.push(entry) - 1)
 			entry.push(entryName)
 			for(const columnName of this.columns){
-				entry.push(this.scoreboard.scores[columnName][entryName])
+				entry.push(this.scoreboard.scores[columnName]?.[entryName] ?? 0)
 			}
 		}
 	}
@@ -271,13 +271,15 @@ class Display {
 		this.currentPage = page
 		if(show != false) this.show()
 		
-		this.updatePagination()
+		if(this.displayCount > 0) this.updatePagination()
 	}
 	
 	changeHideOffline(hideOffline){
 		this.hideOffline = hideOffline
-		this.updatePagination()
-		this.changePage(1)
+		if(this.displayCount > 0){
+			this.updatePagination()
+			this.changePage(1)
+		}
 	}
 	
 	// Re-display table contents
@@ -308,7 +310,7 @@ class Display {
 		let objective = e.target.innerText
 		this.descending = (objective === this.sortBy) ? !this.descending : true
 		this.sortBy = objective
-		this.changePage(1, false)
+		if(this.displayCount > 0) this.changePage(1, false)
 		this.sort()
 		
 		// Set URL query string, for sharing
@@ -429,6 +431,8 @@ class WebStats {
 			})
 			this.display.hideOffline = optionHideOffline.checked
 		}
+		
+		window.webstats = this
 	}
 	
 	init(data){

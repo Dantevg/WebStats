@@ -163,13 +163,15 @@ class Display {
 		this.currentPage = page
 		if(show != false) this.show()
 		
-		this.updatePagination()
+		if(this.displayCount > 0) this.updatePagination()
 	}
 	
 	changeHideOffline(hideOffline){
 		this.hideOffline = hideOffline
-		this.updatePagination()
-		this.changePage(1)
+		if(this.displayCount > 0){
+			this.updatePagination()
+			this.changePage(1)
+		}
 	}
 	
 	// Re-display table contents
@@ -200,7 +202,7 @@ class Display {
 		let objective = e.target.innerText
 		this.descending = (objective === this.sortBy) ? !this.descending : true
 		this.sortBy = objective
-		this.changePage(1, false)
+		if(this.displayCount > 0) this.changePage(1, false)
 		this.sort()
 		
 		// Set URL query string, for sharing

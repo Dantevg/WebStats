@@ -47,6 +47,8 @@ class WebStats {
 			})
 			this.display.hideOffline = optionHideOffline.checked
 		}
+		
+		window.webstats = this
 	}
 	
 	init(data){
