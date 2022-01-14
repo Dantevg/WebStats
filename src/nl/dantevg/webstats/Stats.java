@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.InetAddress;
 import java.util.*;
 
 public class Stats {
@@ -32,6 +33,11 @@ public class Stats {
 	
 	public static @NotNull StatData getAll() {
 		return new StatData(getOnline(), getStats());
+	}
+	
+	public static @NotNull StatData getAll(InetAddress ip){
+		List<String> playernames = WebStats.playerIPStorer.getNames(ip);
+		return new StatData(getOnline(), getStats(), playernames);
 	}
 	
 }

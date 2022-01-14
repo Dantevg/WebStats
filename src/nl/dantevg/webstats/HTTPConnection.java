@@ -11,7 +11,13 @@ import java.util.Scanner;
 import java.util.logging.Level;
 
 public class HTTPConnection {
-	public static void start(@NotNull Socket socket) {
+	private Socket socket;
+	
+	public HTTPConnection(Socket socket) {
+		this.socket = socket;
+	}
+	
+	public void start() {
 		Scanner in = null;
 		PrintWriter out = null;
 		String firstLine = "";
@@ -42,12 +48,13 @@ public class HTTPConnection {
 		}
 	}
 	
-	private static void route(@NotNull URI uri, @NotNull PrintWriter out) throws NoSuchElementException {
+	private void route(@NotNull URI uri, @NotNull PrintWriter out) throws NoSuchElementException {
 		String path = uri.getPath();
 		if (path == null) throw new NoSuchElementException("No path present in request URI");
 		switch (path) {
 			case "/stats.json":
-				HTTP.send(out, HTTP.STATUS_OK, new Gson().toJson(Stats.getAll()));
+				InetAddress ip = socket.getInetAddress();
+				HTTP.send(out, HTTP.STATUS_OK, new Gson().toJson(Stats.getAll(ip)));
 				break;
 			case "/online.json":
 				HTTP.send(out, HTTP.STATUS_OK, new Gson().toJson(Stats.getOnline()));

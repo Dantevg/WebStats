@@ -9,13 +9,20 @@ import java.util.Map;
 import java.util.Set;
 
 public class StatData {
-	Map<String, Object> online;
+	public Map<String, Object> online;
 	@SerializedName("scoreboard")
 	public Stats stats;
+	public List<String> playernames;
 	
 	public StatData(Map<String, Object> online, Stats stats) {
 		this.online = online;
 		this.stats = stats;
+	}
+	
+	public StatData(Map<String, Object> online, Stats stats, List<String> playernames) {
+		this.online = online;
+		this.stats = stats;
+		this.playernames = playernames;
 	}
 	
 	@Override

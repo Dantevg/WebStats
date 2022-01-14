@@ -4,6 +4,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,9 +20,13 @@ public class PlayerIPStorer implements Listener {
 		this.webStats = webStats;
 	}
 	
+	public List<String> getNames(InetAddress ip){
+		return getNames(ip.getHostAddress());
+	}
+	
 	public List<String> getNames(String ip){
-		// TODO: implement
-		return null;
+		List<String> names = ipToName.get(ip);
+		return names != null ? names : new ArrayList<>();
 	}
 	
 	@EventHandler
