@@ -38,12 +38,13 @@ maybe-not-so-good way: (for IntelliJ idea)
 
 ### Contributors
 Thank you to these people for helping out with the plugin by suggesting features and reporting bugs!
-- [@coco0325](https://github.com/coco0325): top-100 and performance improvements suggestion ([#12](https://github.com/Dantevg/WebStats/issues/12)),
+- [@Mr_Coco](https://github.com/coco0325): top-100 and performance improvements suggestion ([#12](https://github.com/Dantevg/WebStats/issues/12)),
   HTTPS reverse proxy idea ([#12](https://github.com/Dantevg/WebStats/issues/12)),
   bug report ([#14](https://github.com/Dantevg/WebStats/issues/14))
 - [@Dancull47](https://github.com/Dancull47): MySQL feature suggestion ([#2](https://github.com/Dantevg/WebStats/issues/2))
 - [@draexo (spigotmc)](https://www.spigotmc.org/members/draexo.2905/): bug report ([spigotmc #13](https://www.spigotmc.org/threads/web-stats.492833/#post-4308888)),
   Discord feature suggestion ([#13](https://github.com/Dantevg/WebStats/issues/13))
+- [@valenvaio](https://github.com/valenvaio): bug report ([#16](https://github.com/Dantevg/WebStats/issues/16))
 - [@zeus1921](https://github.com/zeus1921): PlaceholderAPI feature suggestion ([#3](https://github.com/Dantevg/WebStats/issues/3)),
   online player filter suggestion ([#6](https://github.com/Dantevg/WebStats/issues/6)),
   column ordering suggestion ([#7](https://github.com/Dantevg/WebStats/issues/7)),
