@@ -40,9 +40,9 @@ public class WebStats extends JavaPlugin implements Runnable {
 		int port = config.getInt("port");
 		
 		// Register debug command
-		DebugCommand debugCommand = new DebugCommand(this);
-		getCommand("webstats").setExecutor(debugCommand);
-		getCommand("webstats").setTabCompleter(debugCommand);
+		CommandWebstats command = new CommandWebstats(this);
+		getCommand("webstats").setExecutor(command);
+		getCommand("webstats").setTabCompleter(command);
 		
 		// Set sources
 		if (config.contains("objectives")) scoreboardSource = new ScoreboardSource();
@@ -120,6 +120,11 @@ public class WebStats extends JavaPlugin implements Runnable {
 				logger.log(Level.WARNING, "IO Exception: " + e.getMessage(), e);
 			}
 		}
+	}
+	
+	void reload(){
+		setEnabled(false);
+		setEnabled(true);
 	}
 	
 	private @NotNull String getVersion() {
