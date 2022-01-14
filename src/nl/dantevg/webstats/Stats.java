@@ -35,8 +35,8 @@ public class Stats {
 		return new StatData(getOnline(), getStats());
 	}
 	
-	public static @NotNull StatData getAll(InetAddress ip){
-		List<String> playernames = WebStats.playerIPStorer.getNames(ip);
+	public static @NotNull StatData getAll(InetAddress ip) {
+		Set<String> playernames = WebStats.playerIPStorer.getNames(ip);
 		return new StatData(getOnline(), getStats(), playernames);
 	}
 	

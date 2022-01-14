@@ -107,6 +107,7 @@ public class WebStats extends JavaPlugin implements Runnable {
 		// Let sources close connections
 		if (databaseSource != null) databaseSource.disable();
 		if (placeholderSource != null) placeholderSource.disable();
+		playerIPStorer.disable();
 	}
 	
 	// Gets run in the new thread created on server startup

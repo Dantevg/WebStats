@@ -12,14 +12,14 @@ public class StatData {
 	public Map<String, Object> online;
 	@SerializedName("scoreboard")
 	public Stats stats;
-	public List<String> playernames;
+	public Set<String> playernames;
 	
 	public StatData(Map<String, Object> online, Stats stats) {
 		this.online = online;
 		this.stats = stats;
 	}
 	
-	public StatData(Map<String, Object> online, Stats stats, List<String> playernames) {
+	public StatData(Map<String, Object> online, Stats stats, Set<String> playernames) {
 		this.online = online;
 		this.stats = stats;
 		this.playernames = playernames;
