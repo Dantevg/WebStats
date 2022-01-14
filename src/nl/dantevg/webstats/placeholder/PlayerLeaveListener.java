@@ -4,10 +4,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
-public class EventListener implements Listener {
+public class PlayerLeaveListener implements Listener {
 	private final PlaceholderStorer storer;
 	
-	public EventListener(PlaceholderStorer storer) {
+	public PlayerLeaveListener(PlaceholderStorer storer) {
 		this.storer = storer;
 	}
 	
