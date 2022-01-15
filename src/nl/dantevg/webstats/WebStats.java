@@ -4,6 +4,7 @@ import nl.dantevg.webstats.database.DatabaseSource;
 import nl.dantevg.webstats.placeholder.PlaceholderSource;
 import nl.dantevg.webstats.scoreboard.ScoreboardSource;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -49,7 +50,7 @@ public class WebStats extends JavaPlugin implements Runnable {
 		if (config.contains("database.config")) {
 			try {
 				databaseSource = new DatabaseSource();
-			} catch (ConfigurationException e) {
+			} catch (InvalidConfigurationException e) {
 				logger.log(Level.SEVERE, "Invalid database configuration", e);
 			}
 		}
@@ -57,7 +58,7 @@ public class WebStats extends JavaPlugin implements Runnable {
 			if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
 				try {
 					placeholderSource = new PlaceholderSource();
-				} catch (ConfigurationException e) {
+				} catch (InvalidConfigurationException e) {
 					logger.log(Level.SEVERE, "Invalid placeholder configuration", e);
 				}
 			} else {

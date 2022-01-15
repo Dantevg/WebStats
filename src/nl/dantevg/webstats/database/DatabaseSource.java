@@ -1,8 +1,8 @@
 package nl.dantevg.webstats.database;
 
-import nl.dantevg.webstats.ConfigurationException;
 import nl.dantevg.webstats.EntriesScores;
 import nl.dantevg.webstats.WebStats;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class DatabaseSource {
 	private final Map<String, DatabaseConnection> connections = new HashMap<>();
 	private final List<DatabaseConverter> conversions = new ArrayList<>();
 	
-	public DatabaseSource() throws ConfigurationException {
+	public DatabaseSource() throws InvalidConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling database source");
 		
 		String hostname = WebStats.config.getString("database.hostname");
@@ -25,7 +25,7 @@ public class DatabaseSource {
 		String password = WebStats.config.getString("database.password");
 		
 		if (hostname == null || username == null || password == null) {
-			throw new ConfigurationException("Invalid configuration: missing hostname, username or password");
+			throw new InvalidConfigurationException("Invalid configuration: missing hostname, username or password");
 		}
 		
 		List<Map<?, ?>> configItems = WebStats.config.getMapList("database.config");
