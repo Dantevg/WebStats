@@ -29,7 +29,8 @@ class RandomStats {
 	
 	getStats      = async () => ({
 		online: await this.getOnline(),
-		scoreboard: await this.getScoreboard()
+		scoreboard: await this.getScoreboard(),
+		playernames: [this.scores.entries[1]]
 	})
 	getScoreboard = async () => this.scores
 	getOnline     = async () => {
