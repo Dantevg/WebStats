@@ -2,6 +2,7 @@ class Data {
 	constructor(data){
 		this.setOnlineStatus(data.online)
 		this.setScoreboard(data.scoreboard)
+		this.setPlayernames(data.playernames)
 	}
 	
 	get entries(){ return this.scoreboard.entries }
@@ -13,6 +14,7 @@ class Data {
 	isOffline = player => !!this.players[player]
 	getStatus = player => this.isOnline(player) ? "online"
 		: (this.isAFK(player) ? "AFK" : "offline")
+	isCurrentPlayer = player => this.playernames?.includes(player)
 	
 	setScoreboard(scoreboard){
 		this.scoreboard = scoreboard
@@ -37,9 +39,11 @@ class Data {
 		this.columns.forEach((val, idx) => this.columns_[val] = idx + 2)
 	}
 	setOnlineStatus(online){ this.players = online }
+	setPlayernames(playernames){ this.playernames = playernames }
 	setStats(data){
 		this.setScoreboard(data.scoreboard)
 		this.setOnlineStatus(data.online)
+		this.setPlayernames(data.playernames)
 	}
 	
 	filter(){

@@ -66,9 +66,15 @@ class WebStats {
 	update(){
 		// When nobody is online, assume scoreboard does not change
 		if(this.data.nOnline > 0){
-			this.connection.getStats().then(this.display.updateStats.bind(this.display))
+			this.connection.getStats().then(data => {
+				this.data.setStats(data)
+				this.display.updateStats()
+			})
 		}else{
-			this.connection.getOnline().then(this.display.updateOnlineStatus.bind(this.display))
+			this.connection.getOnline().then(data => {
+				this.data.setOnlineStatus(data.online)
+				this.display.updateOnlineStatus()
+			})
 		}
 	}
 	
