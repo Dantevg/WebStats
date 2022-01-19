@@ -1,9 +1,6 @@
 package nl.dantevg.webstats;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
+import org.bukkit.command.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -26,7 +23,7 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 			return true;
 		} else if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
 			webstats.reload();
-			sender.sendMessage("Reload complete");
+			if (!(sender instanceof ConsoleCommandSender)) sender.sendMessage("Reload complete");
 			return true;
 		}
 		

@@ -123,8 +123,11 @@ public class WebStats extends JavaPlugin implements Runnable {
 	}
 	
 	void reload(){
+		logger.log(Level.INFO, "Reload: disabling plugin");
 		setEnabled(false);
+		logger.log(Level.INFO, "Reload: re-enabling plugin");
 		setEnabled(true);
+		logger.log(Level.INFO, "Reload complete");
 	}
 	
 	private @NotNull String getVersion() {
