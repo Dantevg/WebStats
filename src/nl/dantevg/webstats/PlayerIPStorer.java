@@ -3,7 +3,6 @@ package nl.dantevg.webstats;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -13,7 +12,7 @@ import java.net.InetAddress;
 import java.util.*;
 import java.util.logging.Level;
 
-public class PlayerIPStorer implements Listener {
+public class PlayerIPStorer {
 	private static final String FILENAME = "ip-to-names.yml";
 	
 	private final @NotNull File file;
@@ -21,7 +20,7 @@ public class PlayerIPStorer implements Listener {
 	private final Map<String, Set<String>> ipToNames = new HashMap<>();
 	
 	public PlayerIPStorer(@NotNull WebStats plugin) {
-		this.persistent = WebStats.config.getBoolean("store-player-ips");
+		persistent = WebStats.config.getBoolean("store-player-ips");
 		file = new File(plugin.getDataFolder(), FILENAME);
 		
 		// Register events
@@ -56,19 +55,24 @@ public class PlayerIPStorer implements Listener {
 			return;
 		}
 		
+		int nLoadedMappings = 0;
 		for (String ip : ipToNamesYaml.getKeys(false)) {
 			for (String name : ipToNamesYaml.getStringList(ip)) {
 				addName(decodeIP(ip), name);
+				nLoadedMappings++;
 			}
 		}
+		
+		WebStats.logger.log(Level.INFO, "Loaded " + nLoadedMappings + " ip-to-names mappings");
 	}
 	
 	public void save() {
 		YamlConfiguration ipToNamesYaml = new YamlConfiguration();
-		ipToNames.forEach((ip, names) -> ipToNamesYaml.set(encodeIP(ip), names));
+		ipToNames.forEach((ip, names) -> ipToNamesYaml.set(encodeIP(ip), names.toArray()));
 		
 		try {
 			ipToNamesYaml.save(file);
+			WebStats.logger.log(Level.INFO, "Saved player ip-to-names mappings");
 		} catch (IOException e) {
 			WebStats.logger.log(Level.WARNING, "Could not store " + file.getName(), e);
 		}
@@ -76,6 +80,14 @@ public class PlayerIPStorer implements Listener {
 	
 	public void disable() {
 		if (persistent) save();
+	}
+	
+	public @NotNull String debug() {
+		String persistentStatus = (persistent ? "on" : "off");
+		List<String> loadedIPs = new ArrayList<>();
+		ipToNames.forEach((ip, names) -> loadedIPs.add(ip + ": " + names.toString()));
+		return "Loaded ip to playername mapping: (persistent: " + persistentStatus + ")\n"
+				+ String.join("\n", loadedIPs);
 	}
 	
 	private static @NotNull String encodeIP(@NotNull String ip) {
