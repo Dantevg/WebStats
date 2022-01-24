@@ -19,6 +19,7 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 			List<String> lines = new ArrayList<>();
 			lines.add(webstats.debug());
 			if (WebStats.placeholderSource != null) lines.add(WebStats.placeholderSource.debug());
+			lines.add(WebStats.playerIPStorer.debug());
 			sender.sendMessage(String.join("\n", lines));
 			return true;
 		} else if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {

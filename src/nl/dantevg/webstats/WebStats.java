@@ -21,6 +21,8 @@ public class WebStats extends JavaPlugin implements Runnable {
 	protected static DatabaseSource databaseSource;
 	protected static PlaceholderSource placeholderSource;
 	
+	protected static PlayerIPStorer playerIPStorer;
+	
 	public static Logger logger;
 	public static FileConfiguration config;
 	public static boolean hasEssentials;
@@ -35,6 +37,8 @@ public class WebStats extends JavaPlugin implements Runnable {
 		config = getConfig();
 		
 		hasEssentials = Bukkit.getPluginManager().getPlugin("Essentials") != null;
+		
+		playerIPStorer = new PlayerIPStorer(this);
 		
 		// Config
 		saveDefaultConfig();
@@ -104,6 +108,7 @@ public class WebStats extends JavaPlugin implements Runnable {
 		// Let sources close connections
 		if (databaseSource != null) databaseSource.disable();
 		if (placeholderSource != null) placeholderSource.disable();
+		playerIPStorer.disable();
 	}
 	
 	// Gets run in the new thread created on server startup
@@ -113,7 +118,7 @@ public class WebStats extends JavaPlugin implements Runnable {
 			while (!serverSocket.isClosed() && !thread.isInterrupted()) {
 				// Accept new connections
 				// Only one connection at a time possible, I don't expect heavy traffic
-				HTTPConnection.start(serverSocket.accept());
+				new HTTPConnection(serverSocket.accept()).start();
 			}
 		} catch (IOException e) {
 			if (!serverSocket.isClosed()) {

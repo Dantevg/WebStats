@@ -20,6 +20,10 @@ html.hide-offline tr.offline {
 	display: none;
 }
 
+tr.current-player {
+	font-weight: bold;
+}
+
 td:not(.empty) {
 	position: relative;
 	height: 50px;

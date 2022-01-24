@@ -28,7 +28,7 @@ public class PlaceholderStorer {
 		this.placeholderSource = placeholderSource;
 		
 		// Register events
-		Bukkit.getPluginManager().registerEvents(new EventListener(this), WebStats.getPlugin(WebStats.class));
+		Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(this), WebStats.getPlugin(WebStats.class));
 		
 		// Connect to database
 		String hostname = WebStats.config.getString("database.hostname");

@@ -37,7 +37,7 @@ class Display {
 		}
 		
 		// Fill entries
-		this.updateStats(data)
+		this.updateStats()
 	}
 	
 	initPagination(){
@@ -106,6 +106,9 @@ class Display {
 		let status = Display.prependElement(name, "div")
 		status.classList.add("status")
 		
+		// Highlight current player
+		if(this.data.isCurrentPlayer(entry)) tr.classList.add("current-player")
+		
 		// Append empty elements for alignment
 		for(const objective of this.data.columns){
 			let td = Display.appendElement(tr, "td")
@@ -120,8 +123,7 @@ class Display {
 		if(img) img.src = `https://www.mc-heads.net/avatar/${entry}.png`
 	}
 	
-	updateScoreboard(scoreboard){
-		this.data.setScoreboard(scoreboard)
+	updateScoreboard(){
 		for(const row of this.data.scores){
 			for(const column of this.data.columns){
 				const value = row[this.data.columns_[column]]
@@ -134,8 +136,7 @@ class Display {
 		}
 	}
 	
-	updateOnlineStatus(online){
-		this.data.setOnlineStatus(online)
+	updateOnlineStatus(){
 		for(const row of this.rows){
 			const statusElement = row.querySelector("td .status")
 			if(!statusElement) continue
@@ -152,9 +153,9 @@ class Display {
 		if(this.displayCount > 0) this.show()
 	}
 	
-	updateStats(data){
-		this.updateScoreboard(data.scoreboard)
-		this.updateOnlineStatus(data.online)
+	updateStats(){
+		this.updateScoreboard()
+		this.updateOnlineStatus()
 	}
 	
 	// Change the page, re-display if `show` is not false and set page controls
