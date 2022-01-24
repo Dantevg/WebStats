@@ -1,8 +1,6 @@
 class Data {
 	constructor(data){
-		this.setOnlineStatus(data.online)
-		this.setScoreboard(data.scoreboard)
-		this.setPlayernames(data.playernames)
+		this.setStats(data)
 	}
 	
 	get entries(){ return this.scoreboard.entries }
@@ -14,7 +12,7 @@ class Data {
 	isOffline = player => !!this.players[player]
 	getStatus = player => this.isOnline(player) ? "online"
 		: (this.isAFK(player) ? "AFK" : "offline")
-	isCurrentPlayer = player => this.playernames?.includes(player)
+	isCurrentPlayer = player => this.playernames?.includes(player) ?? false
 	
 	setScoreboard(scoreboard){
 		this.scoreboard = scoreboard
