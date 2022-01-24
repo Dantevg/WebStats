@@ -88,7 +88,7 @@ public class WebStats extends JavaPlugin {
 	public void onDisable() {
 		// Stop web server
 		logger.log(Level.INFO, "Stopping web server");
-		if (webserver != null) webserver.stop(10);
+		if (webserver != null) webserver.stop(5); // Wait max 5 seconds
 		webserver = null;
 		
 		// Let sources close connections
