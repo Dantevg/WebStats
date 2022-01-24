@@ -5,14 +5,14 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayerLeaveListener implements Listener {
-	private final PlaceholderStorer storer;
+	private final PlaceholderStorage storage;
 	
-	public PlayerLeaveListener(PlaceholderStorer storer) {
-		this.storer = storer;
+	public PlayerLeaveListener(PlaceholderStorage storage) {
+		this.storage = storage;
 	}
 	
 	@EventHandler
 	public void onPlayerLeave(PlayerQuitEvent event) {
-		storer.save(event.getPlayer());
+		storage.save(event.getPlayer());
 	}
 }

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class PlaceholderSource {
 	private final Map<String, Object> placeholders;
-	private PlaceholderStorer storer;
+	private PlaceholderStorage storage;
 	
 	public PlaceholderSource() throws InvalidConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling placeholder source");
@@ -27,7 +27,7 @@ public class PlaceholderSource {
 		
 		placeholders = section.getValues(false);
 		if (WebStats.config.contains("store-placeholders-database")) {
-			storer = new PlaceholderStorer(this);
+			storage = new PlaceholderStorage(this);
 		}
 	}
 	
@@ -59,9 +59,9 @@ public class PlaceholderSource {
 				String name = player.getName();
 				if (name == null) continue;
 				String score = PlaceholderAPI.setPlaceholders(player, placeholder);
-				if (!isPlaceholderSet(placeholder, score) && storer != null) {
+				if (!isPlaceholderSet(placeholder, score) && storage != null) {
 					// If the placeholder was not substituted correctly, try the stored value
-					score = storer.getScore(player.getUniqueId(), (String) placeholderName);
+					score = storage.getScore(player.getUniqueId(), (String) placeholderName);
 				}
 				// Only add the score if it is not empty
 				if (isPlaceholderSet(placeholder, score)) scores.put(name, score);
@@ -91,7 +91,7 @@ public class PlaceholderSource {
 	}
 	
 	public void disable() {
-		if (storer != null) storer.disconnect();
+		if (storage != null) storage.disconnect();
 	}
 	
 	public static boolean isPlaceholderSet(String placeholder, @Nullable String value) {
@@ -101,7 +101,7 @@ public class PlaceholderSource {
 	}
 	
 	public @NotNull String debug() {
-		return (storer != null) ? storer.debug() : "";
+		return (storage != null) ? storage.debug() : "";
 	}
 	
 }

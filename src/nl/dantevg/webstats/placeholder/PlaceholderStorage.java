@@ -14,7 +14,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.logging.Level;
 
-public class PlaceholderStorer {
+public class PlaceholderStorage {
 	private static final String TABLE_NAME = "WebStats_placeholders";
 	
 	private final PlaceholderSource placeholderSource;
@@ -22,7 +22,7 @@ public class PlaceholderStorer {
 	
 	private final @NotNull DatabaseConnection conn;
 	
-	public PlaceholderStorer(PlaceholderSource placeholderSource) throws InvalidConfigurationException {
+	public PlaceholderStorage(PlaceholderSource placeholderSource) throws InvalidConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling placeholder storer");
 		
 		this.placeholderSource = placeholderSource;
@@ -172,7 +172,7 @@ public class PlaceholderStorer {
 						uuid.toString(), playerName, cell.getColumnKey(), cell.getValue()));
 			}
 			
-			return "Placeholder storer database connection: " + status
+			return "Placeholder storage database connection: " + status
 					+ "\nLoaded placeholders:\n" + String.join("\n", loadedScores);
 		} catch (SQLException e) {
 			return ""; // Happens only if timeout is < 0, but timeout is 1 here

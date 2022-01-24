@@ -21,7 +21,7 @@ public class WebStats extends JavaPlugin implements Runnable {
 	protected static DatabaseSource databaseSource;
 	protected static PlaceholderSource placeholderSource;
 	
-	protected static PlayerIPStorer playerIPStorer;
+	protected static PlayerIPStorage playerIPStorage;
 	
 	public static Logger logger;
 	public static FileConfiguration config;
@@ -38,7 +38,7 @@ public class WebStats extends JavaPlugin implements Runnable {
 		
 		hasEssentials = Bukkit.getPluginManager().getPlugin("Essentials") != null;
 		
-		playerIPStorer = new PlayerIPStorer(this);
+		playerIPStorage = new PlayerIPStorage(this);
 		
 		// Config
 		saveDefaultConfig();
@@ -108,7 +108,7 @@ public class WebStats extends JavaPlugin implements Runnable {
 		// Let sources close connections
 		if (databaseSource != null) databaseSource.disable();
 		if (placeholderSource != null) placeholderSource.disable();
-		playerIPStorer.disable();
+		playerIPStorage.disable();
 	}
 	
 	// Gets run in the new thread created on server startup

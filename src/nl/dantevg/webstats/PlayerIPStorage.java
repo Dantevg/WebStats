@@ -12,14 +12,14 @@ import java.net.InetAddress;
 import java.util.*;
 import java.util.logging.Level;
 
-public class PlayerIPStorer {
+public class PlayerIPStorage {
 	private static final String FILENAME = "ip-to-names.yml";
 	
 	private final @NotNull File file;
 	private final boolean persistent;
 	private final Map<String, Set<String>> ipToNames = new HashMap<>();
 	
-	public PlayerIPStorer(@NotNull WebStats plugin) {
+	public PlayerIPStorage(@NotNull WebStats plugin) {
 		persistent = WebStats.config.getBoolean("store-player-ips");
 		file = new File(plugin.getDataFolder(), FILENAME);
 		

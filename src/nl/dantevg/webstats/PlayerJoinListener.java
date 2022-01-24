@@ -7,10 +7,10 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import java.net.InetSocketAddress;
 
 public class PlayerJoinListener implements Listener {
-	PlayerIPStorer storer;
+	PlayerIPStorage storage;
 	
-	public PlayerJoinListener(PlayerIPStorer storer) {
-		this.storer = storer;
+	public PlayerJoinListener(PlayerIPStorage storage) {
+		this.storage = storage;
 	}
 	
 	@EventHandler
@@ -19,7 +19,7 @@ public class PlayerJoinListener implements Listener {
 		if (address != null) {
 			String ip = address.getAddress().getHostAddress();
 			String playername = event.getPlayer().getName();
-			storer.addName(ip, playername);
+			storage.addName(ip, playername);
 		}
 	}
 	
