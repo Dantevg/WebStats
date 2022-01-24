@@ -4,6 +4,7 @@ import nl.dantevg.webstats.database.DatabaseSource;
 import nl.dantevg.webstats.placeholder.PlaceholderSource;
 import nl.dantevg.webstats.scoreboard.ScoreboardSource;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -44,16 +45,16 @@ public class WebStats extends JavaPlugin implements Runnable {
 		int port = config.getInt("port");
 		
 		// Register debug command
-		DebugCommand debugCommand = new DebugCommand(this);
-		getCommand("webstats").setExecutor(debugCommand);
-		getCommand("webstats").setTabCompleter(debugCommand);
+		CommandWebstats command = new CommandWebstats(this);
+		getCommand("webstats").setExecutor(command);
+		getCommand("webstats").setTabCompleter(command);
 		
 		// Set sources
 		if (config.contains("objectives")) scoreboardSource = new ScoreboardSource();
 		if (config.contains("database.config")) {
 			try {
 				databaseSource = new DatabaseSource();
-			} catch (ConfigurationException e) {
+			} catch (InvalidConfigurationException e) {
 				logger.log(Level.SEVERE, "Invalid database configuration", e);
 			}
 		}
@@ -61,7 +62,7 @@ public class WebStats extends JavaPlugin implements Runnable {
 			if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
 				try {
 					placeholderSource = new PlaceholderSource();
-				} catch (ConfigurationException e) {
+				} catch (InvalidConfigurationException e) {
 					logger.log(Level.SEVERE, "Invalid placeholder configuration", e);
 				}
 			} else {
@@ -125,6 +126,14 @@ public class WebStats extends JavaPlugin implements Runnable {
 				logger.log(Level.WARNING, "IO Exception: " + e.getMessage(), e);
 			}
 		}
+	}
+	
+	void reload(){
+		logger.log(Level.INFO, "Reload: disabling plugin");
+		setEnabled(false);
+		logger.log(Level.INFO, "Reload: re-enabling plugin");
+		setEnabled(true);
+		logger.log(Level.INFO, "Reload complete");
 	}
 	
 	private @NotNull String getVersion() {

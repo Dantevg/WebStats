@@ -2,11 +2,11 @@ package nl.dantevg.webstats.placeholder;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import nl.dantevg.webstats.ConfigurationException;
 import nl.dantevg.webstats.WebStats;
 import nl.dantevg.webstats.database.DatabaseConnection;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +22,7 @@ public class PlaceholderStorer {
 	
 	private final @NotNull DatabaseConnection conn;
 	
-	public PlaceholderStorer(PlaceholderSource placeholderSource) throws ConfigurationException {
+	public PlaceholderStorer(PlaceholderSource placeholderSource) throws InvalidConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling placeholder storer");
 		
 		this.placeholderSource = placeholderSource;
@@ -37,7 +37,7 @@ public class PlaceholderStorer {
 		String dbname = WebStats.config.getString("store-placeholders-database");
 		
 		if (hostname == null || username == null || password == null || dbname == null) {
-			throw new ConfigurationException("Invalid configuration: missing hostname, username, password or database name");
+			throw new InvalidConfigurationException("Invalid configuration: missing hostname, username, password or database name");
 		}
 		
 		conn = new DatabaseConnection(hostname, username, password, dbname);

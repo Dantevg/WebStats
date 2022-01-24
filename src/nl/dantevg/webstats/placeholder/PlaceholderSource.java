@@ -2,10 +2,10 @@ package nl.dantevg.webstats.placeholder;
 
 import me.clip.placeholderapi.PlaceholderAPI;
 import nl.dantevg.webstats.*;
-import nl.dantevg.webstats.ConfigurationException;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -17,12 +17,12 @@ public class PlaceholderSource {
 	private final Map<String, Object> placeholders;
 	private PlaceholderStorer storer;
 	
-	public PlaceholderSource() throws ConfigurationException {
+	public PlaceholderSource() throws InvalidConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling placeholder source");
 		
 		ConfigurationSection section = WebStats.config.getConfigurationSection("placeholders");
 		if (section == null) {
-			throw new ConfigurationException("Invalid configuration: placeholders should be a key-value map");
+			throw new InvalidConfigurationException("Invalid configuration: placeholders should be a key-value map");
 		}
 		
 		placeholders = section.getValues(false);
