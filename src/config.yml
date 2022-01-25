@@ -14,6 +14,11 @@ port: 8080
 # used for matching your IP to your player name
 store-player-ips: true
 
+# Whether to also serve the web page from within the plugin. (not only the stats)
+# Disable this when you want to use your own external web server, enable this
+# when you do not have one.
+serve-webpage: false
+
 # Scoreboard objectives to use. When '*' is present, uses all objectives.
 # (make sure to enclose the '*' in quotes)
 objectives:

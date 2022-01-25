@@ -1,0 +1,148 @@
+/* GENERIC ELEMENTS */
+:root {
+	--bg1: #FFF1;
+	--bg2: #FFF2;
+	--text: #FFF;
+	--status-offline: #FFF2;
+	--status-online: #4F4;
+	--status-afk: #F84;
+}
+
+a {
+	color: inherit;
+}
+
+table {
+	border-spacing: 2px;
+}
+
+html.hide-offline tr.offline {
+	display: none;
+}
+
+tr.current-player {
+	font-weight: bold;
+}
+
+td:not(.empty) {
+	position: relative;
+	height: 50px;
+	padding: 0px 30px;
+	background: var(--bg1);
+	text-align: right;
+	-webkit-transition: height 0.2s, padding 0.2s;
+	transition: height 0.2s, padding 0.2s;
+}
+
+td:not(.empty)[objective=Player] {
+	text-align: left;
+	padding-left: 40px;
+}
+
+td.skin {
+	padding: 0px !important;
+	background: transparent;
+	z-index: 10;
+}
+
+td.skin img {
+	width: 50px;
+	height: 100%;
+	-ms-interpolation-mode: nearest-neighbor;
+		image-rendering: -webkit-optimize-contrast;
+		image-rendering: -moz-crisp-edges;
+		image-rendering: -o-pixelated;
+		image-rendering: pixelated;
+	display: block;
+	transition: width 0.2s;
+}
+
+html.compact td:not(.empty){
+	height: 30px;
+	padding: 0px 10px;
+}
+
+html.compact td:not(.empty)[objective=Player]{
+	padding-left: 30px;
+}
+
+html.compact td.skin img {
+	width: 30px;
+}
+
+.sticky {
+	position: -webkit-sticky !important;
+	position: sticky !important;
+	left: 0;
+}
+
+th {
+	padding: 10px 20px;
+	background: var(--bg2);
+	cursor: pointer;
+	-webkit-transition: padding 0.2s;
+	transition: padding 0.2s;
+}
+
+html.compact th{
+	padding: 5px 10px;
+}
+
+.status {
+	position: absolute;
+	top: 20px;
+	left: 15px;
+	width: 10px;
+	height: 10px;
+	border-radius: 10px;
+	background: var(--status-offline);
+	-webkit-transition: top 0.2s, left 0.2s;
+	transition: top 0.2s, left 0.2s;
+}
+
+html.compact .status{
+	top: 10px;
+	left: 10px;
+}
+
+.status.online {
+	background: var(--status-online);
+}
+
+.status.afk {
+	background: var(--status-afk);
+}
+
+/* POSITIONAL ELEMENTS */
+body {
+	margin: 0px;
+	color: var(--text);
+	background-color: #222;
+	font-family: sans-serif;
+}
+
+main {
+	margin: 100px auto;
+	width: 60%;
+	-webkit-transition: width 0.2s;
+	transition: width 0.2s;
+}
+
+main > span {
+	margin-right: 10px;
+}
+
+/* MEDIA DIRECTIVES */
+@media (prefers-color-scheme: dark) {
+	:root {
+		--bg1: #0003;
+		--bg2: #0005;
+		--text: #DDD;
+	}
+}
+
+@media screen and (max-width: 700px) {
+	main {
+		width: 100%;
+	}
+}

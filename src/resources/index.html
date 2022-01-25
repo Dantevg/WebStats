@@ -5,18 +5,21 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 	<title>Web Stats</title>
 	
-	<script src="../WebStats-dist.js"></script>
+	<script src="WebStats-dist.js"></script>
 	
 	<link rel="stylesheet" href="style.css">
 	
 	<script>
+		// Get port from cookie set by standalone WebStats web server
+		const port = document.cookie.match(/port=(\d+)/)?.[1] ?? 8080
+		
 		// Will be executed after page is loaded
 		window.addEventListener("load", () => {
 			const stats = new WebStats({
 				// required:
 				table: document.getElementById("webstats-table"), // The <table> element to use
-				ip: "203.0.113.42",    // The IP of the server
-				port: 8080,            // The port set in the config.yml on the server
+				ip: "localhost",       // The IP of the server
+				port: port,            // The port set in the config.yml on the server
 				// optional:
 				updateInterval: 10000, // Set to 0 to disable auto-updating (in ms, default 10000)
 				sortBy: "Player",      // The initial sorted objective (default "Player")

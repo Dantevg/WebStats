@@ -1,5 +1,6 @@
 package nl.dantevg.webstats;
 
+import com.sun.net.httpserver.HttpServer;
 import nl.dantevg.webstats.database.DatabaseSource;
 import nl.dantevg.webstats.placeholder.PlaceholderSource;
 import nl.dantevg.webstats.scoreboard.ScoreboardSource;
@@ -10,13 +11,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.net.ServerSocket;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class WebStats extends JavaPlugin implements Runnable {
+public class WebStats extends JavaPlugin {
 	protected static ScoreboardSource scoreboardSource;
 	protected static DatabaseSource databaseSource;
 	protected static PlaceholderSource placeholderSource;
@@ -27,8 +28,7 @@ public class WebStats extends JavaPlugin implements Runnable {
 	public static FileConfiguration config;
 	public static boolean hasEssentials;
 	
-	private ServerSocket serverSocket;
-	private Thread thread;
+	private HttpServer webserver;
 	
 	// Gets run when the plugin is enabled on server startup
 	@Override
@@ -71,38 +71,27 @@ public class WebStats extends JavaPlugin implements Runnable {
 		}
 		
 		try {
-			// Open server socket
-			serverSocket = new ServerSocket(port);
+			// Start web server
+			webserver = HttpServer.create(new InetSocketAddress(port), 0);
+			webserver.createContext("/", new HTTPRequestHandler());
+			webserver.start();
 			logger.log(Level.INFO, "Web server started on port " + port);
-			
-			// Start server in a new thread, otherwise `serverSocket.accept()` will block the main thread
-			thread = new Thread(this, "WebStats");
-			thread.start();
 		} catch (IOException e) {
-			logger.log(Level.SEVERE, "Failed to open socket with port "
+			logger.log(Level.SEVERE, "Failed to start web server with port "
 					+ port + ": " + e.getMessage(), e);
-			getPluginLoader().disablePlugin(this);
 		}
 	}
 	
 	// Gets run when the plugin is disabled on server stop
 	@Override
 	public void onDisable() {
-		// Close socket
-		try {
-			if (serverSocket != null) serverSocket.close();
-		} catch (IOException e) {
-			logger.log(Level.WARNING, "Failed to close socket: " + e.getMessage(), e);
-		}
-		
-		// Stop thread
-		try {
-			if (thread != null) {
-				thread.interrupt();
-				thread.join();
-			}
-		} catch (InterruptedException e) {
-			logger.log(Level.WARNING, "Failed to stop thread: " + e.getMessage());
+		// Stop web server
+		if (webserver != null) {
+			logger.log(Level.INFO, "Stopping web server");
+			// Do not wait for web server to stop, because it will always take
+			// the max amount of time regardless
+			webserver.stop(0);
+			webserver = null;
 		}
 		
 		// Let sources close connections
@@ -111,24 +100,7 @@ public class WebStats extends JavaPlugin implements Runnable {
 		playerIPStorage.disable();
 	}
 	
-	// Gets run in the new thread created on server startup
-	@Override
-	public void run() {
-		try {
-			while (!serverSocket.isClosed() && !thread.isInterrupted()) {
-				// Accept new connections
-				// Only one connection at a time possible, I don't expect heavy traffic
-				new HTTPConnection(serverSocket.accept()).start();
-			}
-		} catch (IOException e) {
-			if (!serverSocket.isClosed()) {
-				// Print error when the socket was not closed (otherwise just stop)
-				logger.log(Level.WARNING, "IO Exception: " + e.getMessage(), e);
-			}
-		}
-	}
-	
-	void reload(){
+	void reload() {
 		logger.log(Level.INFO, "Reload: disabling plugin");
 		setEnabled(false);
 		logger.log(Level.INFO, "Reload: re-enabling plugin");
@@ -148,19 +120,9 @@ public class WebStats extends JavaPlugin implements Runnable {
 		return "Active sources: " + String.join(", ", sources);
 	}
 	
-	private @NotNull String getThreadStatus() {
-		return "Thread status: " + (thread.isAlive() ? "alive" : "dead");
-	}
-	
-	private @NotNull String getSocketStatus() {
-		return "Socket status: " + (serverSocket.isClosed() ? "closed" : "open");
-	}
-	
 	protected @NotNull String debug() {
 		return getVersion() + "\n"
-				+ getSources() + "\n"
-				+ getThreadStatus() + "\n"
-				+ getSocketStatus();
+				+ getSources();
 	}
 	
 }

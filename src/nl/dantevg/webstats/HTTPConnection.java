@@ -1,66 +1,78 @@
 package nl.dantevg.webstats;
 
-import com.google.gson.Gson;
+import com.google.common.io.ByteStreams;
+import com.sun.net.httpserver.Headers;
+import com.sun.net.httpserver.HttpExchange;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.*;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
+import java.io.*;
+import java.net.HttpURLConnection;
 import java.util.logging.Level;
 
 public class HTTPConnection {
-	private Socket socket;
+	private final @NotNull HttpExchange exchange;
 	
-	public HTTPConnection(Socket socket) {
-		this.socket = socket;
+	public HTTPConnection(@NotNull HttpExchange exchange) {
+		this.exchange = exchange;
 	}
 	
-	public void start() {
-		Scanner in = null;
-		PrintWriter out = null;
-		String firstLine = "";
-		try {
-			// Open input and output streams
-			in = new Scanner(socket.getInputStream());
-			out = new PrintWriter(socket.getOutputStream());
-			
-			// Route to correct end point
-			firstLine = in.nextLine();
-			route(HTTP.parseHeader(firstLine), out);
-			
-		} catch (IOException e) {
-			WebStats.logger.log(Level.WARNING, "Failed to open I/O stream: " + e.getMessage(), e);
-		} catch (URISyntaxException | NoSuchElementException e) {
-			WebStats.logger.log(Level.FINE, "Failed to parse URI: " + e.getMessage(), e);
-			WebStats.logger.log(Level.FINE, "IP: " + socket.getInetAddress().toString() + ", HTTP request line: " + firstLine);
-			HTTP.send(out, HTTP.STATUS_BAD_REQUEST, "");
-		} finally {
-			// Close input and output streams in the order they were defined
-			try {
-				socket.close();
-				in.close();
-				out.close();
-			} catch (NullPointerException | IOException e) {
-				WebStats.logger.log(Level.WARNING, "Error closing stream: " + e.getMessage(), e);
-			}
+	private void setHeaders(String contentType) {
+		Headers headers = exchange.getResponseHeaders();
+		headers.add("Access-Control-Allow-Origin", "*");
+		headers.add("Content-Type", contentType + "; charset=UTF-8");
+		// No "expires" attribute, so session cookie
+		headers.add("Set-Cookie", "port=" + exchange.getLocalAddress().getPort()
+				+ "; SameSite=Lax");
+	}
+	
+	public void send(int status, @NotNull String contentType, @NotNull String response) throws IOException {
+		setHeaders(contentType);
+		
+		// Send headers and data
+		byte[] responseBytes = response.getBytes();
+		exchange.sendResponseHeaders(status, responseBytes.length);
+		OutputStream output = exchange.getResponseBody();
+		output.write(responseBytes);
+		output.close();
+	}
+	
+	public void sendJson(@NotNull String response) throws IOException {
+		send(HttpURLConnection.HTTP_OK, "application/json", response);
+	}
+	
+	public void sendEmptyStatus(int status) throws IOException {
+		setHeaders("text/plain");
+		exchange.sendResponseHeaders(status, 0);
+		exchange.getResponseBody().close();
+	}
+	
+	public void sendFile(@NotNull String contentType, @NotNull String path) throws IOException {
+		// Get input stream
+		InputStream input = getResourceInputStream(path);
+		if (input == null) {
+			WebStats.logger.log(Level.WARNING, "Could not find resource " + path);
+			sendEmptyStatus(HttpURLConnection.HTTP_NOT_FOUND);
+			return;
 		}
+		
+		setHeaders(contentType);
+		
+		// Send headers and data
+		exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, input.available());
+		OutputStream output = exchange.getResponseBody();
+		ByteStreams.copy(input, output);
+		output.close();
 	}
 	
-	private void route(@NotNull URI uri, @NotNull PrintWriter out) throws NoSuchElementException {
-		String path = uri.getPath();
-		if (path == null) throw new NoSuchElementException("No path present in request URI");
-		switch (path) {
-			case "/stats.json":
-				InetAddress ip = socket.getInetAddress();
-				HTTP.send(out, HTTP.STATUS_OK, new Gson().toJson(Stats.getAll(ip)));
-				break;
-			case "/online.json":
-				HTTP.send(out, HTTP.STATUS_OK, new Gson().toJson(Stats.getOnline()));
-				break;
-			default:
-				HTTP.send(out, HTTP.STATUS_NOT_FOUND, "");
+	private @Nullable InputStream getResourceInputStream(@NotNull String path) {
+		try {
+			// Find resource in plugin data folder
+			File file = new File(WebStats.getPlugin(WebStats.class).getDataFolder(), path);
+			return new FileInputStream(file);
+		} catch (FileNotFoundException e) {
+			// Find resource in jar
+			return WebStats.getPlugin(WebStats.class).getResource(path);
 		}
 	}
 	
