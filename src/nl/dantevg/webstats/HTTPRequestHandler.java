@@ -17,6 +17,7 @@ public class HTTPRequestHandler implements HttpHandler {
 		// Only handle GET-requests
 		if (!exchange.getRequestMethod().equals("GET")) {
 			httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_BAD_METHOD);
+			exchange.close();
 			return;
 		}
 		
@@ -24,6 +25,7 @@ public class HTTPRequestHandler implements HttpHandler {
 		String path = exchange.getRequestURI().getPath();
 		if (path == null) {
 			httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_BAD_REQUEST);
+			exchange.close();
 			return;
 		}
 		

@@ -39,6 +39,7 @@ public class HTTPConnection {
 	
 	public void sendEmptyStatus(int status) throws IOException {
 		exchange.sendResponseHeaders(status, 0);
+		exchange.getResponseBody().close();
 	}
 	
 	public void sendFile(@NotNull String contentType, @NotNull String path) throws IOException {

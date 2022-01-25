@@ -79,7 +79,6 @@ public class WebStats extends JavaPlugin {
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, "Failed to start web server with port "
 					+ port + ": " + e.getMessage(), e);
-			getPluginLoader().disablePlugin(this);
 		}
 	}
 	
@@ -87,9 +86,13 @@ public class WebStats extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		// Stop web server
-		logger.log(Level.INFO, "Stopping web server");
-		if (webserver != null) webserver.stop(5); // Wait max 5 seconds
-		webserver = null;
+		if (webserver != null) {
+			logger.log(Level.INFO, "Stopping web server");
+			// Do not wait for web server to stop, because it will always take
+			// the max amount of time regardless
+			webserver.stop(0);
+			webserver = null;
+		}
 		
 		// Let sources close connections
 		if (databaseSource != null) databaseSource.disable();
