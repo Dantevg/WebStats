@@ -10,6 +10,12 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 
 public class HTTPRequestHandler implements HttpHandler {
+	private final boolean enableWebserver;
+	
+	public HTTPRequestHandler() {
+		enableWebserver = WebStats.config.getBoolean("enable-internal-webserver");
+	}
+	
 	@Override
 	public void handle(@NotNull HttpExchange exchange) throws IOException {
 		HTTPConnection httpConnection = new HTTPConnection(exchange);
@@ -39,14 +45,20 @@ public class HTTPRequestHandler implements HttpHandler {
 				break;
 			case "/index.html":
 			case "/":
-				httpConnection.sendFile("text/html", "resources/index.html");
-				break;
+				if (enableWebserver) {
+					httpConnection.sendFile("text/html", "resources/index.html");
+					break;
+				} // Fall-through (to default) if web server is not enabled
 			case "/style.css":
-				httpConnection.sendFile("text/css", "resources/style.css");
-				break;
+				if (enableWebserver) {
+					httpConnection.sendFile("text/css", "resources/style.css");
+					break;
+				} // Fall-through (to default) if web server is not enabled
 			case "/WebStats-dist.js":
-				httpConnection.sendFile("application/javascript", "resources/WebStats-dist.js");
-				break;
+				if (enableWebserver) {
+					httpConnection.sendFile("application/javascript", "resources/WebStats-dist.js");
+					break;
+				} // Fall-through (to default) if web server is not enabled
 			default:
 				httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_NOT_FOUND);
 				break;

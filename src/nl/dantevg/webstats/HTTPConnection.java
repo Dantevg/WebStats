@@ -25,7 +25,6 @@ public class HTTPConnection {
 		// No "expires" attribute, so session cookie
 		headers.add("Set-Cookie", "port=" + exchange.getLocalAddress().getPort()
 				+ "; SameSite=Lax");
-		
 	}
 	
 	public void send(int status, @NotNull String contentType, @NotNull String response) throws IOException {
