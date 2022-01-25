@@ -15,7 +15,7 @@ public class Embed {
 	String type = "rich";
 	String description;
 	String url;
-	Instant timestamp; // ISO8601 timestamp
+	String timestamp; // ISO8601 timestamp
 	int color;
 	EmbedFooter footer;
 	EmbedImage image;
@@ -25,12 +25,15 @@ public class Embed {
 	EmbedAuthor author;
 	List<EmbedField> fields;
 	
+	public Embed() {
+	}
+	
 	public Embed(String title, String description) {
 		this.title = title;
 		this.description = description;
 	}
 	
-	public Embed(String title, String description, String url, Instant timestamp, int color) {
+	public Embed(String title, String description, String url, String timestamp, int color) {
 		this.title = title;
 		this.description = description;
 		this.url = url;

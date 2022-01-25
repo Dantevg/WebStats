@@ -10,13 +10,15 @@ public class Message {
 	boolean tts; // text-to-speech
 	List<Embed> embeds;
 	
-	public Message(String content, String username, String avatar_url) {
-		this.content = content;
-		this.username = username;
-		this.avatar_url = avatar_url;
+	public Message() {
 	}
 	
-	public Message(String username, String avatar_url) {
+	public Message(String content) {
+		this.content = content;
+	}
+	
+	public Message(String content, String username, String avatar_url) {
+		this.content = content;
 		this.username = username;
 		this.avatar_url = avatar_url;
 	}
