@@ -1,6 +1,7 @@
 package nl.dantevg.webstats;
 
 import com.google.common.io.ByteStreams;
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,8 +19,13 @@ public class HTTPConnection {
 	}
 	
 	private void setHeaders(String contentType) {
-		exchange.getResponseHeaders().add("Access-Control-Allow-Origin", "*");
-		exchange.getResponseHeaders().add("Content-Type", contentType + "; charset=UTF-8");
+		Headers headers = exchange.getResponseHeaders();
+		headers.add("Access-Control-Allow-Origin", "*");
+		headers.add("Content-Type", contentType + "; charset=UTF-8");
+		// No "expires" attribute, so session cookie
+		headers.add("Set-Cookie", "port=" + exchange.getLocalAddress().getPort()
+				+ "; SameSite=Lax");
+		
 	}
 	
 	public void send(int status, @NotNull String contentType, @NotNull String response) throws IOException {
