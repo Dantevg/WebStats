@@ -4,10 +4,9 @@ import com.google.common.io.ByteStreams;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.util.logging.Level;
 
@@ -49,7 +48,8 @@ public class HTTPConnection {
 	}
 	
 	public void sendFile(@NotNull String contentType, @NotNull String path) throws IOException {
-		InputStream input = WebStats.getPlugin(WebStats.class).getResource(path);
+		// Get input stream
+		InputStream input = getResourceInputStream(path);
 		if (input == null) {
 			WebStats.logger.log(Level.WARNING, "Could not find resource " + path);
 			sendEmptyStatus(HttpURLConnection.HTTP_NOT_FOUND);
@@ -62,8 +62,18 @@ public class HTTPConnection {
 		exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, input.available());
 		OutputStream output = exchange.getResponseBody();
 		ByteStreams.copy(input, output);
-		input.close();
 		output.close();
+	}
+	
+	private @Nullable InputStream getResourceInputStream(@NotNull String path) {
+		try {
+			// Find resource in plugin data folder
+			File file = new File(WebStats.getPlugin(WebStats.class).getDataFolder(), path);
+			return new FileInputStream(file);
+		} catch (FileNotFoundException e) {
+			// Find resource in jar
+			return WebStats.getPlugin(WebStats.class).getResource(path);
+		}
 	}
 	
 }
