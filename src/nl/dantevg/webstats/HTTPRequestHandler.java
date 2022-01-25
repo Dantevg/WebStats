@@ -8,12 +8,22 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
 
 public class HTTPRequestHandler implements HttpHandler {
-	private final boolean enableWebserver;
+	// Map of resource names to their MIME-types
+	private static final Map<String, String> resources = new HashMap<>();
 	
 	public HTTPRequestHandler() {
-		enableWebserver = WebStats.config.getBoolean("enable-internal-webserver");
+		boolean serveWebpage = WebStats.config.getBoolean("serve-webpage");
+		
+		if (serveWebpage) {
+			resources.put("/index.html", "text/html");
+			resources.put("/style.css", "text/css");
+			resources.put("/WebStats-dist.js", "application/javascript");
+		}
 	}
 	
 	@Override
@@ -35,6 +45,9 @@ public class HTTPRequestHandler implements HttpHandler {
 			return;
 		}
 		
+		// Rewrite "/" to "/index.html"
+		if (path.equals("/")) path = "/index.html";
+		
 		switch (path) {
 			case "/stats.json":
 				InetAddress ip = exchange.getRemoteAddress().getAddress();
@@ -43,24 +56,13 @@ public class HTTPRequestHandler implements HttpHandler {
 			case "/online.json":
 				httpConnection.sendJson(new Gson().toJson(Stats.getOnline()));
 				break;
-			case "/index.html":
-			case "/":
-				if (enableWebserver) {
-					httpConnection.sendFile("text/html", "resources/index.html");
-					break;
-				} // Fall-through (to default) if web server is not enabled
-			case "/style.css":
-				if (enableWebserver) {
-					httpConnection.sendFile("text/css", "resources/style.css");
-					break;
-				} // Fall-through (to default) if web server is not enabled
-			case "/WebStats-dist.js":
-				if (enableWebserver) {
-					httpConnection.sendFile("application/javascript", "resources/WebStats-dist.js");
-					break;
-				} // Fall-through (to default) if web server is not enabled
 			default:
-				httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_NOT_FOUND);
+				if (resources.containsKey(path)) {
+					httpConnection.sendFile(resources.get(path), "resources" + path);
+				} else {
+					WebStats.logger.log(Level.CONFIG, "Got request for " + path + ", not found");
+					httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_NOT_FOUND);
+				}
 				break;
 		}
 		
