@@ -72,7 +72,7 @@ class WebStats {
 			})
 		}else{
 			this.connection.getOnline().then(data => {
-				this.data.setOnlineStatus(data.online)
+				this.data.setOnlineStatus(data)
 				this.display.updateOnlineStatus()
 			})
 		}
