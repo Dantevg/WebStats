@@ -45,3 +45,28 @@ objectives:
 # The database name to store placeholders in, for when players go offline. (uncomment to use)
 # Make sure to specify the database hostname, username and password above
 #store-placeholders-database: WebStats_placeholders
+
+# Configuration for the Discord webhook function (uncomment to use)
+# Make sure to set the webhook URL
+#discord-webhook:
+#  # The webhook URL. Get this from Discord
+#  url: ""
+#  
+#  # The update interval, in seconds
+#  update-interval: 10
+#  
+#  # Which column to sort by
+#  sort-column: Player
+#  
+#  # Whether to sort ascending (smallest first) or descending (largest first)
+#  sort-direction: ascending
+#  
+#  # Show the top n rows/players
+#  display-count: 10
+#  
+#  # Which columns to display. Each item in this list is one embed.
+#  # Defaults to using the columns defined above, or all columns otherwise.
+#  # Note that Discord displays max 3 columns next to each other
+#  columns:
+#    - [col 1, col 2] # first embed
+#    - [col 1, col 2] # second embed
