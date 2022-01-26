@@ -10,6 +10,8 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -22,19 +24,21 @@ import java.util.stream.Collectors;
 public class DiscordWebhook implements Runnable {
 	private final WebStats plugin;
 	
-	private final @NotNull URL url;
+	private final @NotNull URL baseURL;
 	private final int updateInterval;
 	private final @NotNull String sortColumn;
 	private final @NotNull SortDirection sortDirection;
 	private final int displayCount;
 	private final @NotNull List<List<String>> embeds = new ArrayList<>();
 	
+	private Message message;
+	
 	public DiscordWebhook(WebStats plugin) throws MalformedURLException {
 		this.plugin = plugin;
 		
 		ConfigurationSection config = WebStats.config.getConfigurationSection("discord-webhook");
 		
-		url = new URL(config.getString("url"));
+		baseURL = new URL(config.getString("url"));
 		updateInterval = config.getInt("update-interval", 10);
 		sortColumn = config.getString("sort-column", "Player");
 		sortDirection = SortDirection.fromString(
@@ -78,8 +82,10 @@ public class DiscordWebhook implements Runnable {
 				}
 			});
 			
-			// Create message
-			Message message = new Message();
+			// Fill message
+			if (message == null) message = new Message();
+			message.removeEmbeds();
+			
 			if (embeds.isEmpty()) {
 				List<String> columns = (stats.columns != null)
 						? stats.columns
@@ -93,7 +99,11 @@ public class DiscordWebhook implements Runnable {
 			
 			// Send message
 			try {
-				send(message);
+				if (message.id != null) {
+					editMessage(message);
+				} else {
+					sendMessage(message);
+				}
 			} catch (IOException e) {
 				WebStats.logger.log(Level.WARNING, "Could not send webhook message", e);
 			}
@@ -121,9 +131,33 @@ public class DiscordWebhook implements Runnable {
 		return embed;
 	}
 	
-	private void send(Message message) throws IOException {
+	private void sendMessage(Message message) throws IOException {
+		URL url = new URL(baseURL.toString() + "?wait=true");
+		HttpsURLConnection conn = send(url, "POST", message);
+		
+		if (isStatusCodeOk(conn.getResponseCode())) {
+			InputStream input = conn.getInputStream();
+			Message responseMessage = new Gson().fromJson(
+					new InputStreamReader(input), Message.class);
+			message.id = responseMessage.id;
+			input.close();
+		} else {
+			conn.getInputStream().close();
+		}
+		
+		conn.disconnect();
+	}
+	
+	private void editMessage(Message message) throws IOException {
+		URL url = new URL(baseURL.toString() + "messages/" + message.id);
+		HttpsURLConnection conn = send(url, "PATCH", message);
+		conn.getInputStream().close();
+		conn.disconnect();
+	}
+	
+	private HttpsURLConnection send(URL url, String method, Message message) throws IOException {
 		HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-		conn.setRequestMethod("POST");
+		conn.setRequestMethod(method);
 		conn.setDoOutput(true);
 		conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
 		
@@ -132,11 +166,14 @@ public class DiscordWebhook implements Runnable {
 			output.write(new Gson().toJson(message).getBytes());
 		}
 		
-		if (conn.getResponseCode() < 200 || conn.getResponseCode() >= 300) {
+		if (!isStatusCodeOk(conn.getResponseCode())) {
 			WebStats.logger.log(Level.WARNING, "Got !=2XX HTTP code " + conn.getResponseCode() + " from Discord");
 		}
-		conn.getInputStream().close();
-		conn.disconnect();
+		return conn;
+	}
+	
+	private static boolean isStatusCodeOk(int status) {
+		return status >= 200 && status < 300;
 	}
 	
 	private enum SortDirection {

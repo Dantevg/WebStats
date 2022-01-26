@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Message {
+	String id; // only present in responses
 	String content;
 	String username;
 	String avatar_url;
@@ -26,6 +27,10 @@ public class Message {
 	public void addEmbed(Embed embed) {
 		if (embeds == null) embeds = new ArrayList<>();
 		embeds.add(embed);
+	}
+	
+	public void removeEmbeds() {
+		if (embeds != null) embeds.clear();
 	}
 	
 }
