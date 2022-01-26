@@ -7,7 +7,7 @@ public class Message {
 	String content;
 	String username;
 	String avatar_url;
-	boolean tts; // text-to-speech
+	Boolean tts; // text-to-speech
 	List<Embed> embeds;
 	
 	public Message() {

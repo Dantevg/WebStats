@@ -3,7 +3,6 @@ package nl.dantevg.webstats.discord_webhook;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URL;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,12 +10,15 @@ import java.util.List;
  * https://discord.com/developers/docs/resources/channel#embed-object
  */
 public class Embed {
+	// To be used for when a message would otherwise be empty, which is not allowed
+	private static final String EMPTY_FILLER = ".";
+	
 	String title;
-	String type = "rich";
+	final String type = "rich";
 	String description;
 	String url;
 	String timestamp; // ISO8601 timestamp
-	int color;
+	Integer color;
 	EmbedFooter footer;
 	EmbedImage image;
 	EmbedThumbnail thumbnail;
@@ -33,7 +35,7 @@ public class Embed {
 		this.description = description;
 	}
 	
-	public Embed(String title, String description, String url, String timestamp, int color) {
+	public Embed(String title, String description, String url, String timestamp, Integer color) {
 		this.title = title;
 		this.description = description;
 		this.url = url;
@@ -104,17 +106,24 @@ public class Embed {
 	public static class EmbedField {
 		@NotNull String name;
 		@NotNull String value;
-		boolean inline;
+		Boolean inline;
 		
 		public EmbedField(@NotNull String name, @NotNull String value) {
 			this.name = name;
 			this.value = value;
+			fillEmpty();
 		}
 		
 		public EmbedField(@NotNull String name, @NotNull String value, boolean inline) {
 			this.name = name;
 			this.value = value;
 			this.inline = inline;
+			fillEmpty();
+		}
+		
+		public void fillEmpty() {
+			if (this.name.isEmpty()) this.name = EMPTY_FILLER;
+			if (this.value.isEmpty()) this.value = EMPTY_FILLER;
 		}
 	}
 	
