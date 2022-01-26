@@ -76,7 +76,7 @@ public class WebStats extends JavaPlugin {
 		// Start Discord webhook
 		if (config.contains("discord-webhook")) {
 			try {
-				discordWebhook = new DiscordWebhook();
+				discordWebhook = new DiscordWebhook(this);
 			} catch (MalformedURLException e) {
 				logger.log(Level.SEVERE, "Malformed Discord webhook url", e);
 			}
@@ -115,7 +115,9 @@ public class WebStats extends JavaPlugin {
 	void reload() {
 		logger.log(Level.INFO, "Reload: disabling plugin");
 		setEnabled(false);
+		Bukkit.getScheduler().cancelTasks(this);
 		logger.log(Level.INFO, "Reload: re-enabling plugin");
+		reloadConfig();
 		setEnabled(true);
 		logger.log(Level.INFO, "Reload complete");
 	}

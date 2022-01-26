@@ -28,7 +28,7 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 			return true;
 		} else if (args.length == 1 && args[0].equalsIgnoreCase("activate-webhook")) {
 			// TODO: remove, for testing
-			WebStats.discordWebhook.activate();
+			WebStats.discordWebhook.run();
 			return true;
 		}
 		

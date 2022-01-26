@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import nl.dantevg.webstats.StatData;
 import nl.dantevg.webstats.Stats;
 import nl.dantevg.webstats.WebStats;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,7 +19,9 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-public class DiscordWebhook {
+public class DiscordWebhook implements Runnable {
+	private final WebStats plugin;
+	
 	private final @NotNull URL url;
 	private final int updateInterval;
 	private final @NotNull String sortColumn;
@@ -26,7 +29,9 @@ public class DiscordWebhook {
 	private final int displayCount;
 	private final @NotNull List<List<String>> embeds = new ArrayList<>();
 	
-	public DiscordWebhook() throws MalformedURLException {
+	public DiscordWebhook(WebStats plugin) throws MalformedURLException {
+		this.plugin = plugin;
+		
 		ConfigurationSection config = WebStats.config.getConfigurationSection("discord-webhook");
 		
 		url = new URL(config.getString("url"));
@@ -39,49 +44,60 @@ public class DiscordWebhook {
 		if (config.contains("columns")) {
 			embeds.addAll((List<List<String>>) config.getList("columns"));
 		}
+		
+		if (updateInterval > 0) {
+			long delayTicks = 0;
+			long periodTicks = updateInterval * 20L; // assume 20 tps
+			Bukkit.getScheduler().runTaskTimer(plugin, this,
+					delayTicks, periodTicks);
+		}
 	}
 	
-	public void activate() {
-		StatData.Stats stats = Stats.getStats();
+	@Override
+	public void run() {
+		WebStats.logger.log(Level.INFO, "Sending Discord webhook update");
+		final StatData.Stats stats = Stats.getStats();
 		
-		// Sort entries
-		Map<String, Object> columnToSortBy = stats.scores.get(sortColumn);
-		List<String> entries = new ArrayList<>(stats.entries);
-		entries.sort((aRow, bRow) -> {
-			String a = (String) columnToSortBy.get(aRow);
-			String b = (String) columnToSortBy.get(bRow);
+		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+			// Sort entries
+			Map<String, Object> columnToSortBy = stats.scores.get(sortColumn);
+			List<String> entries = new ArrayList<>(stats.entries);
+			entries.sort((aRow, bRow) -> {
+				String a = (String) columnToSortBy.get(aRow);
+				String b = (String) columnToSortBy.get(bRow);
+				
+				try {
+					// Try to convert a and b to numbers
+					double aNum = Double.parseDouble(a);
+					double bNum = Double.parseDouble(b);
+					return (sortDirection == SortDirection.DESCENDING ? -1 : 1)
+							* Double.compare(aNum, bNum);
+				} catch (NumberFormatException e) {
+					// a or b were not numbers, compare as strings
+					return a.compareToIgnoreCase(b);
+				}
+			});
 			
+			// Create message
+			Message message = new Message();
+			if (embeds.isEmpty()) {
+				List<String> columns = (stats.columns != null)
+						? stats.columns
+						: stats.scores.keySet().stream().sorted().collect(Collectors.toList());
+				message.addEmbed(makeEmbed(stats, columns, entries));
+			} else {
+				for (List<String> columns : embeds) {
+					message.addEmbed(makeEmbed(stats, columns, entries));
+				}
+			}
+			
+			// Send message
 			try {
-				// Try to convert a and b to numbers
-				double aNum = Double.parseDouble(a);
-				double bNum = Double.parseDouble(b);
-				return (sortDirection == SortDirection.DESCENDING ? -1 : 1)
-						* Double.compare(aNum, bNum);
-			} catch (NumberFormatException e) {
-				// a or b were not numbers, compare as strings
-				return a.compareToIgnoreCase(b);
+				send(message);
+			} catch (IOException e) {
+				WebStats.logger.log(Level.WARNING, "Could not send webhook message", e);
 			}
 		});
-		
-		// Create message
-		Message message = new Message();
-		if (embeds.isEmpty()) {
-			List<String> columns = (stats.columns != null)
-					? stats.columns
-					: stats.scores.keySet().stream().sorted().collect(Collectors.toList());
-			message.addEmbed(makeEmbed(stats, columns, entries));
-		} else {
-			for (List<String> columns : embeds) {
-				message.addEmbed(makeEmbed(stats, columns, entries));
-			}
-		}
-		
-		// Send message
-		try {
-			send(message);
-		} catch (IOException e) {
-			WebStats.logger.log(Level.WARNING, "Could not send webhook message", e);
-		}
 	}
 	
 	private @NotNull Embed makeEmbed(StatData.@NotNull Stats stats, @NotNull List<String> columns, @NotNull List<String> entries) {
