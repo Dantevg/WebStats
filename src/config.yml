@@ -53,7 +53,7 @@ objectives:
 #  url: ""
 #  
 #  # The update interval, in seconds
-#  update-interval: 10
+#  update-interval: 60
 #  
 #  # Which column to sort by
 #  sort-column: Player
