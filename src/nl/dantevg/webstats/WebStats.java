@@ -74,7 +74,7 @@ public class WebStats extends JavaPlugin {
 		}
 		
 		// Start Discord webhook
-		if (config.contains("discord-webhook-url")) {
+		if (config.contains("discord-webhook")) {
 			try {
 				discordWebhook = new DiscordWebhook();
 			} catch (MalformedURLException e) {
