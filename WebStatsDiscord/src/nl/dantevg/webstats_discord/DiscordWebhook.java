@@ -27,8 +27,9 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class DiscordWebhook implements Runnable {
-	private static final String MESSAGE_ID_FILENAME = "message-id.txt";
+	private static final String MESSAGE_ID_FILENAME = "discord-message-id.txt";
 	
+	private final WebStats webStats;
 	private final WebStatsDiscord plugin;
 	
 	private final @NotNull URL baseURL;
@@ -41,6 +42,7 @@ public class DiscordWebhook implements Runnable {
 	
 	public DiscordWebhook(WebStatsDiscord plugin) throws InvalidConfigurationException {
 		this.plugin = plugin;
+		webStats = WebStats.getPlugin(WebStats.class);
 		
 		ConfigurationSection config = WebStats.config.getConfigurationSection("discord-webhook");
 		if (config == null) {
@@ -121,7 +123,7 @@ public class DiscordWebhook implements Runnable {
 	}
 	
 	private void loadMessageID() {
-		File file = new File(plugin.getDataFolder(), MESSAGE_ID_FILENAME);
+		File file = new File(webStats.getDataFolder(), MESSAGE_ID_FILENAME);
 		try (Scanner scanner = new Scanner(file)) {
 			message.id = scanner.nextLine();
 			WebStatsDiscord.logger.log(Level.INFO, "Loaded " + MESSAGE_ID_FILENAME);
@@ -133,9 +135,8 @@ public class DiscordWebhook implements Runnable {
 	
 	private void storeMessageID() {
 		if (message.id == null) return;
-		File file = new File(plugin.getDataFolder(), MESSAGE_ID_FILENAME);
-		if (file.exists()) return;
-		plugin.getDataFolder().mkdirs();
+		File file = new File(webStats.getDataFolder(), MESSAGE_ID_FILENAME);
+		webStats.getDataFolder().mkdirs();
 		try (FileWriter writer = new FileWriter(file)) {
 			writer.write(message.id);
 			WebStatsDiscord.logger.log(Level.INFO, "Saved " + MESSAGE_ID_FILENAME);
