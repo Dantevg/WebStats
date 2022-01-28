@@ -1,7 +1,9 @@
 package nl.dantevg.webstats.placeholder;
 
 import me.clip.placeholderapi.PlaceholderAPI;
-import nl.dantevg.webstats.*;
+import nl.dantevg.webstats.EntriesScores;
+import nl.dantevg.webstats.EssentialsHelper;
+import nl.dantevg.webstats.WebStats;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
@@ -48,7 +50,7 @@ public class PlaceholderSource {
 	}
 	
 	// Get all scores for all players from PlaceholderAPI
-	// Alternatively find stored scores from PlaceholderStorer
+	// Alternatively find stored scores from PlaceholderStorage
 	private @NotNull Map<String, Map<String, Object>> getScores() {
 		Map<String, Map<String, Object>> values = new HashMap<>();
 		Set<OfflinePlayer> players = getEntriesAsPlayers();
@@ -58,7 +60,16 @@ public class PlaceholderSource {
 			for (OfflinePlayer player : players) {
 				String name = player.getName();
 				if (name == null) continue;
-				String score = PlaceholderAPI.setPlaceholders(player, placeholder);
+				
+				// If the player is online, get the most up-to-date value or
+				// the stored value.
+				// If the player is offline, get the stored value immediately
+				// because placeholder plugins may just yield 0 (which is
+				// indistinguishable from a real score of 0.)
+				String score = null;
+				if (player.isOnline()) {
+					score = PlaceholderAPI.setPlaceholders(player, placeholder);
+				}
 				if (!isPlaceholderSet(placeholder, score) && storage != null) {
 					// If the placeholder was not substituted correctly, try the stored value
 					score = storage.getScore(player.getUniqueId(), (String) placeholderName);
@@ -72,7 +83,7 @@ public class PlaceholderSource {
 	}
 	
 	// Get scores for single player from PlaceholderAPI
-	// This method does NOT try to find stored scores from PlaceholderStorer
+	// This method does NOT try to find stored scores from PlaceholderStorage
 	@NotNull Map<String, String> getScoresForPlayer(@NotNull OfflinePlayer player) {
 		Map<String, String> scores = new HashMap<>();
 		String name = player.getName();
