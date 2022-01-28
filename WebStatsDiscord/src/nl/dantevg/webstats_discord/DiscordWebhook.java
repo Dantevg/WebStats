@@ -15,18 +15,19 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class DiscordWebhook implements Runnable {
+	private static final String MESSAGE_ID_FILENAME = "message-id.txt";
+	
 	private final WebStatsDiscord plugin;
 	
 	private final @NotNull URL baseURL;
@@ -35,7 +36,7 @@ public class DiscordWebhook implements Runnable {
 	private final int displayCount;
 	private final @NotNull List<List<String>> embeds = new ArrayList<>();
 	
-	private Message message;
+	private final Message message = new Message();
 	
 	public DiscordWebhook(WebStatsDiscord plugin) throws MalformedURLException {
 		this.plugin = plugin;
@@ -51,6 +52,8 @@ public class DiscordWebhook implements Runnable {
 		if (config.contains("columns")) {
 			embeds.addAll((List<List<String>>) config.getList("columns"));
 		}
+		
+		loadMessageID();
 	}
 	
 	@Override
@@ -79,7 +82,6 @@ public class DiscordWebhook implements Runnable {
 			});
 			
 			// Fill message
-			if (message == null) message = new Message();
 			message.removeEmbeds();
 			
 			if (embeds.isEmpty()) {
@@ -104,6 +106,35 @@ public class DiscordWebhook implements Runnable {
 				WebStatsDiscord.logger.log(Level.WARNING, "Could not send webhook message", e);
 			}
 		});
+	}
+	
+	public void disable() {
+		storeMessageID();
+	}
+	
+	private void loadMessageID() {
+		File file = new File(plugin.getDataFolder(), MESSAGE_ID_FILENAME);
+		try (Scanner scanner = new Scanner(file)) {
+			message.id = scanner.nextLine();
+			WebStatsDiscord.logger.log(Level.INFO, "Loaded " + MESSAGE_ID_FILENAME);
+		} catch (FileNotFoundException e) {
+			WebStatsDiscord.logger.log(Level.WARNING,
+					MESSAGE_ID_FILENAME + " not present, creating a new message");
+		}
+	}
+	
+	private void storeMessageID() {
+		if (message.id == null) return;
+		File file = new File(plugin.getDataFolder(), MESSAGE_ID_FILENAME);
+		if (file.exists()) return;
+		plugin.getDataFolder().mkdirs();
+		try (FileWriter writer = new FileWriter(file)) {
+			writer.write(message.id);
+			WebStatsDiscord.logger.log(Level.INFO, "Saved " + MESSAGE_ID_FILENAME);
+		} catch (IOException e) {
+			WebStatsDiscord.logger.log(Level.WARNING,
+					"Could not write to " + MESSAGE_ID_FILENAME, e);
+		}
 	}
 	
 	private @NotNull Embed makeEmbed(StatData.@NotNull Stats stats, @NotNull List<String> columns, @NotNull List<String> entries) {

@@ -12,6 +12,8 @@ import static nl.dantevg.webstats.WebStats.config;
 public class WebStatsDiscord extends JavaPlugin {
 	public static Logger logger;
 	
+	public DiscordWebhook webhook;
+	
 	@Override
 	public void onEnable() {
 		logger = getLogger();
@@ -23,7 +25,7 @@ public class WebStatsDiscord extends JavaPlugin {
 		}
 		
 		try {
-			DiscordWebhook webhook = new DiscordWebhook(this);
+			webhook = new DiscordWebhook(this);
 			int updateInterval = config.getInt("update-interval", 10);
 			if (updateInterval > 0) {
 				long delayTicks = 0;
@@ -40,6 +42,7 @@ public class WebStatsDiscord extends JavaPlugin {
 	@Override
 	public void onDisable() {
 		Bukkit.getScheduler().cancelTasks(this);
+		webhook.disable();
 	}
 	
 	public void reload() {
