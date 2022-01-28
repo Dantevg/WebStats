@@ -4,15 +4,20 @@ import com.google.gson.Gson;
 import nl.dantevg.webstats.StatData;
 import nl.dantevg.webstats.Stats;
 import nl.dantevg.webstats.WebStats;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpPatch;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 
-import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -50,7 +55,7 @@ public class DiscordWebhook implements Runnable {
 	
 	@Override
 	public void run() {
-		WebStats.logger.log(Level.INFO, "Sending Discord webhook update");
+		WebStatsDiscord.logger.log(Level.INFO, "Sending Discord webhook update");
 		final StatData.Stats stats = Stats.getStats();
 		
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
@@ -96,7 +101,7 @@ public class DiscordWebhook implements Runnable {
 					sendMessage(message);
 				}
 			} catch (IOException e) {
-				WebStats.logger.log(Level.WARNING, "Could not send webhook message", e);
+				WebStatsDiscord.logger.log(Level.WARNING, "Could not send webhook message", e);
 			}
 		});
 	}
@@ -124,46 +129,31 @@ public class DiscordWebhook implements Runnable {
 	
 	private void sendMessage(Message message) throws IOException {
 		URL url = new URL(baseURL + "?wait=true");
-		HttpsURLConnection conn = send(url, "POST", message);
-		
-		if (isStatusCodeOk(conn.getResponseCode())) {
-			InputStream input = conn.getInputStream();
-			Message responseMessage = new Gson().fromJson(
-					new InputStreamReader(input), Message.class);
-			message.id = responseMessage.id;
-			input.close();
-		} else {
-			conn.getInputStream().close();
-		}
-		
-		conn.disconnect();
+		send(new HttpPost(url.toString()), message);
 	}
 	
-	// "Edit" the message by deleting and sending a new one
-	// No real edit because HttpURLConnection does not support PATCH.
 	private void editMessage(Message message) throws IOException {
 		URL url = new URL(baseURL + "/messages/" + message.id);
-		HttpsURLConnection conn = send(url, "DELETE", message);
-		conn.getInputStream().close();
-		conn.disconnect();
-		sendMessage(message);
+		send(new HttpPatch(url.toString()), message);
 	}
 	
-	private HttpsURLConnection send(URL url, String method, Message message) throws IOException {
-		HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-		conn.setRequestMethod(method);
-		conn.setDoOutput(true);
-		conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-		
-		conn.connect();
-		try (OutputStream output = conn.getOutputStream()) {
-			output.write(new Gson().toJson(message).getBytes());
+	private void send(HttpEntityEnclosingRequestBase request, Message message) throws IOException {
+		try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			request.setHeader("Content-Type", "application/json; charset=UTF-8");
+			request.setEntity(new StringEntity(new Gson().toJson(message)));
+			
+			try (final CloseableHttpResponse response = httpClient.execute(request)) {
+				final int status = response.getStatusLine().getStatusCode();
+				if (isStatusCodeOk(status)) {
+					InputStream input = response.getEntity().getContent();
+					Message responseMessage = new Gson().fromJson(
+							new InputStreamReader(input), Message.class);
+					message.id = responseMessage.id;
+				} else {
+					WebStatsDiscord.logger.log(Level.WARNING, "Got !=2XX HTTP code " + status + " from Discord");
+				}
+			}
 		}
-		
-		if (!isStatusCodeOk(conn.getResponseCode())) {
-			WebStats.logger.log(Level.WARNING, "Got !=2XX HTTP code " + conn.getResponseCode() + " from Discord");
-		}
-		return conn;
 	}
 	
 	private static boolean isStatusCodeOk(int status) {
@@ -177,7 +167,7 @@ public class DiscordWebhook implements Runnable {
 			try {
 				return SortDirection.valueOf(direction.toUpperCase());
 			} catch (IllegalArgumentException e) {
-				WebStats.logger.log(Level.WARNING, "Invalid direction value '" + direction + "', using default");
+				WebStatsDiscord.logger.log(Level.WARNING, "Invalid direction value '" + direction + "', using default");
 				return def;
 			}
 		}

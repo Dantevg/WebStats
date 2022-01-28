@@ -5,12 +5,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.net.MalformedURLException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static nl.dantevg.webstats.WebStats.config;
 
 public class WebStatsDiscord extends JavaPlugin {
+	public static Logger logger;
+	
 	@Override
 	public void onEnable() {
+		logger = getLogger();
+		
 		if (!config.contains("discord-webhook")) {
 			getLogger().log(Level.SEVERE,
 					"WebStatsDiscord plugin present but config.yml does not contain discord-webhook, disabling");
