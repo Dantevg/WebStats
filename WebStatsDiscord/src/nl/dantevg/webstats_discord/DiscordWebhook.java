@@ -13,6 +13,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -38,12 +39,19 @@ public class DiscordWebhook implements Runnable {
 	
 	private final Message message = new Message();
 	
-	public DiscordWebhook(WebStatsDiscord plugin) throws MalformedURLException {
+	public DiscordWebhook(WebStatsDiscord plugin) throws InvalidConfigurationException {
 		this.plugin = plugin;
 		
 		ConfigurationSection config = WebStats.config.getConfigurationSection("discord-webhook");
+		if (config == null) {
+			throw new InvalidConfigurationException("discord-webhook not present in config.yml");
+		}
 		
-		baseURL = new URL(config.getString("url"));
+		try {
+			baseURL = new URL(config.getString("url", ""));
+		} catch (MalformedURLException e) {
+			throw new InvalidConfigurationException(e);
+		}
 		sortColumn = config.getString("sort-column", "Player");
 		sortDirection = SortDirection.fromString(
 				config.getString("sort-direction", ""),
@@ -158,17 +166,17 @@ public class DiscordWebhook implements Runnable {
 		return embed;
 	}
 	
-	private void sendMessage(Message message) throws IOException {
+	private void sendMessage(@NotNull Message message) throws IOException {
 		URL url = new URL(baseURL + "?wait=true");
 		send(new HttpPost(url.toString()), message);
 	}
 	
-	private void editMessage(Message message) throws IOException {
+	private void editMessage(@NotNull Message message) throws IOException {
 		URL url = new URL(baseURL + "/messages/" + message.id);
 		send(new HttpPatch(url.toString()), message);
 	}
 	
-	private void send(HttpEntityEnclosingRequestBase request, Message message) throws IOException {
+	private void send(@NotNull HttpEntityEnclosingRequestBase request, @NotNull Message message) throws IOException {
 		try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
 			request.setHeader("Content-Type", "application/json; charset=UTF-8");
 			request.setEntity(new StringEntity(new Gson().toJson(message)));

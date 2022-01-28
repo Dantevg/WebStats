@@ -1,9 +1,9 @@
 package nl.dantevg.webstats_discord;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,8 +33,8 @@ public class WebStatsDiscord extends JavaPlugin {
 				Bukkit.getScheduler().runTaskTimer(this, webhook,
 						delayTicks, periodTicks);
 			}
-		} catch (MalformedURLException e) {
-			getLogger().log(Level.SEVERE, "Malformed Discord webhook url, disabling", e);
+		} catch (InvalidConfigurationException e) {
+			getLogger().log(Level.SEVERE, "Invalid Discord webhook configuration, disabling", e);
 			getPluginLoader().disablePlugin(this);
 		}
 	}
