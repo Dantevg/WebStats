@@ -1,4 +1,4 @@
-package nl.dantevg.webstats.discord_webhook;
+package nl.dantevg.webstats_discord;
 
 import com.google.gson.Gson;
 import nl.dantevg.webstats.StatData;
@@ -22,10 +22,9 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class DiscordWebhook implements Runnable {
-	private final WebStats plugin;
+	private final WebStatsDiscord plugin;
 	
 	private final @NotNull URL baseURL;
-	private final int updateInterval;
 	private final @NotNull String sortColumn;
 	private final @NotNull SortDirection sortDirection;
 	private final int displayCount;
@@ -33,13 +32,12 @@ public class DiscordWebhook implements Runnable {
 	
 	private Message message;
 	
-	public DiscordWebhook(WebStats plugin) throws MalformedURLException {
+	public DiscordWebhook(WebStatsDiscord plugin) throws MalformedURLException {
 		this.plugin = plugin;
 		
 		ConfigurationSection config = WebStats.config.getConfigurationSection("discord-webhook");
 		
 		baseURL = new URL(config.getString("url"));
-		updateInterval = config.getInt("update-interval", 10);
 		sortColumn = config.getString("sort-column", "Player");
 		sortDirection = SortDirection.fromString(
 				config.getString("sort-direction", ""),
@@ -47,13 +45,6 @@ public class DiscordWebhook implements Runnable {
 		displayCount = config.getInt("display-count", 10);
 		if (config.contains("columns")) {
 			embeds.addAll((List<List<String>>) config.getList("columns"));
-		}
-		
-		if (updateInterval > 0) {
-			long delayTicks = 0;
-			long periodTicks = updateInterval * 20L; // assume 20 tps
-			Bukkit.getScheduler().runTaskTimer(plugin, this,
-					delayTicks, periodTicks);
 		}
 	}
 	
@@ -132,7 +123,7 @@ public class DiscordWebhook implements Runnable {
 	}
 	
 	private void sendMessage(Message message) throws IOException {
-		URL url = new URL(baseURL.toString() + "?wait=true");
+		URL url = new URL(baseURL + "?wait=true");
 		HttpsURLConnection conn = send(url, "POST", message);
 		
 		if (isStatusCodeOk(conn.getResponseCode())) {
@@ -148,11 +139,14 @@ public class DiscordWebhook implements Runnable {
 		conn.disconnect();
 	}
 	
+	// "Edit" the message by deleting and sending a new one
+	// No real edit because HttpURLConnection does not support PATCH.
 	private void editMessage(Message message) throws IOException {
-		URL url = new URL(baseURL.toString() + "messages/" + message.id);
-		HttpsURLConnection conn = send(url, "PATCH", message);
+		URL url = new URL(baseURL + "/messages/" + message.id);
+		HttpsURLConnection conn = send(url, "DELETE", message);
 		conn.getInputStream().close();
 		conn.disconnect();
+		sendMessage(message);
 	}
 	
 	private HttpsURLConnection send(URL url, String method, Message message) throws IOException {

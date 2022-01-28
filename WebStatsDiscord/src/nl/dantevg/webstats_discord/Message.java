@@ -1,4 +1,4 @@
-package nl.dantevg.webstats.discord_webhook;
+package nl.dantevg.webstats_discord;
 
 import java.util.ArrayList;
 import java.util.List;

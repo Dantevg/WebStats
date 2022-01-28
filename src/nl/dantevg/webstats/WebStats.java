@@ -2,7 +2,6 @@ package nl.dantevg.webstats;
 
 import com.sun.net.httpserver.HttpServer;
 import nl.dantevg.webstats.database.DatabaseSource;
-import nl.dantevg.webstats.discord_webhook.DiscordWebhook;
 import nl.dantevg.webstats.placeholder.PlaceholderSource;
 import nl.dantevg.webstats.scoreboard.ScoreboardSource;
 import org.bukkit.Bukkit;
@@ -13,7 +12,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -23,7 +21,6 @@ public class WebStats extends JavaPlugin {
 	protected static ScoreboardSource scoreboardSource;
 	protected static DatabaseSource databaseSource;
 	protected static PlaceholderSource placeholderSource;
-	protected static DiscordWebhook discordWebhook;
 	
 	protected static PlayerIPStorage playerIPStorage;
 	
@@ -70,15 +67,6 @@ public class WebStats extends JavaPlugin {
 				}
 			} else {
 				logger.log(Level.WARNING, "PlaceholderAPI not present but config contains placeholders (comment to remove this warning)");
-			}
-		}
-		
-		// Start Discord webhook
-		if (config.contains("discord-webhook")) {
-			try {
-				discordWebhook = new DiscordWebhook(this);
-			} catch (MalformedURLException e) {
-				logger.log(Level.SEVERE, "Malformed Discord webhook url", e);
 			}
 		}
 		

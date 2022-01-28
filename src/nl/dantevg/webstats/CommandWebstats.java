@@ -26,10 +26,6 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 			webstats.reload();
 			if (!(sender instanceof ConsoleCommandSender)) sender.sendMessage("Reload complete");
 			return true;
-		} else if (args.length == 1 && args[0].equalsIgnoreCase("activate-webhook")) {
-			// TODO: remove, for testing
-			WebStats.discordWebhook.run();
-			return true;
 		}
 		
 		return false;
@@ -41,8 +37,6 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 		if (args.length == 1) {
 			completions.add("debug");
 			completions.add("reload");
-			// TODO: remove, for testing
-			completions.add("activate-webhook");
 		}
 		return completions;
 	}

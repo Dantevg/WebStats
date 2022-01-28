@@ -1,0 +1,8 @@
+main: nl.dantevg.webstats_discord.DiscordWebhook
+name: WebStats-Discord
+version: 1.0.0
+api-version: 1.13
+description: Display WebStats data in a Discord channel
+author: RedPolygon
+website: dantevg.nl/mods-plugins/WebStats
+depend: [WebStats]
