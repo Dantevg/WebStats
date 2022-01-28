@@ -1,4 +1,4 @@
-main: nl.dantevg.webstats_discord.DiscordWebhook
+main: nl.dantevg.webstats_discord.WebStatsDiscord
 name: WebStats-Discord
 version: 1.0.0
 api-version: 1.13
