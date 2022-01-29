@@ -40,11 +40,12 @@ public class DiscordWebhook implements Runnable {
 	private final Message message = new Message();
 	
 	public DiscordWebhook(WebStats plugin) throws InvalidConfigurationException {
+		WebStats.logger.log(Level.INFO, "Enabling Discord webhook");
 		this.plugin = plugin;
 		
 		ConfigurationSection config = WebStats.config.getConfigurationSection("discord-webhook");
 		if (config == null) {
-			throw new InvalidConfigurationException("discord-webhook not present in config.yml");
+			throw new InvalidConfigurationException("discord-webhook must be a config section");
 		}
 		
 		try {
@@ -74,7 +75,7 @@ public class DiscordWebhook implements Runnable {
 	
 	@Override
 	public void run() {
-		WebStats.logger.log(Level.INFO, "Sending Discord webhook update");
+		WebStats.logger.log(Level.CONFIG, "Sending Discord webhook update");
 		final StatData.Stats stats = Stats.getStats();
 		
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
