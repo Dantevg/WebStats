@@ -1,4 +1,4 @@
-package nl.dantevg.webstats_discord;
+package nl.dantevg.webstats.discordwebhook;
 
 import org.jetbrains.annotations.NotNull;
 

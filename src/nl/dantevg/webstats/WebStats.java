@@ -2,6 +2,7 @@ package nl.dantevg.webstats;
 
 import com.sun.net.httpserver.HttpServer;
 import nl.dantevg.webstats.database.DatabaseSource;
+import nl.dantevg.webstats.discordwebhook.DiscordWebhook;
 import nl.dantevg.webstats.placeholder.PlaceholderSource;
 import nl.dantevg.webstats.scoreboard.ScoreboardSource;
 import org.bukkit.Bukkit;
@@ -21,6 +22,8 @@ public class WebStats extends JavaPlugin {
 	protected static ScoreboardSource scoreboardSource;
 	protected static DatabaseSource databaseSource;
 	protected static PlaceholderSource placeholderSource;
+	
+	protected static DiscordWebhook discordWebhook;
 	
 	protected static PlayerIPStorage playerIPStorage;
 	
@@ -70,6 +73,14 @@ public class WebStats extends JavaPlugin {
 			}
 		}
 		
+		if (config.contains("discord-webhook")) {
+			try {
+				discordWebhook = new DiscordWebhook(this);
+			} catch (InvalidConfigurationException e) {
+				logger.log(Level.SEVERE, "Invalid Discord webhook configuration", e);
+			}
+		}
+		
 		try {
 			// Start web server
 			webserver = HttpServer.create(new InetSocketAddress(port), 0);
@@ -98,6 +109,7 @@ public class WebStats extends JavaPlugin {
 		if (databaseSource != null) databaseSource.disable();
 		if (placeholderSource != null) placeholderSource.disable();
 		playerIPStorage.disable();
+		discordWebhook.disable();
 	}
 	
 	void reload() {

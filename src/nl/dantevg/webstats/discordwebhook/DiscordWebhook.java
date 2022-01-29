@@ -1,4 +1,4 @@
-package nl.dantevg.webstats_discord;
+package nl.dantevg.webstats.discordwebhook;
 
 import com.google.gson.Gson;
 import nl.dantevg.webstats.StatData;
@@ -29,8 +29,7 @@ import java.util.stream.Collectors;
 public class DiscordWebhook implements Runnable {
 	private static final String MESSAGE_ID_FILENAME = "discord-message-id.txt";
 	
-	private final WebStats webStats;
-	private final WebStatsDiscord plugin;
+	private final WebStats plugin;
 	
 	private final @NotNull URL baseURL;
 	private final @NotNull String sortColumn;
@@ -40,9 +39,8 @@ public class DiscordWebhook implements Runnable {
 	
 	private final Message message = new Message();
 	
-	public DiscordWebhook(WebStatsDiscord plugin) throws InvalidConfigurationException {
+	public DiscordWebhook(WebStats plugin) throws InvalidConfigurationException {
 		this.plugin = plugin;
-		webStats = WebStats.getPlugin(WebStats.class);
 		
 		ConfigurationSection config = WebStats.config.getConfigurationSection("discord-webhook");
 		if (config == null) {
@@ -64,11 +62,19 @@ public class DiscordWebhook implements Runnable {
 		}
 		
 		loadMessageID();
+		
+		int updateInterval = config.getInt("update-interval", 10);
+		if (updateInterval > 0) {
+			long delayTicks = 0;
+			long periodTicks = updateInterval * 20L; // assume 20 tps
+			Bukkit.getScheduler().runTaskTimer(plugin, this,
+					delayTicks, periodTicks);
+		}
 	}
 	
 	@Override
 	public void run() {
-		WebStatsDiscord.logger.log(Level.INFO, "Sending Discord webhook update");
+		WebStats.logger.log(Level.INFO, "Sending Discord webhook update");
 		final StatData.Stats stats = Stats.getStats();
 		
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
@@ -113,7 +119,7 @@ public class DiscordWebhook implements Runnable {
 					sendMessage(message);
 				}
 			} catch (IOException e) {
-				WebStatsDiscord.logger.log(Level.WARNING, "Could not send webhook message", e);
+				WebStats.logger.log(Level.WARNING, "Could not send webhook message", e);
 			}
 		});
 	}
@@ -123,25 +129,25 @@ public class DiscordWebhook implements Runnable {
 	}
 	
 	private void loadMessageID() {
-		File file = new File(webStats.getDataFolder(), MESSAGE_ID_FILENAME);
+		File file = new File(plugin.getDataFolder(), MESSAGE_ID_FILENAME);
 		try (Scanner scanner = new Scanner(file)) {
 			message.id = scanner.nextLine();
-			WebStatsDiscord.logger.log(Level.INFO, "Loaded " + MESSAGE_ID_FILENAME);
+			WebStats.logger.log(Level.INFO, "Loaded " + MESSAGE_ID_FILENAME);
 		} catch (FileNotFoundException e) {
-			WebStatsDiscord.logger.log(Level.WARNING,
+			WebStats.logger.log(Level.WARNING,
 					MESSAGE_ID_FILENAME + " not present, creating a new message");
 		}
 	}
 	
 	private void storeMessageID() {
 		if (message.id == null) return;
-		File file = new File(webStats.getDataFolder(), MESSAGE_ID_FILENAME);
-		webStats.getDataFolder().mkdirs();
+		File file = new File(plugin.getDataFolder(), MESSAGE_ID_FILENAME);
+		plugin.getDataFolder().mkdirs();
 		try (FileWriter writer = new FileWriter(file)) {
 			writer.write(message.id);
-			WebStatsDiscord.logger.log(Level.INFO, "Saved " + MESSAGE_ID_FILENAME);
+			WebStats.logger.log(Level.INFO, "Saved " + MESSAGE_ID_FILENAME);
 		} catch (IOException e) {
-			WebStatsDiscord.logger.log(Level.WARNING,
+			WebStats.logger.log(Level.WARNING,
 					"Could not write to " + MESSAGE_ID_FILENAME, e);
 		}
 	}
@@ -190,7 +196,7 @@ public class DiscordWebhook implements Runnable {
 							new InputStreamReader(input), Message.class);
 					message.id = responseMessage.id;
 				} else {
-					WebStatsDiscord.logger.log(Level.WARNING, "Got !=2XX HTTP code " + status + " from Discord");
+					WebStats.logger.log(Level.WARNING, "Got !=2XX HTTP code " + status + " from Discord");
 				}
 			}
 		}
@@ -207,7 +213,7 @@ public class DiscordWebhook implements Runnable {
 			try {
 				return SortDirection.valueOf(direction.toUpperCase());
 			} catch (IllegalArgumentException e) {
-				WebStatsDiscord.logger.log(Level.WARNING, "Invalid direction value '" + direction + "', using default");
+				WebStats.logger.log(Level.WARNING, "Invalid direction value '" + direction + "', using default");
 				return def;
 			}
 		}
