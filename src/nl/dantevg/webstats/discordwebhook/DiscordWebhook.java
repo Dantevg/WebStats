@@ -115,6 +115,11 @@ public class DiscordWebhook implements Runnable {
 				}
 			}
 			
+			DiscordEmbed lastEmbed = message.embeds.get(message.embeds.size() - 1);
+			lastEmbed.timestamp = Instant.now().toString();
+			String serverStatus = Bukkit.getServer().getOnlinePlayers().size() + " online";
+			lastEmbed.footer = new DiscordEmbed.EmbedFooter(serverStatus);
+			
 			// Send message
 			try {
 				if (message.id != null) {
@@ -126,6 +131,18 @@ public class DiscordWebhook implements Runnable {
 				WebStats.logger.log(Level.WARNING, "Could not send webhook message", e);
 			}
 		});
+	}
+	
+	public void disable() {
+		if (message.id == null) return;
+		
+		DiscordEmbed lastEmbed = message.embeds.get(message.embeds.size() - 1);
+		lastEmbed.footer = new DiscordEmbed.EmbedFooter("offline");
+		try {
+			editMessage(message);
+		} catch (IOException e) {
+			WebStats.logger.log(Level.WARNING, "Could not send webhook message", e);
+		}
 	}
 	
 	private void loadMessageID() {
@@ -169,8 +186,6 @@ public class DiscordWebhook implements Runnable {
 			embed.addField(new DiscordEmbed.EmbedField(columnName,
 					String.join("\n", values), true));
 		}
-		
-		embed.timestamp = Instant.now().toString();
 		
 		return embed;
 	}
