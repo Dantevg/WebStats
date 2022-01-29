@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import nl.dantevg.webstats.StatData;
 import nl.dantevg.webstats.Stats;
 import nl.dantevg.webstats.WebStats;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpPatch;
@@ -19,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 
 public class DiscordWebhook implements Runnable {
 	private static final String MESSAGE_ID_FILENAME = "discord-message-id.txt";
+	private static final String WEBSTATS_ICON_URL = "https://raw.githubusercontent.com/Dantevg/WebStats/discord-webhook/img/icon-largemargins-96.png";
 	
 	private final WebStats plugin;
 	
@@ -37,7 +40,7 @@ public class DiscordWebhook implements Runnable {
 	private final int displayCount;
 	private final @NotNull List<List<String>> embeds = new ArrayList<>();
 	
-	private final Message message = new Message();
+	private final DiscordMessage message = new DiscordMessage("WebStats", WEBSTATS_ICON_URL);
 	
 	public DiscordWebhook(WebStats plugin) throws InvalidConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling Discord webhook");
@@ -125,10 +128,6 @@ public class DiscordWebhook implements Runnable {
 		});
 	}
 	
-	public void disable() {
-		storeMessageID();
-	}
-	
 	private void loadMessageID() {
 		File file = new File(plugin.getDataFolder(), MESSAGE_ID_FILENAME);
 		try (Scanner scanner = new Scanner(file)) {
@@ -153,9 +152,9 @@ public class DiscordWebhook implements Runnable {
 		}
 	}
 	
-	private @NotNull Embed makeEmbed(StatData.@NotNull Stats stats, @NotNull List<String> columns, @NotNull List<String> entries) {
-		Embed embed = new Embed();
-		embed.addField(new Embed.EmbedField("Player",
+	private @NotNull DiscordEmbed makeEmbed(StatData.@NotNull Stats stats, @NotNull List<String> columns, @NotNull List<String> entries) {
+		DiscordEmbed embed = new DiscordEmbed();
+		embed.addField(new DiscordEmbed.EmbedField("Player",
 				String.join("\n", entries), true));
 		
 		for (String columnName : columns) {
@@ -167,39 +166,61 @@ public class DiscordWebhook implements Runnable {
 							? (String) column.get(entryName) : "")
 					.collect(Collectors.toList());
 			
-			embed.addField(new Embed.EmbedField(columnName,
+			embed.addField(new DiscordEmbed.EmbedField(columnName,
 					String.join("\n", values), true));
 		}
+		
+		embed.timestamp = Instant.now().toString();
 		
 		return embed;
 	}
 	
-	private void sendMessage(@NotNull Message message) throws IOException {
+	private void sendMessage(@NotNull DiscordMessage message) throws IOException {
 		URL url = new URL(baseURL + "?wait=true");
 		send(new HttpPost(url.toString()), message);
 	}
 	
-	private void editMessage(@NotNull Message message) throws IOException {
+	private void editMessage(@NotNull DiscordMessage message) throws IOException {
 		URL url = new URL(baseURL + "/messages/" + message.id);
 		send(new HttpPatch(url.toString()), message);
 	}
 	
-	private void send(@NotNull HttpEntityEnclosingRequestBase request, @NotNull Message message) throws IOException {
+	private void send(@NotNull HttpEntityEnclosingRequestBase request, @NotNull DiscordMessage message) throws IOException {
 		try (final CloseableHttpClient httpClient = HttpClients.createDefault()) {
 			request.setHeader("Content-Type", "application/json; charset=UTF-8");
 			request.setEntity(new StringEntity(new Gson().toJson(message)));
 			
 			try (final CloseableHttpResponse response = httpClient.execute(request)) {
-				final int status = response.getStatusLine().getStatusCode();
-				if (isStatusCodeOk(status)) {
-					InputStream input = response.getEntity().getContent();
-					Message responseMessage = new Gson().fromJson(
-							new InputStreamReader(input), Message.class);
-					message.id = responseMessage.id;
-				} else {
-					WebStats.logger.log(Level.WARNING, "Got !=2XX HTTP code " + status + " from Discord");
+				HttpEntity responseEntity = response.getEntity();
+				if (responseEntity == null) {
+					WebStats.logger.log(Level.WARNING, "Got no response content from Discord");
+					return;
 				}
+				int status = response.getStatusLine().getStatusCode();
+				InputStreamReader input = new InputStreamReader(responseEntity.getContent());
+				handleResponse(message, input, status);
 			}
+		}
+	}
+	
+	private void handleResponse(@NotNull DiscordMessage message, @NotNull InputStreamReader input, int status) throws IOException {
+		if (isStatusCodeOk(status)) {
+			if (message.id == null) {
+				DiscordMessage responseMessage = new Gson().fromJson(input, DiscordMessage.class);
+				message.id = responseMessage.id;
+				storeMessageID();
+			}
+		} else if (status == 404 && new Gson().fromJson(input, DiscordError.class)
+				.message.equals("Unknown Message")) {
+			// Probably the message got deleted, so create a new one
+			message.id = null;
+			WebStats.logger.log(Level.WARNING,
+					"Got unknown message response (did the message get deleted?), creating new message");
+			sendMessage(message);
+		} else {
+			WebStats.logger.log(Level.WARNING, "Got HTTP code " + status + " response from Discord");
+			new BufferedReader(input).lines()
+					.forEach(line -> WebStats.logger.log(Level.WARNING, line));
 		}
 	}
 	

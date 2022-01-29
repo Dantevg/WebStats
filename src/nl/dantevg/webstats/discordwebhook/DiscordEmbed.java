@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * https://discord.com/developers/docs/resources/channel#embed-object
  */
-public class Embed {
+public class DiscordEmbed {
 	// To be used for when a message would otherwise be empty, which is not allowed
 	private static final String EMPTY_FILLER = ".";
 	
@@ -27,15 +27,15 @@ public class Embed {
 	EmbedAuthor author;
 	List<EmbedField> fields;
 	
-	public Embed() {
+	public DiscordEmbed() {
 	}
 	
-	public Embed(String title, String description) {
+	public DiscordEmbed(String title, String description) {
 		this.title = title;
 		this.description = description;
 	}
 	
-	public Embed(String title, String description, String url, String timestamp, Integer color) {
+	public DiscordEmbed(String title, String description, String url, String timestamp, Integer color) {
 		this.title = title;
 		this.description = description;
 		this.url = url;

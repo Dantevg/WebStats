@@ -3,28 +3,33 @@ package nl.dantevg.webstats.discordwebhook;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Message {
+public class DiscordMessage {
 	String id; // only present in responses
 	String content;
 	String username;
 	String avatar_url;
 	Boolean tts; // text-to-speech
-	List<Embed> embeds;
+	List<DiscordEmbed> embeds;
 	
-	public Message() {
+	public DiscordMessage() {
 	}
 	
-	public Message(String content) {
+	public DiscordMessage(String content) {
 		this.content = content;
 	}
 	
-	public Message(String content, String username, String avatar_url) {
+	public DiscordMessage(String username, String avatar_url) {
+		this.username = username;
+		this.avatar_url = avatar_url;
+	}
+	
+	public DiscordMessage(String content, String username, String avatar_url) {
 		this.content = content;
 		this.username = username;
 		this.avatar_url = avatar_url;
 	}
 	
-	public void addEmbed(Embed embed) {
+	public void addEmbed(DiscordEmbed embed) {
 		if (embeds == null) embeds = new ArrayList<>();
 		embeds.add(embed);
 	}
