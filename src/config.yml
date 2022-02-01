@@ -52,8 +52,8 @@ objectives:
 #  # The webhook URL. Get this from Discord
 #  url: ""
 #  
-#  # The update interval, in seconds
-#  update-interval: 60
+#  # The update interval, in minutes
+#  update-interval: 5
 #  
 #  # Which column to sort by
 #  sort-column: Player

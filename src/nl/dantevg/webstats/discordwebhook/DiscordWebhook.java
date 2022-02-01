@@ -67,10 +67,10 @@ public class DiscordWebhook implements Runnable {
 		
 		loadMessageID();
 		
-		int updateInterval = config.getInt("update-interval", 10);
+		int updateInterval = config.getInt("update-interval", 5);
 		if (updateInterval > 0) {
 			long delayTicks = 0;
-			long periodTicks = updateInterval * 20L; // assume 20 tps
+			long periodTicks = (long) updateInterval * 20 * 60; // assume 20 tps
 			Bukkit.getScheduler().runTaskTimer(plugin, this,
 					delayTicks, periodTicks);
 		}
