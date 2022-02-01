@@ -137,6 +137,7 @@ public class DiscordWebhook implements Runnable {
 		if (message.id == null) return;
 		
 		DiscordEmbed lastEmbed = message.embeds.get(message.embeds.size() - 1);
+		lastEmbed.timestamp = Instant.now().toString();
 		lastEmbed.footer = new DiscordEmbed.EmbedFooter("offline");
 		try {
 			editMessage(message);
