@@ -176,6 +176,7 @@ public class DiscordWebhook implements Runnable {
 		
 		for (String columnName : columns) {
 			Map<String, Object> column = stats.scores.get(columnName);
+			if (column == null) continue;
 			
 			List<String> values = entries.stream()
 					.limit(displayCount)
