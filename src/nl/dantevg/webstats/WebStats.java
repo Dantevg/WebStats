@@ -2,6 +2,7 @@ package nl.dantevg.webstats;
 
 import com.sun.net.httpserver.HttpServer;
 import nl.dantevg.webstats.database.DatabaseSource;
+import nl.dantevg.webstats.discordwebhook.DiscordWebhook;
 import nl.dantevg.webstats.placeholder.PlaceholderSource;
 import nl.dantevg.webstats.scoreboard.ScoreboardSource;
 import org.bukkit.Bukkit;
@@ -21,6 +22,8 @@ public class WebStats extends JavaPlugin {
 	protected static ScoreboardSource scoreboardSource;
 	protected static DatabaseSource databaseSource;
 	protected static PlaceholderSource placeholderSource;
+	
+	protected static DiscordWebhook discordWebhook;
 	
 	protected static PlayerIPStorage playerIPStorage;
 	
@@ -49,7 +52,7 @@ public class WebStats extends JavaPlugin {
 		getCommand("webstats").setExecutor(command);
 		getCommand("webstats").setTabCompleter(command);
 		
-		// Set sources
+		// Enable sources
 		if (config.contains("objectives")) scoreboardSource = new ScoreboardSource();
 		if (config.contains("database.config")) {
 			try {
@@ -67,6 +70,14 @@ public class WebStats extends JavaPlugin {
 				}
 			} else {
 				logger.log(Level.WARNING, "PlaceholderAPI not present but config contains placeholders (comment to remove this warning)");
+			}
+		}
+		
+		if (config.contains("discord-webhook")) {
+			try {
+				discordWebhook = new DiscordWebhook(this);
+			} catch (InvalidConfigurationException e) {
+				logger.log(Level.SEVERE, "Invalid Discord webhook configuration", e);
 			}
 		}
 		
@@ -98,12 +109,15 @@ public class WebStats extends JavaPlugin {
 		if (databaseSource != null) databaseSource.disable();
 		if (placeholderSource != null) placeholderSource.disable();
 		playerIPStorage.disable();
+		discordWebhook.disable();
 	}
 	
 	void reload() {
 		logger.log(Level.INFO, "Reload: disabling plugin");
 		setEnabled(false);
+		Bukkit.getScheduler().cancelTasks(this);
 		logger.log(Level.INFO, "Reload: re-enabling plugin");
+		reloadConfig();
 		setEnabled(true);
 		logger.log(Level.INFO, "Reload complete");
 	}
