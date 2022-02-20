@@ -43,7 +43,7 @@ public class DiscordMessage {
 		public List<String> parse; // elements can be: "roles", "users", "everyone"
 		public List<String> roles;
 		public List<String> users;
-		public boolean replied_user;
+		public Boolean replied_user;
 	}
 	
 }
