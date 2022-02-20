@@ -10,6 +10,7 @@ public class DiscordMessage {
 	String avatar_url;
 	Boolean tts; // text-to-speech
 	List<DiscordEmbed> embeds;
+	AllowedMentions allowed_mentions = new AllowedMentions();
 	
 	public DiscordMessage() {
 	}
@@ -36,6 +37,13 @@ public class DiscordMessage {
 	
 	public void removeEmbeds() {
 		if (embeds != null) embeds.clear();
+	}
+	
+	public static class AllowedMentions {
+		public List<String> parse; // elements can be: "roles", "users", "everyone"
+		public List<String> roles;
+		public List<String> users;
+		public boolean replied_user;
 	}
 	
 }
