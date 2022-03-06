@@ -76,8 +76,9 @@ class Data {
 	}
 	
 	// Ignore all entries which have no scores (armour stand book fix)
+	// (also hides entries with only 0 values)
 	isNonemptyEntry = entry => Object.entries(this.scoreboard.scores)
-		.filter(([_,score]) => score[entry]).length > 0
+		.filter(([_,score]) => score[entry] && score[entry] != "0").length > 0
 	
 	// Only entries which don't start with '#' and don't contain only digits are marked as players
 	static isPlayer = entry => !entry.startsWith("#") && !entry.match(/^\d*$/)
