@@ -55,6 +55,7 @@ public class DiscordWebhook implements Runnable {
 		for (Map<?, ?> embed : config.getMapList("embeds")) {
 			embeds.add(new EmbedConfig(embed));
 		}
+		message.content = config.getString("title");
 		
 		loadMessageID();
 		
