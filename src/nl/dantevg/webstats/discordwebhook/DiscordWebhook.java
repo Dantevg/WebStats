@@ -21,10 +21,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -159,6 +156,7 @@ public class DiscordWebhook implements Runnable {
 		List<String> nonEmptyEntries = entries.stream()
 				.filter(entry -> columns.stream()
 						.map(stats.scores::get)
+						.filter(Objects::nonNull)
 						.anyMatch(column -> column.get(entry) != null
 								&& !column.get(entry).trim().isEmpty()))
 				.collect(Collectors.toList());
