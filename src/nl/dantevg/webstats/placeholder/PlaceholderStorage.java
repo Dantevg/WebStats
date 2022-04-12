@@ -28,7 +28,10 @@ public class PlaceholderStorage {
 		this.placeholderSource = placeholderSource;
 		
 		// Register events
-		Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(this), WebStats.getPlugin(WebStats.class));
+		boolean saveOnPluginDisable = WebStats.config.getBoolean("save-placeholders-on-plugin-disable");
+		Bukkit.getPluginManager().registerEvents(
+				new PlayerLeaveListener(this, saveOnPluginDisable),
+				WebStats.getPlugin(WebStats.class));
 		
 		// Connect to database
 		String hostname = WebStats.config.getString("database.hostname");
