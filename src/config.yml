@@ -70,3 +70,8 @@ objectives:
 #  columns:
 #    - [col 1, col 2] # first embed
 #    - [col 1, col 2] # second embed
+
+# Whether to save placeholders before any plugins are disabled on server shutdown
+# This is a fix for error "java.lang.IllegalStateException: zip file closed."
+# You can leave this off if you don't experience this error.
+save-placeholders-on-plugin-disable: false
