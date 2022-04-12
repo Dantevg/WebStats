@@ -10,14 +10,14 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.logging.Level;
 
-public class PlayerLeaveListener implements Listener {
+public class PlaceholderListener implements Listener {
 	private static final Duration PLUGIN_DISABLE_WAIT = Duration.ofSeconds(30);
 	
 	private final PlaceholderStorage storage;
 	private final boolean SAVE_ON_PLUGIN_DISABLE;
 	private Instant lastPluginDisable = Instant.now();
 	
-	public PlayerLeaveListener(PlaceholderStorage storage, boolean saveOnPluginDisable) {
+	public PlaceholderListener(PlaceholderStorage storage, boolean saveOnPluginDisable) {
 		this.storage = storage;
 		SAVE_ON_PLUGIN_DISABLE = saveOnPluginDisable;
 	}

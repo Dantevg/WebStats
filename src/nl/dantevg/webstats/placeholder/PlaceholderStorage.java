@@ -35,7 +35,7 @@ public class PlaceholderStorage {
 		// Register events
 		boolean saveOnPluginDisable = WebStats.config.getBoolean("save-placeholders-on-plugin-disable");
 		Bukkit.getPluginManager().registerEvents(
-				new PlayerLeaveListener(this, saveOnPluginDisable),
+				new PlaceholderListener(this, saveOnPluginDisable),
 				WebStats.getPlugin(WebStats.class));
 		
 		// Connect to database
