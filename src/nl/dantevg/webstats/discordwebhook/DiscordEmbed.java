@@ -122,8 +122,8 @@ public class DiscordEmbed {
 		}
 		
 		public void fillEmpty() {
-			if (this.name.isEmpty()) this.name = EMPTY_FILLER;
-			if (this.value.isEmpty()) this.value = EMPTY_FILLER;
+			if (this.name.trim().isEmpty()) this.name = EMPTY_FILLER;
+			if (this.value.trim().isEmpty()) this.value = EMPTY_FILLER;
 		}
 	}
 	

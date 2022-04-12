@@ -28,17 +28,17 @@ public class ScoreboardSource {
 		return new HashSet<>(scoreboard.getEntries());
 	}
 	
-	private @NotNull Map<String, Map<String, Object>> getScores() {
-		Map<String, Map<String, Object>> objectives = new HashMap<>();
+	private @NotNull Map<String, Map<String, String>> getScores() {
+		Map<String, Map<String, String>> objectives = new HashMap<>();
 		for (Objective objective : scoreboard.getObjectives()) {
 			// Filter objectives
 			if (!allObjectives && !objectivesFilter.contains(objective.getDisplayName())) continue;
 			
 			// Get player scores
-			Map<String, Object> scores = new HashMap<>();
+			Map<String, String> scores = new HashMap<>();
 			for (String entry : scoreboard.getEntries()) {
 				Score s = objective.getScore(entry);
-				if (s.isScoreSet()) scores.put(entry, s.getScore());
+				if (s.isScoreSet()) scores.put(entry, String.valueOf(s.getScore()));
 			}
 			
 			objectives.put(objective.getDisplayName(), scores);

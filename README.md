@@ -1,9 +1,9 @@
-![](img/banner.png)
+![](img/banner-1024x256.png)
 # WebStats
 WebStats is a spigot plugin that can gather player statistics from multiple
 sources and display it on a webpage. It can get data from the **scoreboard**,
 from any plugin that stores its data in a **database**, from **PlaceholderAPI**
-and player **online/AFK** status.
+and player **online/AFK** status. It can also be used as a **Discord webhook**.
 
 [View demo page here](https://dantevg.nl/mods-plugins/WebStats/demo)
 

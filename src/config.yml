@@ -24,7 +24,7 @@ serve-webpage: false
 objectives:
   - '*'
 
-# Database credentials for MySQL database connectivity and placeholder storer
+# Database credentials for MySQL database connectivity and placeholder storage
 #database:
 #  hostname: localhost
 #  username: DATABASE USERNAME
@@ -55,18 +55,31 @@ objectives:
 #  # The update interval, in minutes
 #  update-interval: 5
 #  
-#  # Which column to sort by
-#  sort-column: Player
-#  
-#  # Whether to sort ascending (smallest first) or descending (largest first)
-#  sort-direction: ascending
-#  
 #  # Show the top n rows/players
 #  display-count: 10
 #  
-#  # Which columns to display. Each item in this list is one embed.
-#  # Defaults to using the columns defined above, or all columns otherwise.
-#  # Note that Discord displays max 3 columns next to each other
-#  columns:
-#    - [col 1, col 2] # first embed
-#    - [col 1, col 2] # second embed
+#  # Message title, text to be displayed before the embeds
+#  title:
+#  
+#  # Each item in this list is one embed
+#  embeds:
+#    - # The title of the embed. Leave empty for no title
+#      title:
+#      
+#      # Which column to sort by
+#      sort-column: Player
+#      
+#      # Whether to sort ascending (smallest first) or descending (largest first)
+#      sort-direction: ascending
+#      
+#      # Which columns to display. Defaults to using the columns defined at the
+#      # top of this file in a single embed, or all columns otherwise.
+#      # Note that Discord displays max 3 columns next to each other (including
+#      # the "Player" column which is always present)
+#      columns: [Deaths]
+#      
+#      # A further example
+#    - title: Best miners
+#      sort-column: Mine All Diamond
+#      sort-direction: ascending
+#      columns: [Mine All Diamond, Mine Ancient Debris]
