@@ -109,7 +109,7 @@ public class WebStats extends JavaPlugin {
 		if (databaseSource != null) databaseSource.disable();
 		if (placeholderSource != null) placeholderSource.disable();
 		playerIPStorage.disable();
-		discordWebhook.disable();
+		if (discordWebhook != null) discordWebhook.disable();
 	}
 	
 	void reload() {

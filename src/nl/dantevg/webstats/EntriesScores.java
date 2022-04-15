@@ -6,9 +6,9 @@ import java.util.*;
 
 public class EntriesScores {
 	public Set<String> entries;
-	public Map<String, Map<String, Object>> scores;
+	public Map<String, Map<String, String>> scores;
 	
-	public EntriesScores(Set<String> entries, Map<String, Map<String, Object>> scores) {
+	public EntriesScores(Set<String> entries, Map<String, Map<String, String>> scores) {
 		this.entries = entries;
 		this.scores = scores;
 	}

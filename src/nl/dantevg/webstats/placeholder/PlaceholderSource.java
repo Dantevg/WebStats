@@ -51,12 +51,12 @@ public class PlaceholderSource {
 	
 	// Get all scores for all players from PlaceholderAPI
 	// Alternatively find stored scores from PlaceholderStorage
-	private @NotNull Map<String, Map<String, Object>> getScores() {
-		Map<String, Map<String, Object>> values = new HashMap<>();
+	private @NotNull Map<String, Map<String, String>> getScores() {
+		Map<String, Map<String, String>> values = new HashMap<>();
 		Set<OfflinePlayer> players = getEntriesAsPlayers();
 		
 		placeholders.forEach((placeholder, placeholderName) -> {
-			Map<String, Object> scores = new HashMap<>();
+			Map<String, String> scores = new HashMap<>();
 			for (OfflinePlayer player : players) {
 				String name = player.getName();
 				if (name == null) continue;

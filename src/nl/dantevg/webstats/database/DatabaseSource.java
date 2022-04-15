@@ -36,7 +36,7 @@ public class DatabaseSource {
 				conn = connections.get(dbname);
 			} else {
 				conn = new DatabaseConnection(hostname, username, password, dbname);
-				if(conn.connect()) connections.put(dbname, conn);
+				if (conn.connect()) connections.put(dbname, conn);
 			}
 			conversions.add(new DatabaseConverter(
 					conn, (String) configItem.get("table"),

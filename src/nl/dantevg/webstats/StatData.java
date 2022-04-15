@@ -33,7 +33,7 @@ public class StatData {
 	public static class Stats {
 		public Set<String> entries;
 		public List<String> columns;
-		public Map<String, Map<String, Object>> scores;
+		public Map<String, Map<String, String>> scores;
 		
 		public Stats(@NotNull EntriesScores entriesScores, List<String> columns) {
 			this.entries = entriesScores.entries;

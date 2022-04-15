@@ -21,10 +21,7 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -35,10 +32,8 @@ public class DiscordWebhook implements Runnable {
 	private final WebStats plugin;
 	
 	private final @NotNull URL baseURL;
-	private final @NotNull String sortColumn;
-	private final @NotNull SortDirection sortDirection;
 	private final int displayCount;
-	private final @NotNull List<List<String>> embeds = new ArrayList<>();
+	private final @NotNull List<EmbedConfig> embeds = new ArrayList<>();
 	
 	private final DiscordMessage message = new DiscordMessage("WebStats", WEBSTATS_ICON_URL);
 	
@@ -56,14 +51,11 @@ public class DiscordWebhook implements Runnable {
 		} catch (MalformedURLException e) {
 			throw new InvalidConfigurationException(e);
 		}
-		sortColumn = config.getString("sort-column", "Player");
-		sortDirection = SortDirection.fromString(
-				config.getString("sort-direction", ""),
-				SortDirection.DESCENDING);
 		displayCount = config.getInt("display-count", 10);
-		if (config.contains("columns")) {
-			embeds.addAll((List<List<String>>) config.getList("columns"));
+		for (Map<?, ?> embed : config.getMapList("embeds")) {
+			embeds.add(new EmbedConfig(embed));
 		}
+		message.content = config.getString("title");
 		
 		loadMessageID();
 		
@@ -82,36 +74,26 @@ public class DiscordWebhook implements Runnable {
 		final StatData.Stats stats = Stats.getStats();
 		
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-			// Sort entries
-			Map<String, Object> columnToSortBy = stats.scores.get(sortColumn);
 			List<String> entries = new ArrayList<>(stats.entries);
-			entries.sort((aRow, bRow) -> {
-				String a = (String) columnToSortBy.get(aRow);
-				String b = (String) columnToSortBy.get(bRow);
-				
-				try {
-					// Try to convert a and b to numbers
-					double aNum = Double.parseDouble(a);
-					double bNum = Double.parseDouble(b);
-					return (sortDirection == SortDirection.DESCENDING ? -1 : 1)
-							* Double.compare(aNum, bNum);
-				} catch (NumberFormatException e) {
-					// a or b were not numbers, compare as strings
-					return a.compareToIgnoreCase(b);
-				}
-			});
 			
-			// Fill message
 			message.removeEmbeds();
 			
+			// Fill message
 			if (embeds.isEmpty()) {
+				// Add one default embed
 				List<String> columns = (stats.columns != null)
 						? stats.columns
 						: stats.scores.keySet().stream().sorted().collect(Collectors.toList());
+				sortEntries(entries, null, SortDirection.DESCENDING);
 				message.addEmbed(makeEmbed(stats, columns, entries));
 			} else {
-				for (List<String> columns : embeds) {
-					message.addEmbed(makeEmbed(stats, columns, entries));
+				// Add embeds according to config
+				for (EmbedConfig embedConfig : embeds) {
+					Map<String, String> columnToSortBy = stats.scores.get(embedConfig.sortColumn);
+					sortEntries(entries, columnToSortBy, embedConfig.sortDirection);
+					DiscordEmbed embed = makeEmbed(stats, embedConfig.columns, entries);
+					if (embedConfig.title != null) embed.title = embedConfig.title;
+					message.addEmbed(embed);
 				}
 			}
 			
@@ -137,6 +119,7 @@ public class DiscordWebhook implements Runnable {
 		if (message.id == null) return;
 		
 		DiscordEmbed lastEmbed = message.embeds.get(message.embeds.size() - 1);
+		lastEmbed.timestamp = Instant.now().toString();
 		lastEmbed.footer = new DiscordEmbed.EmbedFooter("offline");
 		try {
 			editMessage(message);
@@ -170,22 +153,34 @@ public class DiscordWebhook implements Runnable {
 	}
 	
 	private @NotNull DiscordEmbed makeEmbed(StatData.@NotNull Stats stats, @NotNull List<String> columns, @NotNull List<String> entries) {
+		// Filter out empty rows
+		List<String> nonEmptyEntries = entries.stream()
+				.filter(entry -> columns.stream()
+						.map(stats.scores::get)
+						.filter(Objects::nonNull)
+						.anyMatch(column -> column.get(entry) != null
+								&& !column.get(entry).trim().isEmpty()))
+				.collect(Collectors.toList());
+		
 		DiscordEmbed embed = new DiscordEmbed();
-		embed.addField(new DiscordEmbed.EmbedField("Player",
-				String.join("\n", entries), true));
+		embed.addField(new DiscordEmbed.EmbedField(
+				"Player",
+				nonEmptyEntries.stream()
+						.limit(displayCount)
+						.collect(Collectors.joining("\n")),
+				true));
 		
 		for (String columnName : columns) {
-			Map<String, Object> column = stats.scores.get(columnName);
+			Map<String, String> column = stats.scores.get(columnName);
 			if (column == null) continue;
 			
-			List<String> values = entries.stream()
+			String values = nonEmptyEntries.stream()
 					.limit(displayCount)
 					.map((entryName) -> column.get(entryName) != null
-							? (String) column.get(entryName) : "")
-					.collect(Collectors.toList());
+							? column.get(entryName) : "")
+					.collect(Collectors.joining("\n"));
 			
-			embed.addField(new DiscordEmbed.EmbedField(columnName,
-					String.join("\n", values), true));
+			embed.addField(new DiscordEmbed.EmbedField(columnName, values, true));
 		}
 		
 		return embed;
@@ -226,22 +221,70 @@ public class DiscordWebhook implements Runnable {
 				message.id = responseMessage.id;
 				storeMessageID();
 			}
-		} else if (status == 404 && new Gson().fromJson(input, DiscordError.class)
-				.message.equals("Unknown Message")) {
-			// Probably the message got deleted, so create a new one
-			message.id = null;
-			WebStats.logger.log(Level.WARNING,
-					"Got unknown message response (did the message get deleted?), creating new message");
-			sendMessage(message);
 		} else {
-			WebStats.logger.log(Level.WARNING, "Got HTTP code " + status + " response from Discord");
-			new BufferedReader(input).lines()
-					.forEach(line -> WebStats.logger.log(Level.WARNING, line));
+			String response = new BufferedReader(input).lines().collect(Collectors.joining());
+			DiscordError error = new Gson().fromJson(response, DiscordError.class);
+			if (status == 404 && error.message.equals("Unknown Message")) {
+				// Probably the message got deleted, so create a new one
+				message.id = null;
+				WebStats.logger.log(Level.WARNING,
+						"Got unknown message response (did the message get deleted?), creating new message");
+				sendMessage(message);
+			} else {
+				WebStats.logger.log(Level.WARNING, "Got HTTP code " + status + " response from Discord");
+				WebStats.logger.log(Level.WARNING, response);
+			}
 		}
+	}
+	
+	private static void sortEntries(List<String> entries, Map<String, String> column, SortDirection direction) {
+		entries.sort((aRow, bRow) -> {
+			String a, b;
+			if (column == null) {
+				// Null column means just sort player names
+				a = aRow;
+				b = bRow;
+			} else {
+				a = column.get(aRow);
+				b = column.get(bRow);
+			}
+			
+			try {
+				// Handle null (because Double.parseDouble cannot handle null)
+				if (a == null && b == null) return 0;
+				else if (a == null) return -direction.toInt();
+				else if (b == null) return direction.toInt();
+				
+				// Try to convert a and b to numbers
+				double aNum = Double.parseDouble(a);
+				double bNum = Double.parseDouble(b);
+				return direction.toInt() * Double.compare(aNum, bNum);
+			} catch (NumberFormatException e) {
+				// a or b were not numbers, compare as strings
+				return direction.toInt() * a.compareToIgnoreCase(b);
+			}
+		});
 	}
 	
 	private static boolean isStatusCodeOk(int status) {
 		return status >= 200 && status < 300;
+	}
+	
+	private static class EmbedConfig {
+		public final String title;
+		public final @NotNull String sortColumn;
+		public final @NotNull SortDirection sortDirection;
+		public final @NotNull List<String> columns;
+		
+		public EmbedConfig(Map<?, ?> map) {
+			this.title = (String) map.get("title");
+			String sortColumn = (String) map.get("sort-column");
+			this.sortColumn = (sortColumn != null) ? sortColumn : "Player";
+			String sortDirection = (String) map.get("sort-direction");
+			this.sortDirection = SortDirection.fromString(sortDirection, SortDirection.DESCENDING);
+			List<String> columns = (List<String>) map.get("columns");
+			this.columns = (columns != null) ? columns : new ArrayList<>();
+		}
 	}
 	
 	private enum SortDirection {
@@ -254,6 +297,10 @@ public class DiscordWebhook implements Runnable {
 				WebStats.logger.log(Level.WARNING, "Invalid direction value '" + direction + "', using default");
 				return def;
 			}
+		}
+		
+		public int toInt() {
+			return (this == SortDirection.DESCENDING ? -1 : 1);
 		}
 	}
 	

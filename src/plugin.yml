@@ -8,9 +8,9 @@ website: dantevg.nl/mods-plugins/WebStats
 softdepend: [Essentials, PlaceholderAPI]
 commands:
   webstats:
-    description: WebStats debug command
-    usage: "Usage: /<command> debug"
-    permission: webstats.debug
+    description: WebStats command
+    usage: "Usage: /<command> debug | reload"
+    permission: webstats.*
 permissions:
-  webstats.debug:
-    description: Allows running debug command
+  webstats.*:
+    description: Allows running /webstats command
