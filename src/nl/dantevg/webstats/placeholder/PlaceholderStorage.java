@@ -24,6 +24,7 @@ public class PlaceholderStorage {
 	
 	private final PlaceholderSource placeholderSource;
 	private final HashBasedTable<UUID, String, String> data = HashBasedTable.create();
+	private final boolean saveOnPluginDisable;
 	
 	private final @NotNull DatabaseConnection conn;
 	
@@ -33,7 +34,7 @@ public class PlaceholderStorage {
 		this.placeholderSource = placeholderSource;
 		
 		// Register events
-		boolean saveOnPluginDisable = WebStats.config.getBoolean("save-placeholders-on-plugin-disable");
+		saveOnPluginDisable = WebStats.config.getBoolean("save-placeholders-on-plugin-disable");
 		Bukkit.getPluginManager().registerEvents(
 				new PlaceholderListener(this, saveOnPluginDisable),
 				WebStats.getPlugin(WebStats.class));
@@ -62,6 +63,9 @@ public class PlaceholderStorage {
 	}
 	
 	public boolean disconnect() {
+		// Don't save on server close if we already saved on plugin disable
+		if (saveOnPluginDisable) return true;
+		
 		// since this is called when the server closes,
 		// save all data to persistent database storage now
 		try {
