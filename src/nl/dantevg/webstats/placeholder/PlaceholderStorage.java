@@ -10,8 +10,13 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.sql.*;
-import java.util.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 
 public class PlaceholderStorage {
@@ -28,7 +33,10 @@ public class PlaceholderStorage {
 		this.placeholderSource = placeholderSource;
 		
 		// Register events
-		Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(this), WebStats.getPlugin(WebStats.class));
+		boolean saveOnPluginDisable = WebStats.config.getBoolean("save-placeholders-on-plugin-disable");
+		Bukkit.getPluginManager().registerEvents(
+				new PlaceholderListener(this, saveOnPluginDisable),
+				WebStats.getPlugin(WebStats.class));
 		
 		// Connect to database
 		String hostname = WebStats.config.getString("database.hostname");
@@ -56,7 +64,22 @@ public class PlaceholderStorage {
 	public boolean disconnect() {
 		// since this is called when the server closes,
 		// save all data to persistent database storage now
-		saveAll();
+		try {
+			saveAll();
+		} catch (IllegalStateException e) {
+			// Catch this exception to add a helpful message before
+			// https://github.com/Dantevg/WebStats/issues/30
+			if (e.getMessage().equals("zip file closed")) {
+				WebStats.logger.log(Level.SEVERE, "A plugin providing PlaceholderAPI placeholders " +
+						"was disabled before WebStats could save the latest placeholders. You can set " +
+						"'save-placeholders-on-plugin-disable' to true in the config as a workaround.\n" +
+						"Github issue: https://github.com/Dantevg/WebStats/issues/30\n" +
+						"Here is the stack trace for your interest:", e);
+			}else{
+				// Rethrow, not the right error message
+				throw e;
+			}
+		}
 		return conn.disconnect();
 	}
 	

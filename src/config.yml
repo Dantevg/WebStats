@@ -83,3 +83,8 @@ objectives:
 #      sort-column: Mine All Diamond
 #      sort-direction: ascending
 #      columns: [Mine All Diamond, Mine Ancient Debris]
+
+# Whether to save placeholders before any plugins are disabled on server shutdown
+# This is a fix for error "java.lang.IllegalStateException: zip file closed."
+# You can leave this off if you don't experience this error.
+save-placeholders-on-plugin-disable: false
