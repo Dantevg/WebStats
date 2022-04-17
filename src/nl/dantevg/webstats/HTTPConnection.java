@@ -21,7 +21,11 @@ public class HTTPConnection {
 		Headers headers = exchange.getResponseHeaders();
 		headers.add("Access-Control-Allow-Origin", "*");
 		headers.add("Content-Type", contentType + "; charset=UTF-8");
-		// No "expires" attribute, so session cookie
+		
+		// Add cookies for javascript where to find the server
+		// No "expires" attribute, so session cookies
+		headers.add("Set-Cookie", "ip=" + exchange.getLocalAddress().getHostString()
+				+ "; SameSite=Lax");
 		headers.add("Set-Cookie", "port=" + exchange.getLocalAddress().getPort()
 				+ "; SameSite=Lax");
 	}

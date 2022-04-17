@@ -10,15 +10,18 @@
 	<link rel="stylesheet" href="style.css">
 	
 	<script>
+		const getCookie = (cookie) => document.cookie.match(`${cookie}=([^;]+)`)?.[1]
+		
 		// Get port from cookie set by standalone WebStats web server
-		const port = document.cookie.match(/port=(\d+)/)?.[1] ?? 8080
+		const ip = getCookie("ip") ?? "localhost"
+		const port = getCookie("port") ?? 8080
 		
 		// Will be executed after page is loaded
 		window.addEventListener("load", () => {
 			const stats = new WebStats({
 				// required:
 				table: document.getElementById("webstats-table"), // The <table> element to use
-				ip: "localhost",       // The IP of the server
+				ip: ip,                // The IP of the server
 				port: port,            // The port set in the config.yml on the server
 				// optional:
 				updateInterval: 10000, // Set to 0 to disable auto-updating (in ms, default 10000)
