@@ -1,5 +1,6 @@
 package nl.dantevg.webstats;
 
+import com.google.common.collect.Table;
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 import org.jetbrains.annotations.NotNull;
@@ -33,7 +34,7 @@ public class StatData {
 	public static class Stats {
 		public Set<String> entries;
 		public List<String> columns;
-		public Map<String, Map<String, String>> scores;
+		public Table<String, String, String> scores;
 		
 		public Stats(@NotNull EntriesScores entriesScores, List<String> columns) {
 			this.entries = entriesScores.entries;
@@ -42,8 +43,8 @@ public class StatData {
 		}
 		
 		public Stats(@NotNull EntriesScores entriesScores) {
-			this.entries = entriesScores.entries;
-			this.scores = entriesScores.scores;
+			entries = entriesScores.entries;
+			scores = entriesScores.scores;
 		}
 		
 	}

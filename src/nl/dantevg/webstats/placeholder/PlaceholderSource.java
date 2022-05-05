@@ -1,5 +1,7 @@
 package nl.dantevg.webstats.placeholder;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import me.clip.placeholderapi.PlaceholderAPI;
 import nl.dantevg.webstats.EntriesScores;
 import nl.dantevg.webstats.EssentialsHelper;
@@ -70,18 +72,16 @@ public class PlaceholderSource {
 	
 	// Get all scores for all players from PlaceholderAPI
 	// Alternatively find stored scores from PlaceholderStorage
-	private @NotNull Map<String, Map<String, String>> getScores() {
-		Map<String, Map<String, String>> values = new HashMap<>();
+	private @NotNull Table<String, String, String> getScores() {
+		Table<String, String, String> values = HashBasedTable.create();
 		Set<OfflinePlayer> players = getEntriesAsPlayers();
 		
 		placeholders.forEach((placeholder, placeholderName) -> {
-			Map<String, String> scores = new HashMap<>();
 			for (OfflinePlayer player : players) {
 				String score = getPlaceholderForPlayer(player, placeholder, (String) placeholderName);
 				// Only add the score if it is not empty
-				if (score != null) scores.put(player.getName(), score);
+				if (score != null) values.put((String) placeholderName, player.getName(), score);
 			}
-			values.put((String) placeholderName, scores);
 		});
 		return values;
 	}

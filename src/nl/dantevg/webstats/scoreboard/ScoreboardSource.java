@@ -1,5 +1,7 @@
 package nl.dantevg.webstats.scoreboard;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import nl.dantevg.webstats.EntriesScores;
 import nl.dantevg.webstats.WebStats;
 import org.bukkit.Bukkit;
@@ -8,7 +10,9 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
 public class ScoreboardSource {
@@ -28,22 +32,22 @@ public class ScoreboardSource {
 		return new HashSet<>(scoreboard.getEntries());
 	}
 	
-	private @NotNull Map<String, Map<String, String>> getScores() {
-		Map<String, Map<String, String>> objectives = new HashMap<>();
+	private @NotNull Table<String, String, String> getScores() {
+		Table<String, String, String> values = HashBasedTable.create();
 		for (Objective objective : scoreboard.getObjectives()) {
 			// Filter objectives
 			if (!allObjectives && !objectivesFilter.contains(objective.getDisplayName())) continue;
 			
 			// Get player scores
-			Map<String, String> scores = new HashMap<>();
 			for (String entry : scoreboard.getEntries()) {
 				Score s = objective.getScore(entry);
-				if (s.isScoreSet()) scores.put(entry, String.valueOf(s.getScore()));
+				if (s.isScoreSet()) values.put(
+						objective.getDisplayName(),
+						entry,
+						String.valueOf(s.getScore()));
 			}
-			
-			objectives.put(objective.getDisplayName(), scores);
 		}
-		return objectives;
+		return values;
 	}
 	
 	public @NotNull EntriesScores getStats() {
