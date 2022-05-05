@@ -24,7 +24,8 @@ public class HTTPConnection {
 		
 		// Add cookies for javascript where to find the server
 		// No "expires" attribute, so session cookies
-		headers.add("Set-Cookie", "ip=" + exchange.getLocalAddress().getHostString()
+		String host = exchange.getRequestHeaders().getFirst("Host");
+		headers.add("Set-Cookie", "ip=" + host.split(":")[0]
 				+ "; SameSite=Lax");
 		headers.add("Set-Cookie", "port=" + exchange.getLocalAddress().getPort()
 				+ "; SameSite=Lax");
