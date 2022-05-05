@@ -49,6 +49,25 @@ public class PlaceholderSource {
 				.collect(Collectors.toSet());
 	}
 	
+	// Get up-to-date score for player, or stored one if the player is offline
+	private @Nullable String getPlaceholderForPlayer(OfflinePlayer player, String placeholder, String placeholderName) {
+		String name = player.getName();
+		if (name == null) return null;
+		
+		// If the player is online, get the most up-to-date value or the stored value.
+		// If the player is offline, get the stored value immediately because placeholder
+		// plugins may just yield 0 (which is indistinguishable from a real score of 0.)
+		String score = null;
+		if (player.isOnline()) {
+			score = PlaceholderAPI.setPlaceholders(player, placeholder);
+		}
+		if (!isPlaceholderSet(placeholder, score) && storage != null) {
+			// If the placeholder was not substituted correctly, try the stored value
+			score = storage.getScore(player.getUniqueId(), placeholderName);
+		}
+		return isPlaceholderSet(placeholder, score) ? score : null;
+	}
+	
 	// Get all scores for all players from PlaceholderAPI
 	// Alternatively find stored scores from PlaceholderStorage
 	private @NotNull Map<String, Map<String, String>> getScores() {
@@ -58,24 +77,9 @@ public class PlaceholderSource {
 		placeholders.forEach((placeholder, placeholderName) -> {
 			Map<String, String> scores = new HashMap<>();
 			for (OfflinePlayer player : players) {
-				String name = player.getName();
-				if (name == null) continue;
-				
-				// If the player is online, get the most up-to-date value or
-				// the stored value.
-				// If the player is offline, get the stored value immediately
-				// because placeholder plugins may just yield 0 (which is
-				// indistinguishable from a real score of 0.)
-				String score = null;
-				if (player.isOnline()) {
-					score = PlaceholderAPI.setPlaceholders(player, placeholder);
-				}
-				if (!isPlaceholderSet(placeholder, score) && storage != null) {
-					// If the placeholder was not substituted correctly, try the stored value
-					score = storage.getScore(player.getUniqueId(), (String) placeholderName);
-				}
+				String score = getPlaceholderForPlayer(player, placeholder, (String) placeholderName);
 				// Only add the score if it is not empty
-				if (isPlaceholderSet(placeholder, score)) scores.put(name, score);
+				if (score != null) scores.put(player.getName(), score);
 			}
 			values.put((String) placeholderName, scores);
 		});
