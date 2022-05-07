@@ -55,7 +55,8 @@ class Data {
 		this.scoreboard.scores = Data.filter(this.scoreboard.scores, Data.isNonemptyObjective)
 		
 		// Filter out Minecraft colour codes
-		this.scoreboard.scores = Data.map(this.scoreboard.scores, Data.stripColourCodes)
+		this.scoreboard.scores = Data.map(this.scoreboard.scores,
+			(_, col) => Data.map(col, Data.stripColourCodes))
 	}
 	
 	sort(by, descending){
@@ -92,7 +93,7 @@ class Data {
 	
 	// Remove Minecraft colour codes from a string
 	// (§ followed by a single character, but not when preceded by a backslash)
-	static stripColourCodes = str => str.replace(/(?<!\\)(§.)/gm, "")
+	static stripColourCodes = (_, str) => str.replace(/(?<!\\)(§.)/gm, "")
 	
 	// Array-like filter function for objects
 	// https://stackoverflow.com/a/37616104
