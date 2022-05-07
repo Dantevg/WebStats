@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.HttpURLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 
 public class HTTPConnection {
@@ -35,7 +36,7 @@ public class HTTPConnection {
 		setHeaders(contentType);
 		
 		// Send headers and data
-		byte[] responseBytes = response.getBytes();
+		byte[] responseBytes = response.getBytes(StandardCharsets.UTF_8);
 		exchange.sendResponseHeaders(status, responseBytes.length);
 		OutputStream output = exchange.getResponseBody();
 		output.write(responseBytes);
