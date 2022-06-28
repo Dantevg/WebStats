@@ -1,6 +1,8 @@
 package nl.dantevg.webstats;
 
-import com.sun.net.httpserver.HttpServer;
+import com.sun.net.httpserver.HttpsConfigurator;
+import com.sun.net.httpserver.HttpsParameters;
+import com.sun.net.httpserver.HttpsServer;
 import nl.dantevg.webstats.database.DatabaseSource;
 import nl.dantevg.webstats.discordwebhook.DiscordWebhook;
 import nl.dantevg.webstats.placeholder.PlaceholderSource;
@@ -11,14 +13,24 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class WebStats extends JavaPlugin {
+	private static final String KEYSTORE_FILE = "resources/webstats.jks";
+	private static final String KEYSTORE_PASSWORD = "webstats"; // TODO: change!
+	
 	protected static ScoreboardSource scoreboardSource;
 	protected static DatabaseSource databaseSource;
 	protected static PlaceholderSource placeholderSource;
@@ -31,7 +43,7 @@ public class WebStats extends JavaPlugin {
 	public static FileConfiguration config;
 	public static boolean hasEssentials;
 	
-	private HttpServer webserver;
+	private HttpsServer webserver;
 	
 	// Gets run when the plugin is enabled on server startup
 	@Override
@@ -83,13 +95,48 @@ public class WebStats extends JavaPlugin {
 		
 		try {
 			// Start web server
-			webserver = HttpServer.create(new InetSocketAddress(port), 0);
+			webserver = HttpsServer.create(new InetSocketAddress(port), 0);
+			
+			// Initialise TLS
+			SSLContext sslContext = SSLContext.getInstance("TLS");
+			
+			// Initialise keystore
+			KeyStore keyStore = KeyStore.getInstance("JKS");
+			keyStore.load(getResource("resources/webstats.jks"), KEYSTORE_PASSWORD.toCharArray());
+			
+			// Set up key manager factory
+			KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("PKIX");
+			keyManagerFactory.init(keyStore, KEYSTORE_PASSWORD.toCharArray());
+			
+			// Set up trust manager factory
+			TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
+			trustManagerFactory.init(keyStore);
+			
+			// Setup HTTPS
+			sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+			webserver.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
+				public void configure(HttpsParameters params) {
+					SSLContext ctx = getSSLContext();
+					params.setSSLParameters(ctx.getDefaultSSLParameters());
+				}
+			});
+			
 			webserver.createContext("/", new HTTPRequestHandler());
 			webserver.start();
 			logger.log(Level.INFO, "Web server started on port " + port);
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, "Failed to start web server with port "
 					+ port + ": " + e.getMessage(), e);
+		} catch (NoSuchAlgorithmException e) {
+			logger.log(Level.SEVERE, "No TLS implementation found", e);
+		} catch (KeyStoreException e) {
+			logger.log(Level.SEVERE, "No JKS keystore implementation found", e);
+		} catch (CertificateException e) {
+			logger.log(Level.SEVERE, "Can not not load certificate from keystore", e);
+		} catch (UnrecoverableKeyException e) {
+			logger.log(Level.SEVERE, "Can not read key from keystore, check password", e);
+		} catch (KeyManagementException e) {
+			logger.log(Level.SEVERE, "Can not initialise SSL context", e);
 		}
 	}
 	
