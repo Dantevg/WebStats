@@ -84,8 +84,9 @@ class Data {
 	isNonemptyEntry = entry => Object.entries(this.scoreboard.scores)
 		.filter(([_,score]) => score[entry] && score[entry] != "0").length > 0
 	
-	// Only entries which don't start with '#' and don't contain only digits are marked as players
-	static isPlayer = entry => !entry.startsWith("#") && !entry.match(/^\d*$/)
+	// Valid player names only contain between 3 and 16 characters [A-Za-z0-9_],
+	// entries with only digits are ignored as well (common for datapacks)
+	static isPlayer = entry => entry.match(/^\w{3,16}$/) && !entry.match(/^\d*$/)
 	
 	// Whether any entry has a value for this objective
 	static isNonemptyObjective = objective =>
