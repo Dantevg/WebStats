@@ -4,6 +4,8 @@ import nl.dantevg.webstats.database.DatabaseSource;
 import nl.dantevg.webstats.discordwebhook.DiscordWebhook;
 import nl.dantevg.webstats.placeholder.PlaceholderSource;
 import nl.dantevg.webstats.scoreboard.ScoreboardSource;
+import nl.dantevg.webstats.webserver.HTTPSWebServer;
+import nl.dantevg.webstats.webserver.HTTPWebServer;
 import nl.dantevg.webstats.webserver.WebServer;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -83,10 +85,17 @@ public class WebStats extends JavaPlugin {
 		}
 		
 		try {
-			webserver = new WebServer();
+			if (config.contains("https")) {
+				webserver = new HTTPSWebServer();
+			} else {
+				webserver = new HTTPWebServer();
+			}
+			webserver.start();
+		} catch (InvalidConfigurationException e) {
+			logger.log(Level.SEVERE, "Invalid webserver configuration", e);
 		} catch (Exception e) {
-			logger.log(Level.SEVERE, "Failed to start web server with port "
-					+ config.getInt("port") + ": " + e.getMessage(), e);
+			logger.log(Level.SEVERE, "Failed to start web server (port "
+					+ config.getInt("port") + "): " + e.getMessage(), e);
 		}
 	}
 	
@@ -139,8 +148,9 @@ public class WebStats extends JavaPlugin {
 	/**
 	 * Get the input stream of a file in the plugin data folder, or in the jar
 	 * if that does not exist.
+	 *
 	 * @param path the path to the file, relative to the plugin folder or the
-	 *             jar root.   
+	 *             jar root.
 	 * @return the input stream of the file.
 	 */
 	public static @Nullable InputStream getResourceInputStream(@NotNull String path) {

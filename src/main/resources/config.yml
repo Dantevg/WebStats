@@ -5,6 +5,7 @@
 # to the one set in the web page js script.
 port: 8080
 
+<<<<<<< HEAD:src/main/resources/config.yml
 tables:
   - # The name of the table, will be displayed above it.
     #name: main
@@ -18,6 +19,20 @@ tables:
 # These columns will not be displayed on individual player's rows, but on a
 # separate 'Server' row.
 server-columns: []
+=======
+# HTTPS configuration. Uncomment to enable HTTPS.
+# See https://github.com/Dantevg/WebStats/wiki/HTTPS for how to set up.
+#https:
+#  # The path to the keystore file, relative to the plugin config folder.
+#  keystore-file: webstats.jks
+#  # The password of the keystore file.
+#  keystore-password: ""
+
+# Only these columns will appear, in the order specified.
+# When commented out, all columns will be displayed, in alphabetical order (default).
+# The 'Player' column will always be displayed, as the first column.
+#columns: []
+>>>>>>> 5bcd14e (Add option for non-https web server):src/config.yml
 
 # Whether to store IP to player name mapping in 'ip-to-names.yml',
 # used for matching your IP to your player name
