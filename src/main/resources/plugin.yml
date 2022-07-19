@@ -1,6 +1,6 @@
 main: nl.dantevg.webstats.WebStats
 name: WebStats
-version: 1.7.2
+version: ${version} # Filled in automatically by maven
 api-version: 1.13
 description: Display the scoreboard, PlaceholderAPI and other plugin statistics on the web
 author: RedPolygon
