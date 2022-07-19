@@ -58,7 +58,7 @@ public class HTTPRequestHandler implements HttpHandler {
 				break;
 			default:
 				if (resources.containsKey(path)) {
-					httpConnection.sendFile(resources.get(path), "resources" + path);
+					httpConnection.sendFile(resources.get(path), "web" + path);
 				} else {
 					WebStats.logger.log(Level.CONFIG, "Got request for " + path + ", not found");
 					httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_NOT_FOUND);
