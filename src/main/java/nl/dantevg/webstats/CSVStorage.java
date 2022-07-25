@@ -60,10 +60,7 @@ public class CSVStorage {
 	public boolean store(@NotNull Table<String, String, String> scores, @NotNull List<String> columns) {
 		if (ensureFileExists()) return false;
 		try (FileWriter writer = new FileWriter(file, false)) {
-			CSVPrinter printer = CSVFormat.DEFAULT.builder()
-					.setHeader(columns.toArray(new String[0]))
-					.build()
-					.print(writer);
+			CSVPrinter printer = csvPrinterFromColumns(columns, writer);
 			writeScores(printer, scores, columns);
 			return true;
 		} catch (IOException e) {
@@ -99,10 +96,7 @@ public class CSVStorage {
 				writeScores(printer, scores, columnsFromHeader);
 			} else {
 				// No header present in CSV file, write header first.
-				CSVPrinter printer = CSVFormat.DEFAULT.builder()
-						.setHeader(columns.toArray(new String[0]))
-						.build()
-						.print(writer);
+				CSVPrinter printer = csvPrinterFromColumns(columns, writer);
 				writeScores(printer, scores, columns);
 			}
 			return true;
@@ -112,17 +106,27 @@ public class CSVStorage {
 		}
 	}
 	
-	public @Nullable List<Map<String, String>> load() {
+	public @Nullable Result load() {
 		try {
 			CSVParser parser = CSVFormat.DEFAULT.builder()
 					.setHeader().setSkipHeaderRecord(true).build()
 					.parse(new FileReader(file));
 			List<Map<String, String>> stats = new ArrayList<>();
 			for (CSVRecord record : parser) stats.add(record.toMap());
-			return stats;
+			return new Result(parser.getHeaderNames(), stats);
 		} catch (IOException e) {
 			WebStats.logger.log(Level.SEVERE, "Could not load scores from file " + file.getPath(), e);
 			return null;
+		}
+	}
+	
+	public static class Result {
+		public final List<String> columns;
+		public final List<Map<String, String>> scores;
+		
+		public Result(List<String> columns, List<Map<String, String>> scores) {
+			this.columns = columns;
+			this.scores = scores;
 		}
 	}
 	
@@ -140,6 +144,7 @@ public class CSVStorage {
 			throws IOException {
 		for (String entry : scores.columnKeySet()) {
 			List<String> scoreList = new ArrayList<>();
+			scoreList.add(entry); // Player's name or UUID
 			boolean hasScores = false;
 			for (String column : columns) {
 				if (mapper.containsKey(column)) {
@@ -188,6 +193,15 @@ public class CSVStorage {
 			return false;
 		}
 		return true;
+	}
+	
+	private static CSVPrinter csvPrinterFromColumns(List<String> columns, FileWriter writer) throws IOException {
+		columns = new ArrayList<>(columns);
+		columns.add(0, "Player");
+		return CSVFormat.DEFAULT.builder()
+				.setHeader(columns.toArray(new String[0]))
+				.build()
+				.print(writer);
 	}
 	
 }
