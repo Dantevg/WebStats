@@ -1,13 +1,21 @@
 package nl.dantevg.webstats;
 
 import com.google.common.collect.Table;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVPrinter;
+import org.apache.commons.csv.CSVRecord;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
 
@@ -52,11 +60,14 @@ public class CSVStorage {
 	public boolean store(@NotNull Table<String, String, String> scores, @NotNull List<String> columns) {
 		if (ensureFileExists()) return false;
 		try (FileWriter writer = new FileWriter(file, false)) {
-			writeHeader(writer, columns);
-			writeScores(writer, scores, columns);
+			CSVPrinter printer = CSVFormat.DEFAULT.builder()
+					.setHeader(columns.toArray(new String[0]))
+					.build()
+					.print(writer);
+			writeScores(printer, scores, columns);
 			return true;
 		} catch (IOException e) {
-			WebStats.logger.log(Level.WARNING, "Could not write scores to file " + file.getPath(), e);
+			WebStats.logger.log(Level.SEVERE, "Could not write scores to file " + file.getPath(), e);
 			return false;
 		}
 	}
@@ -84,39 +95,46 @@ public class CSVStorage {
 		try (FileWriter writer = new FileWriter(file, true)) {
 			List<String> columnsFromHeader = readColumns();
 			if (columnsFromHeader != null) {
-				writeScores(writer, scores, columnsFromHeader);
+				CSVPrinter printer = CSVFormat.DEFAULT.print(writer);
+				writeScores(printer, scores, columnsFromHeader);
 			} else {
 				// No header present in CSV file, write header first.
-				writeHeader(writer, columns);
-				writeScores(writer, scores, columns);
+				CSVPrinter printer = CSVFormat.DEFAULT.builder()
+						.setHeader(columns.toArray(new String[0]))
+						.build()
+						.print(writer);
+				writeScores(printer, scores, columns);
 			}
 			return true;
 		} catch (IOException e) {
-			WebStats.logger.log(Level.WARNING, "Could not write scores to file " + file.getPath(), e);
+			WebStats.logger.log(Level.SEVERE, "Could not write scores to file " + file.getPath(), e);
 			return false;
 		}
 	}
 	
-	/**
-	 * Write the CSV header of columns to the file.
-	 *
-	 * @param writer  the writer to write to
-	 * @param columns the columns to use as header
-	 * @throws IOException
-	 */
-	private void writeHeader(@NotNull FileWriter writer, @NotNull List<String> columns) throws IOException {
-		writer.append(String.join(",", columns)).append("\n");
+	public @Nullable List<Map<String, String>> load() {
+		try {
+			CSVParser parser = CSVFormat.DEFAULT.builder()
+					.setHeader().setSkipHeaderRecord(true).build()
+					.parse(new FileReader(file));
+			List<Map<String, String>> stats = new ArrayList<>();
+			for (CSVRecord record : parser) stats.add(record.toMap());
+			return stats;
+		} catch (IOException e) {
+			WebStats.logger.log(Level.SEVERE, "Could not load scores from file " + file.getPath(), e);
+			return null;
+		}
 	}
 	
 	/**
 	 * Write the scores to the file.
 	 *
-	 * @param writer  the writer to write to
+	 * @param printer the printer to write to
 	 * @param scores  the scores to write
 	 * @param columns the columns to use. Only these columns will be written.
 	 * @throws IOException
 	 */
-	private void writeScores(@NotNull FileWriter writer,
+	private void writeScores(@NotNull CSVPrinter printer,
 	                         @NotNull Table<String, String, String> scores,
 	                         @NotNull List<String> columns)
 			throws IOException {
@@ -140,7 +158,7 @@ public class CSVStorage {
 					scoreList.add("");
 				}
 			}
-			if (hasScores) writer.append(String.join(",", scoreList)).append("\n");
+			if (hasScores) printer.printRecord(scoreList);
 		}
 	}
 	
@@ -151,20 +169,7 @@ public class CSVStorage {
 	 * @throws IOException if the file is not found
 	 */
 	private @Nullable List<String> readColumns() throws IOException {
-		List<String> columns = new ArrayList<>();
-		
-		String line;
-		try (Scanner lineScanner = new Scanner(file)) {
-			line = lineScanner.nextLine();
-		} catch (NoSuchElementException e) {
-			return null;
-		}
-		
-		Scanner columnScanner = new Scanner(line);
-		columnScanner.useDelimiter(",");
-		while (columnScanner.hasNext()) columns.add(columnScanner.next());
-		columnScanner.close();
-		
+		List<String> columns = CSVFormat.DEFAULT.parse(new FileReader(file)).getHeaderNames();
 		return columns.size() > 0 ? columns : null;
 	}
 	
@@ -173,12 +178,12 @@ public class CSVStorage {
 			// Create new file if it did not yet exist
 			file.createNewFile();
 		} catch (IOException e) {
-			WebStats.logger.log(Level.WARNING, "Could not create file " + file.getName(), e);
+			WebStats.logger.log(Level.SEVERE, "Could not create file " + file.getName(), e);
 			return false;
 		}
 		if (!file.isFile()) {
 			// File does exist and is not a file (a directory)
-			WebStats.logger.log(Level.WARNING, "Could not create file " + file.getName()
+			WebStats.logger.log(Level.SEVERE, "Could not create file " + file.getName()
 					+ "because it is a directory. Please remove");
 			return false;
 		}
