@@ -1,4 +1,34 @@
 class Display {
+	static FORMATTING_CODES = {
+		["§0"]: "black",
+		["§1"]: "dark_blue",
+		["§2"]: "dark_green",
+		["§3"]: "dark_aqua",
+		["§4"]: "dark_red",
+		["§5"]: "dark_purple",
+		["§6"]: "gold",
+		["§7"]: "gray",
+		["§8"]: "dark_gray",
+		["§9"]: "blue",
+		["§a"]: "green",
+		["§b"]: "aqua",
+		["§c"]: "red",
+		["§d"]: "light_purple",
+		["§e"]: "yellow",
+		["§f"]: "white",
+		
+		["§k"]: "obfuscated",
+		["§l"]: "bold",
+		["§m"]: "strikethrough",
+		["§n"]: "underline",
+		["§o"]: "italic",
+		["§r"]: "reset",
+	}
+	
+	// § followed by a single character, but not when preceded by a backslash
+	// (also capture rest of string, until next §)
+	static FORMATTING_CODE_REGEX = /(?<!\\)(§.)([^§]*)/gm
+	
 	constructor({table, sortBy = "Player", descending = false, showSkins = true, displayCount = 100}){
 		this.table = table
 		this.sortBy = sortBy
@@ -126,12 +156,18 @@ class Display {
 	updateScoreboard(){
 		for(const row of this.data.scores){
 			for(const column of this.data.columns){
-				const value = row[this.data.columns_[column]]
+				let value = row[this.data.columns_[column]]
 				if(!value) continue
 				const td = this.rows[row[0]].querySelector(`td[objective='${column}']`)
 				td.classList.remove("empty")
 				td.setAttribute("value", value)
-				td.innerText = isNaN(value) ? value : Number(value).toLocaleString()
+				
+				// Convert numbers to locale
+				value = isNaN(value) ? value : Number(value).toLocaleString()
+				
+				// Convert Minecraft formatting codes
+				td.innerHTML = ""
+				td.append(...Display.convertFormattingCodes(value))
 			}
 		}
 	}
@@ -214,6 +250,31 @@ class Display {
 	
 	// Replace single quotes by '&quot;' (html-escape)
 	static quoteEscape = string => string.replace(/'/g, "&quot;")
+	
+	// Replace all formatting codes by <span> elements
+	static convertFormattingCodes(value){
+		const firstIdx = value.matchAll(Display.FORMATTING_CODE_REGEX).next().value?.index
+		const elements = []
+		if(firstIdx != undefined && firstIdx > 0){
+			elements.push(value.substring(0, firstIdx))
+		}
+		for(const match of value.matchAll(Display.FORMATTING_CODE_REGEX)){
+			elements.push(Display.convertFormattingCode(...match))
+		}
+		return elements
+	}
+	
+	// Convert a single formatting code to a <span> element
+	static convertFormattingCode(_, code, str){
+		if(Display.FORMATTING_CODES[code] == undefined){
+			return str
+		}else{
+			const span = document.createElement("span")
+			span.innerText = str
+			span.classList.add("mc-format", "mc-" + Display.FORMATTING_CODES[code])
+			return span
+		}
+	}
 	
 	static appendElement(base, type){
 		let el = document.createElement(type)

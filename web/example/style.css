@@ -113,6 +113,30 @@ html.compact .status{
 	background: var(--status-afk);
 }
 
+.mc-format.mc-black { color: #000000 }
+.mc-format.mc-dark_blue { color: #0000AA }
+.mc-format.mc-dark_green { color: #00AA00 }
+.mc-format.mc-dark_aqua { color: #00AAAA }
+.mc-format.mc-dark_red { color: #AA0000 }
+.mc-format.mc-dark_purple { color: #AA00AA }
+.mc-format.mc-gold { color: #FFAA00 }
+.mc-format.mc-gray { color: #AAAAAA }
+.mc-format.mc-dark_gray { color: #555555 }
+.mc-format.mc-blue { color: #5555FF }
+.mc-format.mc-green { color: #55FF55 }
+.mc-format.mc-aqua { color: #55FFFF }
+.mc-format.mc-red { color: #FF5555 }
+.mc-format.mc-light_purple { color: #FF55FF }
+.mc-format.mc-yellow { color: #FFFF55 }
+.mc-format.mc-white { color: #FFFFFF }
+
+.mc-format.mc-obfuscated { /* no style */ }
+.mc-format.mc-bold { font-weight: bold }
+.mc-format.mc-strikethrough { text-decoration: line-through }
+.mc-format.mc-underline { text-decoration: underline }
+.mc-format.mc-italic { font-style: italic }
+.mc-format.mc-reset { /* no style */ }
+
 /* POSITIONAL ELEMENTS */
 body {
 	margin: 0px;
