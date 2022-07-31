@@ -74,6 +74,9 @@ public class HTTPRequestHandler implements HttpHandler {
 	}
 	
 	private void attemptMigrateResources() {
+		File dir = new File(WebStats.getPlugin(WebStats.class).getDataFolder(), "web");
+		if (!dir.isDirectory()) dir.mkdirs();
+		
 		for (String path : resources.keySet()) {
 			File oldFile = new File(WebStats.getPlugin(WebStats.class).getDataFolder(), path);
 			if (oldFile.isFile()) {
