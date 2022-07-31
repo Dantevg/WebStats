@@ -2,14 +2,14 @@ export default class Connection {
 	all: string
 	scores: string
 	online: string
-	
-	constructor({all, scores, online}){
-		this.all    = all
+
+	constructor({ all, scores, online }) {
+		this.all = all
 		this.scores = scores
 		this.online = online
 	}
-	
-	static json(ip, port){
+
+	static json(ip: string, port: string | number) {
 		const baseURL = `http://${ip}:${port}`
 		return new Connection({
 			all: baseURL + "/stats.json",
@@ -17,15 +17,15 @@ export default class Connection {
 			online: baseURL + "/online.json"
 		})
 	}
-	
-	getStats      = async () => {
-		if(this.all){
+
+	getStats = async () => {
+		if (this.all) {
 			return await (await fetch(this.all)).json()
-		}else{
+		} else {
 			const [online, scoreboard] = await Promise.all([this.getOnline(), this.getScoreboard()])
-			return {online, scoreboard}
+			return { online, scoreboard }
 		}
 	}
 	getScoreboard = () => fetch(this.scores).then(response => response.json())
-	getOnline     = () => fetch(this.online).then(response => response.json())
+	getOnline = () => fetch(this.online).then(response => response.json())
 }
