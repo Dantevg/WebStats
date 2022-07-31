@@ -25,15 +25,14 @@ const FORMATTING_CODES = {
 }
 
 class ColourCodes {
-	static N_ENTRIES = Object.keys(FORMATTING_CODES).length
-	static N_STATS   = 1
-	
 	constructor(){
 		this.scores = { entries: [], scores: {} }
 		
 		for(const code in FORMATTING_CODES){
 			this.scores.entries.push(FORMATTING_CODES[code])
 		}
+		this.scores.entries.push("hex")
+		this.scores.entries.push("bold_red")
 		
 		const stat = {}
 		this.scores.scores.Colour = stat
@@ -41,6 +40,8 @@ class ColourCodes {
 			const name = FORMATTING_CODES[code]
 			stat[name] = "before" + code + "after"
 		}
+		stat.hex = "before§x§f§f§4§4§4§4after"
+		stat["bold_red"] = "before§c§lafter"
 	}
 	
 	getStats      = async () => ({
