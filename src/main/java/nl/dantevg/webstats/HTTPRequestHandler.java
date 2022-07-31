@@ -5,16 +5,18 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 
 public class HTTPRequestHandler implements HttpHandler {
 	// Map of resource names to their MIME-types
-	private static final Map<String, String> resources = new HashMap<>();
+	private final Map<String, String> resources = new HashMap<>();
 	
 	public HTTPRequestHandler() {
 		boolean serveWebpage = WebStats.config.getBoolean("serve-webpage");
@@ -24,6 +26,8 @@ public class HTTPRequestHandler implements HttpHandler {
 			resources.put("/style.css", "text/css");
 			resources.put("/WebStats-dist.js", "application/javascript");
 		}
+		
+		attemptMigrateResources();
 	}
 	
 	@Override
@@ -67,6 +71,23 @@ public class HTTPRequestHandler implements HttpHandler {
 		}
 		
 		exchange.close();
+	}
+	
+	private void attemptMigrateResources() {
+		for (String path : resources.keySet()) {
+			File oldFile = new File(WebStats.getPlugin(WebStats.class).getDataFolder(), path);
+			if (oldFile.isFile()) {
+				File newFile = new File(WebStats.getPlugin(WebStats.class).getDataFolder(), "web" + path);
+				try {
+					Files.move(oldFile.toPath(), newFile.toPath());
+					WebStats.logger.log(Level.INFO, "Migrated web resource at '"
+							+ oldFile.toPath() + "' to '" + newFile.toPath() + "'");
+				} catch (IOException e) {
+					WebStats.logger.log(Level.WARNING, "Could not migrate web resource at '"
+							+ oldFile.toPath() + "' to '" + newFile.toPath() + "'", e);
+				}
+			}
+		}
 	}
 	
 }
