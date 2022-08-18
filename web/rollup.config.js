@@ -1,5 +1,7 @@
+import typescript from "@rollup/plugin-typescript"
+
 export default {
-	input: "rollup-index.js",
+	input: "src/WebStats.ts",
 	output: {
 		file: "WebStats-dist.js",
 		banner: `\
@@ -14,4 +16,5 @@ export default {
 `,
 	},
 	treeshake: false,
+	plugins: [typescript()],
 }

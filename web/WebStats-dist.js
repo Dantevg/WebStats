@@ -424,3 +424,5 @@ class WebStats {
         clearInterval(this.interval);
     }
 }
+
+export { WebStats as default };
