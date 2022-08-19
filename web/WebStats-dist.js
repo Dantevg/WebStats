@@ -426,3 +426,4 @@ class WebStats {
 }
 
 export { WebStats as default };
+//# sourceMappingURL=WebStats-dist.js.map
