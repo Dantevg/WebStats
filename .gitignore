@@ -4,3 +4,6 @@
 
 # Build files
 target/
+web/out/
+
+**/node_modules
