@@ -416,8 +416,8 @@ class Display {
 			return {
 				text,
 				format: Display.FORMATTING_CODES[code],
-				colour: prev.colour,
-				colourType: prev.colourType,
+				colour: prev?.colour,
+				colourType: prev?.colourType,
 			}
 		}
 		
