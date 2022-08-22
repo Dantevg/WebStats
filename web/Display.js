@@ -278,7 +278,7 @@ class Display {
 		const parts = []
 		
 		const firstIdx = value.matchAll(Display.FORMATTING_CODE_REGEX).next().value?.index
-		if(firstIdx != undefined && firstIdx > 0){
+		if(firstIdx == undefined || firstIdx > 0){
 			parts.push({text: value.substring(0, firstIdx)})
 		}
 		
