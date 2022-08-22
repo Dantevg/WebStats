@@ -33,6 +33,7 @@ class ColourCodes {
 		}
 		this.scores.entries.push("hex")
 		this.scores.entries.push("bold_red")
+		this.scores.entries.push("first")
 		
 		const stat = {}
 		this.scores.scores.Colour = stat
@@ -42,6 +43,7 @@ class ColourCodes {
 		}
 		stat.hex = "before§x§f§f§4§4§4§4after"
 		stat["bold_red"] = "before§c§lafter"
+		stat.first = "§c§lafter"
 	}
 	
 	getStats      = async () => ({
