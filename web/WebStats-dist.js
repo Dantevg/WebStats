@@ -85,8 +85,6 @@ class Data {
             .sort(Intl.Collator().compare);
         // Remove empty columns
         this.scoreboard.scores = Data.filter(this.scoreboard.scores, Data.isNonemptyObjective);
-        // Filter out Minecraft colour codes
-        this.scoreboard.scores = Data.map(this.scoreboard.scores, (_, col) => Data.map(col, Data.stripColourCodes));
     }
     sort(by, descending) {
         // Pre-create collator for significant performance improvement
@@ -113,9 +111,6 @@ class Data {
 Data.isPlayer = (entry) => entry.match(/^\w{3,16}$/) && !entry.match(/^\d*$/);
 // Whether any entry has a value for this objective
 Data.isNonemptyObjective = (objective) => Object.keys(objective).filter(Data.isPlayer).length > 0;
-// Remove Minecraft colour codes from a string
-// (§ followed by a single character, but not when preceded by a backslash)
-Data.stripColourCodes = (_, str) => str.replace(/(?<!\\)(§.)/gm, "");
 // Array-like filter function for objects
 // https://stackoverflow.com/a/37616104
 Data.filter = (obj, predicate) => Object.fromEntries(Object.entries(obj).filter(([_, v]) => predicate(v)));
@@ -239,13 +234,17 @@ class Display {
     updateScoreboard() {
         for (const row of this.data.scores) {
             for (const column of this.data.columns) {
-                const value = row[this.data.columns_[column]];
+                let value = row[this.data.columns_[column]];
                 if (!value)
                     continue;
                 const td = this.rows[row[0]].querySelector(`td[objective='${column}']`);
                 td.classList.remove("empty");
                 td.setAttribute("value", value);
-                td.innerText = isNaN(value) ? value : Number(value).toLocaleString();
+                // Convert numbers to locale
+                value = isNaN(value) ? value : Number(value).toLocaleString();
+                // Convert Minecraft formatting codes
+                td.innerHTML = "";
+                td.append(...Display.convertFormattingCodes(value));
             }
         }
     }
@@ -320,6 +319,63 @@ class Display {
         window.history.replaceState({}, "", location.pathname + "?sort=" + this.sortBy.replace(/\s/g, "+")
             + "&order=" + (this.descending ? "desc" : "asc"));
     }
+    // Convert a single formatting code to a <span> element
+    static convertFormattingCode(part) {
+        if (!part.format && !part.colour)
+            return part.text;
+        const span = document.createElement("span");
+        span.innerText = part.text;
+        span.classList.add("mc-format");
+        if (part.format)
+            span.classList.add("mc-" + part.format);
+        if (part.colour) {
+            if (part.colourType == "simple")
+                span.classList.add("mc-" + part.colour);
+            if (part.colourType == "hex")
+                span.style.color = part.colour;
+        }
+        return span;
+    }
+    static parseFormattingCodes(value) {
+        const parts = [];
+        const firstIdx = value.matchAll(Display.FORMATTING_CODE_REGEX).next().value?.index;
+        if (firstIdx == undefined || firstIdx > 0) {
+            parts.push({ text: value.substring(0, firstIdx) });
+        }
+        for (const match of value.matchAll(Display.FORMATTING_CODE_REGEX)) {
+            parts.push(Display.parseFormattingCode(match[1], match[2], parts[parts.length - 1]));
+        }
+        return parts;
+    }
+    static parseFormattingCode(code, text, prev) {
+        // Simple colour codes and formatting codes
+        if (Display.COLOUR_CODES[code]) {
+            return {
+                text,
+                colour: Display.COLOUR_CODES[code],
+                colourType: "simple",
+            };
+        }
+        if (Display.FORMATTING_CODES[code]) {
+            return {
+                text,
+                format: Display.FORMATTING_CODES[code],
+                colour: prev?.colour,
+                colourType: prev?.colourType,
+            };
+        }
+        // Hex colour codes
+        const matches = code.match(/§x§(.)§(.)§(.)§(.)§(.)§(.)/m);
+        if (matches) {
+            return {
+                text,
+                colour: "#" + matches.slice(1).join(""),
+                colourType: "hex",
+            };
+        }
+        // Not a valid formatting code, just return the input unaltered
+        return { text };
+    }
     static appendElement(base, type) {
         let el = document.createElement(type);
         base.append(el);
@@ -349,8 +405,39 @@ class Display {
         return img;
     }
 }
+Display.COLOUR_CODES = {
+    ["§0"]: "black",
+    ["§1"]: "dark_blue",
+    ["§2"]: "dark_green",
+    ["§3"]: "dark_aqua",
+    ["§4"]: "dark_red",
+    ["§5"]: "dark_purple",
+    ["§6"]: "gold",
+    ["§7"]: "gray",
+    ["§8"]: "dark_gray",
+    ["§9"]: "blue",
+    ["§a"]: "green",
+    ["§b"]: "aqua",
+    ["§c"]: "red",
+    ["§d"]: "light_purple",
+    ["§e"]: "yellow",
+    ["§f"]: "white",
+};
+Display.FORMATTING_CODES = {
+    ["§k"]: "obfuscated",
+    ["§l"]: "bold",
+    ["§m"]: "strikethrough",
+    ["§n"]: "underline",
+    ["§o"]: "italic",
+    ["§r"]: "reset",
+};
+// § followed by a single character, or of the form §x§r§r§g§g§b§b
+// (also capture rest of string, until next §)
+Display.FORMATTING_CODE_REGEX = /(§x§.§.§.§.§.§.|§.)([^§]*)/gm;
 // Replace single quotes by '&quot;' (html-escape)
 Display.quoteEscape = (string) => string.replace(/'/g, "&quot;");
+// Replace all formatting codes by <span> elements
+Display.convertFormattingCodes = (value) => Display.parseFormattingCodes(value).map(Display.convertFormattingCode);
 
 class WebStats {
     constructor(config) {

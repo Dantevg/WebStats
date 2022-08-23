@@ -68,10 +68,6 @@ export default class Data {
 
 		// Remove empty columns
 		this.scoreboard.scores = Data.filter(this.scoreboard.scores, Data.isNonemptyObjective)
-
-		// Filter out Minecraft colour codes
-		this.scoreboard.scores = Data.map(this.scoreboard.scores,
-			(_, col) => Data.map(col, Data.stripColourCodes))
 	}
 
 	sort(by: string, descending: boolean) {
@@ -106,10 +102,6 @@ export default class Data {
 	// Whether any entry has a value for this objective
 	static isNonemptyObjective = (objective: { [entry: string]: string | number }) =>
 		Object.keys(objective).filter(Data.isPlayer).length > 0
-
-	// Remove Minecraft colour codes from a string
-	// (§ followed by a single character, but not when preceded by a backslash)
-	static stripColourCodes = (_: any, str: string) => str.replace(/(?<!\\)(§.)/gm, "")
 
 	// Array-like filter function for objects
 	// https://stackoverflow.com/a/37616104
