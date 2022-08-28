@@ -2,8 +2,11 @@ package nl.dantevg.webstats.placeholder;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import nl.dantevg.webstats.CSVStorage;
+import nl.dantevg.webstats.storage.CSVStorage;
+import nl.dantevg.webstats.storage.DatabaseStorage;
+import nl.dantevg.webstats.storage.StorageMethod;
 import nl.dantevg.webstats.WebStats;
+import nl.dantevg.webstats.database.DatabaseConnection;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -18,11 +21,12 @@ import java.util.logging.Level;
 
 public class PlaceholderStorage {
 	private static final String FILENAME = "placeholders.csv";
+	private static final String TABLE_NAME = "WebStats_placeholders";
 	
 	private final PlaceholderSource placeholderSource;
 	private final HashBasedTable<UUID, String, String> data = HashBasedTable.create();
 	private final boolean saveOnPluginDisable;
-	private final @NotNull CSVStorage csvStorage;
+	private final @NotNull StorageMethod storage;
 	
 	public PlaceholderStorage(PlaceholderSource placeholderSource) throws InvalidConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling placeholder storer");
@@ -35,7 +39,22 @@ public class PlaceholderStorage {
 				new PlaceholderListener(this, saveOnPluginDisable),
 				WebStats.getPlugin(WebStats.class));
 		
-		csvStorage = new CSVStorage(FILENAME);
+		if (WebStats.config.contains("store-placeholders-database")) {
+			String hostname = WebStats.config.getString("database.hostname");
+			String username = WebStats.config.getString("database.username");
+			String password = WebStats.config.getString("database.password");
+			String dbname = WebStats.config.getString("store-placeholders-database");
+			
+			if (hostname == null || username == null || password == null || dbname == null) {
+				throw new InvalidConfigurationException("Invalid configuration: missing hostname, username, password or database name");
+			}
+			
+			storage = new DatabaseStorage(
+					new DatabaseConnection(hostname, username, password, dbname),
+					TABLE_NAME, "uuid", "placeholder");
+		} else {
+			storage = new CSVStorage(FILENAME);
+		}
 		
 		// Read persistently stored data
 		load();
@@ -69,15 +88,12 @@ public class PlaceholderStorage {
 	}
 	
 	private void load() {
-		CSVStorage.Result stats = csvStorage.load();
+		StorageMethod.Result stats = storage.load();
 		if (stats == null) return;
 		data.clear();
 		
-		for (Map<String, String> entry : stats.scores) {
-			UUID uuid = UUID.fromString(entry.get("uuid"));
-			for (String column : stats.columns) {
-				data.put(uuid, column, entry.get(column));
-			}
+		for (Table.Cell<String, String, String> cell : stats.scores.cellSet()) {
+			data.put(UUID.fromString(cell.getRowKey()), cell.getColumnKey(), cell.getValue());
 		}
 	}
 	
@@ -118,7 +134,7 @@ public class PlaceholderStorage {
 		for (Table.Cell<UUID, String, String> cell : data.cellSet()) {
 			dataString.put(cell.getRowKey().toString(), cell.getColumnKey(), cell.getValue());
 		}
-		csvStorage.store(dataString);
+		storage.store(dataString);
 		
 		WebStats.logger.log(Level.INFO, "Saved all placeholders to " + FILENAME);
 	}

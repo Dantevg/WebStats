@@ -30,7 +30,8 @@ public class PlaceholderSource {
 		}
 		
 		placeholders = section.getValues(false);
-		if (WebStats.config.contains("store-placeholders-database")) {
+		if (WebStats.config.contains("store-placeholders-database")
+				|| WebStats.config.getBoolean("store-placeholders-in-file")) {
 			storage = new PlaceholderStorage(this);
 		}
 	}

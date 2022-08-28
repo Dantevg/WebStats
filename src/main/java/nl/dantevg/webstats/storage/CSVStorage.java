@@ -1,6 +1,7 @@
-package nl.dantevg.webstats;
+package nl.dantevg.webstats.storage;
 
 import com.google.common.collect.Table;
+import nl.dantevg.webstats.WebStats;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;
@@ -19,7 +20,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.logging.Level;
 
-public class CSVStorage {
+public class CSVStorage implements StorageMethod {
 	private final @NotNull File file;
 	
 	/**
@@ -39,24 +40,12 @@ public class CSVStorage {
 		this(filename, new HashMap<>());
 	}
 	
-	/**
-	 * Store the scores, overwrite any previously existing scores. Write all
-	 * columns present in the stats.
-	 *
-	 * @param scores the scores to store
-	 * @return whether the storing was successful
-	 */
+	@Override
 	public boolean store(@NotNull Table<String, String, String> scores) {
 		return store(scores, new ArrayList<>(scores.rowKeySet()));
 	}
 	
-	/**
-	 * Store the scores, overwrite any previously existing scores.
-	 *
-	 * @param scores  the scores to store
-	 * @param columns the columns to use. Only these columns will be written.
-	 * @return whether the storing was successful
-	 */
+	@Override
 	public boolean store(@NotNull Table<String, String, String> scores, @NotNull List<String> columns) {
 		if (ensureFileExists()) return false;
 		try (FileWriter writer = new FileWriter(file, false)) {
@@ -106,6 +95,7 @@ public class CSVStorage {
 		}
 	}
 	
+	@Override
 	public @Nullable Result load() {
 		try {
 			CSVParser parser = CSVFormat.DEFAULT.builder()
@@ -117,16 +107,6 @@ public class CSVStorage {
 		} catch (IOException e) {
 			WebStats.logger.log(Level.SEVERE, "Could not load scores from file " + file.getPath(), e);
 			return null;
-		}
-	}
-	
-	public static class Result {
-		public final List<String> columns;
-		public final List<Map<String, String>> scores;
-		
-		public Result(List<String> columns, List<Map<String, String>> scores) {
-			this.columns = columns;
-			this.scores = scores;
 		}
 	}
 	

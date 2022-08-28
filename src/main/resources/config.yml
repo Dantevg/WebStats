@@ -42,8 +42,13 @@ objectives:
 #placeholders:
 #  '%placeholder_name%': displayed name
 
-# The database name to store placeholders in, for when players go offline. (uncomment to use)
+# Set to true to store placeholders in a file, for when players go offline. (uncomment to use)
+# Mutually exclusive with `store-placeholders-database`
+#store-placeholders-in-file: true
+
+# Alternatively, the database name to store placeholders in. (uncomment to use)
 # Make sure to specify the database hostname, username and password above
+# Mutually exclusive with `store-placeholders-in-file`
 #store-placeholders-database: WebStats_placeholders
 
 # Configuration for the Discord webhook function (uncomment to use)
