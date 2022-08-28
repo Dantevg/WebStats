@@ -63,7 +63,7 @@ public class PlaceholderSource {
 		String score = null;
 		if (storage != null) score = storage.getScore(player.getUniqueId(), placeholderName);
 		if (player.isOnline() || !isPlaceholderSet(placeholder, score)) {
-			return PlaceholderAPI.setPlaceholders(player, placeholder);
+			score = PlaceholderAPI.setPlaceholders(player, placeholder);
 		}
 		return isPlaceholderSet(placeholder, score) ? score : null;
 	}
