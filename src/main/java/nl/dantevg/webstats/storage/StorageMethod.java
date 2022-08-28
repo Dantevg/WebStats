@@ -38,12 +38,12 @@ public interface StorageMethod {
 			this.scores = scores;
 		}
 		
-		public Result(List<String> columns, List<Map<String, String>> scores) {
+		public Result(List<String> columns, List<Map<String, String>> scores, String rowKey) {
 			this.columns = columns;
 			this.scores = HashBasedTable.create();
 			for (Map<String, String> entry : scores) {
 				for (String column : columns) {
-					this.scores.put(entry.get("uuid"), column, entry.get(column));
+					this.scores.put(entry.get(rowKey), column, entry.get(column));
 				}
 			}
 		}

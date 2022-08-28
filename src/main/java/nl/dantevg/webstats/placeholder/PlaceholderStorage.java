@@ -2,11 +2,11 @@ package nl.dantevg.webstats.placeholder;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import nl.dantevg.webstats.WebStats;
+import nl.dantevg.webstats.database.DatabaseConnection;
 import nl.dantevg.webstats.storage.CSVStorage;
 import nl.dantevg.webstats.storage.DatabaseStorage;
 import nl.dantevg.webstats.storage.StorageMethod;
-import nl.dantevg.webstats.WebStats;
-import nl.dantevg.webstats.database.DatabaseConnection;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -29,7 +29,7 @@ public class PlaceholderStorage {
 	private final @NotNull StorageMethod storage;
 	
 	public PlaceholderStorage(PlaceholderSource placeholderSource) throws InvalidConfigurationException {
-		WebStats.logger.log(Level.INFO, "Enabling placeholder storer");
+		WebStats.logger.log(Level.INFO, "Enabling placeholder storage");
 		
 		this.placeholderSource = placeholderSource;
 		
@@ -53,7 +53,7 @@ public class PlaceholderStorage {
 					new DatabaseConnection(hostname, username, password, dbname),
 					TABLE_NAME, "uuid", "placeholder");
 		} else {
-			storage = new CSVStorage(FILENAME);
+			storage = new CSVStorage(FILENAME, "uuid");
 		}
 		
 		// Read persistently stored data
@@ -136,7 +136,7 @@ public class PlaceholderStorage {
 		}
 		storage.store(dataString);
 		
-		WebStats.logger.log(Level.INFO, "Saved all placeholders to " + FILENAME);
+		WebStats.logger.log(Level.INFO, "Saved placeholders");
 	}
 	
 	public @Nullable String getScore(UUID uuid, String placeholder) {

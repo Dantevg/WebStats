@@ -57,16 +57,13 @@ public class PlaceholderSource {
 		String name = player.getName();
 		if (name == null) return null;
 		
-		// If the player is online, get the most up-to-date value or the stored value.
-		// If the player is offline, get the stored value immediately because placeholder
+		// If the player is online, get the most up-to-date value.
+		// If the player is offline, get the stored value if it is stored, because placeholder
 		// plugins may just yield 0 (which is indistinguishable from a real score of 0.)
 		String score = null;
-		if (player.isOnline()) {
-			score = PlaceholderAPI.setPlaceholders(player, placeholder);
-		}
-		if (!isPlaceholderSet(placeholder, score) && storage != null) {
-			// If the placeholder was not substituted correctly, try the stored value
-			score = storage.getScore(player.getUniqueId(), placeholderName);
+		if (storage != null) score = storage.getScore(player.getUniqueId(), placeholderName);
+		if (player.isOnline() || !isPlaceholderSet(placeholder, score)) {
+			return PlaceholderAPI.setPlaceholders(player, placeholder);
 		}
 		return isPlaceholderSet(placeholder, score) ? score : null;
 	}

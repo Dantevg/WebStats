@@ -22,6 +22,7 @@ import java.util.logging.Level;
 
 public class CSVStorage implements StorageMethod {
 	private final @NotNull File file;
+	private final String rowKey;
 	
 	/**
 	 * Map of columns to entry->score functions
@@ -29,28 +30,31 @@ public class CSVStorage implements StorageMethod {
 	private final @NotNull Map<String, Function<@NotNull String, @Nullable String>> mapper;
 	
 	public CSVStorage(@NotNull String filename,
-	                  @NotNull Map<String, Function<@NotNull String, @Nullable String>> mapper) {
+	                  @NotNull Map<String, Function<@NotNull String, @Nullable String>> mapper,
+	                  String rowKey) {
 		File datafolder = WebStats.getPlugin(WebStats.class).getDataFolder();
 		file = new File(datafolder, filename);
+		this.rowKey = rowKey;
 		datafolder.mkdirs();
 		this.mapper = mapper;
 	}
 	
-	public CSVStorage(@NotNull String filename) {
-		this(filename, new HashMap<>());
+	public CSVStorage(@NotNull String filename, String rowKey) {
+		this(filename, new HashMap<>(), rowKey);
 	}
 	
 	@Override
 	public boolean store(@NotNull Table<String, String, String> scores) {
-		return store(scores, new ArrayList<>(scores.rowKeySet()));
+		return store(scores, new ArrayList<>(scores.columnKeySet()));
 	}
 	
 	@Override
 	public boolean store(@NotNull Table<String, String, String> scores, @NotNull List<String> columns) {
-		if (ensureFileExists()) return false;
+		if (!ensureFileExists()) return false;
 		try (FileWriter writer = new FileWriter(file, false)) {
 			CSVPrinter printer = csvPrinterFromColumns(columns, writer);
 			writeScores(printer, scores, columns);
+			printer.close();
 			return true;
 		} catch (IOException e) {
 			WebStats.logger.log(Level.SEVERE, "Could not write scores to file " + file.getPath(), e);
@@ -66,7 +70,7 @@ public class CSVStorage implements StorageMethod {
 	 * @return whether the storing was successful
 	 */
 	public boolean append(@NotNull Table<String, String, String> scores) {
-		return append(scores, new ArrayList<>(scores.rowKeySet()));
+		return append(scores, new ArrayList<>(scores.columnKeySet()));
 	}
 	
 	/**
@@ -77,16 +81,18 @@ public class CSVStorage implements StorageMethod {
 	 * @return whether the storing was successful
 	 */
 	public boolean append(@NotNull Table<String, String, String> scores, @NotNull List<String> columns) {
-		if (ensureFileExists()) return false;
+		if (!ensureFileExists()) return false;
 		try (FileWriter writer = new FileWriter(file, true)) {
 			List<String> columnsFromHeader = readColumns();
 			if (columnsFromHeader != null) {
 				CSVPrinter printer = CSVFormat.DEFAULT.print(writer);
 				writeScores(printer, scores, columnsFromHeader);
+				printer.close();
 			} else {
 				// No header present in CSV file, write header first.
 				CSVPrinter printer = csvPrinterFromColumns(columns, writer);
 				writeScores(printer, scores, columns);
+				printer.close();
 			}
 			return true;
 		} catch (IOException e) {
@@ -97,13 +103,18 @@ public class CSVStorage implements StorageMethod {
 	
 	@Override
 	public @Nullable Result load() {
+		if (!ensureFileExists()) return null;
 		try {
 			CSVParser parser = CSVFormat.DEFAULT.builder()
 					.setHeader().setSkipHeaderRecord(true).build()
 					.parse(new FileReader(file));
 			List<Map<String, String>> stats = new ArrayList<>();
 			for (CSVRecord record : parser) stats.add(record.toMap());
-			return new Result(parser.getHeaderNames(), stats);
+			
+			List<String> columns = new ArrayList<>(parser.getHeaderNames());
+			columns.remove(rowKey);
+			
+			return new Result(columns, stats, rowKey);
 		} catch (IOException e) {
 			WebStats.logger.log(Level.SEVERE, "Could not load scores from file " + file.getPath(), e);
 			return null;
@@ -122,7 +133,7 @@ public class CSVStorage implements StorageMethod {
 	                         @NotNull Table<String, String, String> scores,
 	                         @NotNull List<String> columns)
 			throws IOException {
-		for (String entry : scores.columnKeySet()) {
+		for (String entry : scores.rowKeySet()) {
 			List<String> scoreList = new ArrayList<>();
 			scoreList.add(entry); // Player's name or UUID
 			boolean hasScores = false;
@@ -135,8 +146,8 @@ public class CSVStorage implements StorageMethod {
 					} else {
 						scoreList.add("");
 					}
-				} else if (scores.contains(column, entry)) {
-					scoreList.add(scores.get(column, entry));
+				} else if (scores.contains(entry, column)) {
+					scoreList.add(scores.get(entry, column));
 					hasScores = true;
 				} else {
 					// Add empty score so the columns stay aligned
@@ -175,9 +186,9 @@ public class CSVStorage implements StorageMethod {
 		return true;
 	}
 	
-	private static CSVPrinter csvPrinterFromColumns(List<String> columns, FileWriter writer) throws IOException {
+	private CSVPrinter csvPrinterFromColumns(List<String> columns, FileWriter writer) throws IOException {
 		columns = new ArrayList<>(columns);
-		columns.add(0, "Player");
+		columns.add(0, rowKey);
 		return CSVFormat.DEFAULT.builder()
 				.setHeader(columns.toArray(new String[0]))
 				.build()
