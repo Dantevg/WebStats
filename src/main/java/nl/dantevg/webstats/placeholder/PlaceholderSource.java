@@ -6,6 +6,7 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import nl.dantevg.webstats.EntriesScores;
 import nl.dantevg.webstats.EssentialsHelper;
 import nl.dantevg.webstats.WebStats;
+import nl.dantevg.webstats.storage.StorageMethod;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
@@ -104,7 +105,11 @@ public class PlaceholderSource {
 	}
 	
 	public void disable() {
-		if (storage != null) storage.disconnect();
+		if (storage != null) storage.disable();
+	}
+	
+	public void migrateStorage(Class<? extends StorageMethod> to) {
+		storage.migrate(to);
 	}
 	
 	public static boolean isPlaceholderSet(String placeholder, @Nullable String value) {

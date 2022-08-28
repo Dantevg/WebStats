@@ -29,6 +29,8 @@ public interface StorageMethod {
 	
 	@Nullable Result load();
 	
+	void close();
+	
 	class Result {
 		public final List<String> columns;
 		public final Table<String, String, String> scores;

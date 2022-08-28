@@ -9,7 +9,7 @@ softdepend: [Essentials, PlaceholderAPI]
 commands:
   webstats:
     description: WebStats command
-    usage: "Usage: /<command> debug | reload"
+    usage: "Usage: /<command> debug | reload | migrate-placeholders-to (database | csv)"
     permission: webstats.*
 permissions:
   webstats.*:

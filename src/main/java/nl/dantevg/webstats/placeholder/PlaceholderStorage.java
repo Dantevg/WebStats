@@ -26,7 +26,7 @@ public class PlaceholderStorage {
 	private final PlaceholderSource placeholderSource;
 	private final HashBasedTable<UUID, String, String> data = HashBasedTable.create();
 	private final boolean saveOnPluginDisable;
-	private final @NotNull StorageMethod storage;
+	private @NotNull StorageMethod storage;
 	
 	public PlaceholderStorage(PlaceholderSource placeholderSource) throws InvalidConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling placeholder storage");
@@ -39,21 +39,10 @@ public class PlaceholderStorage {
 				new PlaceholderListener(this, saveOnPluginDisable),
 				WebStats.getPlugin(WebStats.class));
 		
-		if (WebStats.config.contains("store-placeholders-database")) {
-			String hostname = WebStats.config.getString("database.hostname");
-			String username = WebStats.config.getString("database.username");
-			String password = WebStats.config.getString("database.password");
-			String dbname = WebStats.config.getString("store-placeholders-database");
-			
-			if (hostname == null || username == null || password == null || dbname == null) {
-				throw new InvalidConfigurationException("Invalid configuration: missing hostname, username, password or database name");
-			}
-			
-			storage = new DatabaseStorage(
-					new DatabaseConnection(hostname, username, password, dbname),
-					TABLE_NAME, "uuid", "placeholder");
+		if (WebStats.config.getBoolean("store-placeholders-in-file")) {
+			storage = getCSVStorage();
 		} else {
-			storage = new CSVStorage(FILENAME, "uuid");
+			storage = getDatabaseStorage();
 		}
 		
 		// Read persistently stored data
@@ -63,7 +52,26 @@ public class PlaceholderStorage {
 		update();
 	}
 	
-	public void disconnect() {
+	private DatabaseStorage getDatabaseStorage() throws InvalidConfigurationException {
+		String hostname = WebStats.config.getString("database.hostname");
+		String username = WebStats.config.getString("database.username");
+		String password = WebStats.config.getString("database.password");
+		String dbname = WebStats.config.getString("store-placeholders-database");
+		
+		if (hostname == null || username == null || password == null || dbname == null) {
+			throw new InvalidConfigurationException("Invalid configuration: missing hostname, username, password or database name");
+		}
+		
+		return new DatabaseStorage(
+				new DatabaseConnection(hostname, username, password, dbname),
+				TABLE_NAME, "uuid", "placeholder");
+	}
+	
+	private CSVStorage getCSVStorage() {
+		return new CSVStorage(FILENAME, "uuid");
+	}
+	
+	public void disable() {
 		// Don't save on server close if we already saved on plugin disable
 		if (saveOnPluginDisable) return;
 		
@@ -85,6 +93,7 @@ public class PlaceholderStorage {
 				throw e;
 			}
 		}
+		storage.close();
 	}
 	
 	private void load() {
@@ -141,6 +150,36 @@ public class PlaceholderStorage {
 	
 	public @Nullable String getScore(UUID uuid, String placeholder) {
 		return data.get(uuid, placeholder);
+	}
+	
+	public boolean migrateToCSV() {
+		storage.close();
+		storage = getCSVStorage();
+		saveAll();
+		return true;
+	}
+	
+	public boolean migrateToDatabase() {
+		StorageMethod source = storage;
+		try {
+			storage = getDatabaseStorage();
+		} catch (InvalidConfigurationException e) {
+			WebStats.logger.log(Level.WARNING, "Migration failed");
+			return false;
+		}
+		source.close();
+		saveAll();
+		return true;
+	}
+	
+	public boolean migrate(Class<? extends StorageMethod> to) {
+		if (to == CSVStorage.class) {
+			return migrateToCSV();
+		} else if (to == DatabaseStorage.class) {
+			return migrateToDatabase();
+		} else {
+			throw new UnsupportedOperationException("unknown migration destination type");
+		}
 	}
 	
 	protected @NotNull String debug() {

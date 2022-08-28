@@ -121,6 +121,11 @@ public class CSVStorage implements StorageMethod {
 		}
 	}
 	
+	@Override
+	public void close() {
+		// Do nothing
+	}
+	
 	/**
 	 * Write the scores to the file.
 	 *

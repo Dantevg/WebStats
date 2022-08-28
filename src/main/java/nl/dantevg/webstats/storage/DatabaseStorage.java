@@ -79,6 +79,11 @@ public class DatabaseStorage implements StorageMethod {
 		return null;
 	}
 	
+	@Override
+	public void close() {
+		conn.disconnect();
+	}
+	
 	private boolean isFirstUse() {
 		try (ResultSet resultSet = conn.getConnection().getMetaData()
 				.getTables(null, null, tableName, null)) {
