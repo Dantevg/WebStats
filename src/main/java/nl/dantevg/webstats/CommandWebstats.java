@@ -1,5 +1,8 @@
 package nl.dantevg.webstats;
 
+import nl.dantevg.webstats.storage.CSVStorage;
+import nl.dantevg.webstats.storage.DatabaseStorage;
+import org.bukkit.Bukkit;
 import org.bukkit.command.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,6 +29,20 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 			webstats.reload();
 			if (!(sender instanceof ConsoleCommandSender)) sender.sendMessage("Reload complete");
 			return true;
+		} else if (args.length == 2 && args[0].equalsIgnoreCase("migrate-placeholders-to")) {
+			if (!args[1].equalsIgnoreCase("csv") && !args[1].equalsIgnoreCase("database")) {
+				return false;
+			}
+			// Do this async because connecting to the database may take some time
+			Bukkit.getScheduler().runTaskAsynchronously(webstats, () -> {
+				if (args[1].equalsIgnoreCase("csv")) {
+					WebStats.placeholderSource.migrateStorage(CSVStorage.class);
+				} else if (args[1].equalsIgnoreCase("database")) {
+					WebStats.placeholderSource.migrateStorage(DatabaseStorage.class);
+				}
+				sender.sendMessage("Migration complete. Remember to change config.yml to reflect these changes!");
+			});
+			return true;
 		}
 		
 		return false;
@@ -37,6 +54,10 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 		if (args.length == 1) {
 			completions.add("debug");
 			completions.add("reload");
+			completions.add("migrate-placeholders-to");
+		} else if (args.length == 2) {
+			completions.add("database");
+			completions.add("csv");
 		}
 		return completions;
 	}
