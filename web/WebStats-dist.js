@@ -80,7 +80,7 @@ class Data {
     filter() {
         // Remove non-player / empty entries and sort
         this.scoreboard.entries = this.scoreboard.entries
-            .filter(Data.isPlayer)
+            .filter(Data.isPlayerOrServer)
             .filter(this.isNonemptyEntry.bind(this))
             .sort(Intl.Collator().compare);
         // Remove empty columns
@@ -108,9 +108,9 @@ class Data {
 }
 // Valid player names only contain between 3 and 16 characters [A-Za-z0-9_],
 // entries with only digits are ignored as well (common for datapacks)
-Data.isPlayer = (entry) => entry.match(/^\w{3,16}$/) && !entry.match(/^\d*$/);
+Data.isPlayerOrServer = (entry) => entry == "#server" || (entry.match(/^\w{3,16}$/) && !entry.match(/^\d*$/));
 // Whether any entry has a value for this objective
-Data.isNonemptyObjective = (objective) => Object.keys(objective).filter(Data.isPlayer).length > 0;
+Data.isNonemptyObjective = (objective) => Object.keys(objective).filter(Data.isPlayerOrServer).length > 0;
 // Array-like filter function for objects
 // https://stackoverflow.com/a/37616104
 Data.filter = (obj, predicate) => Object.fromEntries(Object.entries(obj).filter(([_, v]) => predicate(v)));
@@ -209,7 +209,7 @@ class Display {
             img.setAttribute("title", entry);
         }
         // Append player name
-        let name = Display.appendTextElement(tr, "td", entry);
+        let name = Display.appendTextElement(tr, "td", entry == "#server" ? "Server" : entry);
         name.setAttribute("objective", "Player");
         name.setAttribute("value", entry);
         // Prepend online/afk status
@@ -228,8 +228,12 @@ class Display {
     }
     setSkin(entry, row) {
         const img = row.getElementsByTagName("img")[0];
-        if (img)
-            img.src = `https://www.mc-heads.net/avatar/${entry}.png`;
+        if (img) {
+            if (entry == "#server")
+                img.src = Display.CONSOLE_IMAGE;
+            else
+                img.src = `https://www.mc-heads.net/avatar/${entry}.png`;
+        }
     }
     updateScoreboard() {
         for (const row of this.data.scores) {
@@ -434,6 +438,7 @@ Display.FORMATTING_CODES = {
 // § followed by a single character, or of the form §x§r§r§g§g§b§b
 // (also capture rest of string, until next §)
 Display.FORMATTING_CODE_REGEX = /(§x§.§.§.§.§.§.|§.)([^§]*)/gm;
+Display.CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NUUlL6z0ABYBw1gGE0DBioHAZ3795lUFZWJildosQCRQaQoxnkVLgL0A2A8dFpdP8NfEICAMkiK2HeQ9JUAAAAAElFTkSuQmCC";
 // Replace single quotes by '&quot;' (html-escape)
 Display.quoteEscape = (string) => string.replace(/'/g, "&quot;");
 // Replace all formatting codes by <span> elements
