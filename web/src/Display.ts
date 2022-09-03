@@ -16,7 +16,7 @@ export default class Display {
 	selectElem: HTMLSelectElement
 	prevButton: HTMLButtonElement
 	nextButton: HTMLButtonElement
-	
+
 	static COLOUR_CODES = {
 		["§0"]: "black",
 		["§1"]: "dark_blue",
@@ -35,7 +35,7 @@ export default class Display {
 		["§e"]: "yellow",
 		["§f"]: "white",
 	}
-	
+
 	static FORMATTING_CODES = {
 		["§k"]: "obfuscated",
 		["§l"]: "bold",
@@ -44,10 +44,12 @@ export default class Display {
 		["§o"]: "italic",
 		["§r"]: "reset",
 	}
-	
+
 	// § followed by a single character, or of the form §x§r§r§g§g§b§b
 	// (also capture rest of string, until next §)
 	static FORMATTING_CODE_REGEX = /(§x§.§.§.§.§.§.|§.)([^§]*)/gm
+	
+	static CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NUUlL6z0ABYBw1gGE0DBioHAZ3795lUFZWJildosQCRQaQoxnkVLgL0A2A8dFpdP8NfEICAMkiK2HeQ9JUAAAAAElFTkSuQmCC"
 
 	constructor({ table, sortBy = "Player", descending = false, showSkins = true, displayCount = 100 }) {
 		this.table = table
@@ -148,7 +150,7 @@ export default class Display {
 		}
 
 		// Append player name
-		let name = Display.appendTextElement(tr, "td", entry)
+		let name = Display.appendTextElement(tr, "td", entry == "#server" ? "Server" : entry)
 		name.setAttribute("objective", "Player")
 		name.setAttribute("value", entry)
 
@@ -170,7 +172,10 @@ export default class Display {
 
 	setSkin(entry: string, row: HTMLTableRowElement) {
 		const img = row.getElementsByTagName("img")[0]
-		if (img) img.src = `https://www.mc-heads.net/avatar/${entry}.png`
+		if (img) {
+			if (entry == "#server") img.src = Display.CONSOLE_IMAGE
+			else img.src = `https://www.mc-heads.net/avatar/${entry}.png`
+		}
 	}
 
 	updateScoreboard() {
@@ -181,10 +186,10 @@ export default class Display {
 				const td = this.rows[row[0]].querySelector(`td[objective='${column}']`) as HTMLTableCellElement
 				td.classList.remove("empty")
 				td.setAttribute("value", value)
-				
+
 				// Convert numbers to locale
 				value = isNaN(value as any) ? value : Number(value).toLocaleString()
-				
+
 				// Convert Minecraft formatting codes
 				td.innerHTML = ""
 				td.append(...Display.convertFormattingCodes(value))
@@ -270,53 +275,53 @@ export default class Display {
 
 	// Replace single quotes by '&quot;' (html-escape)
 	static quoteEscape = (string: string) => string.replace(/'/g, "&quot;")
-	
+
 	// Replace all formatting codes by <span> elements
 	static convertFormattingCodes = (value) =>
 		Display.parseFormattingCodes(value).map(Display.convertFormattingCode)
-	
+
 	// Convert a single formatting code to a <span> element
-	static convertFormattingCode(part){
-		if(!part.format && !part.colour) return part.text
-		
+	static convertFormattingCode(part) {
+		if (!part.format && !part.colour) return part.text
+
 		const span = document.createElement("span")
 		span.innerText = part.text
 		span.classList.add("mc-format")
-		
-		if(part.format) span.classList.add("mc-" + part.format)
-		if(part.colour){
-			if(part.colourType == "simple") span.classList.add("mc-" + part.colour)
-			if(part.colourType == "hex") span.style.color = part.colour
+
+		if (part.format) span.classList.add("mc-" + part.format)
+		if (part.colour) {
+			if (part.colourType == "simple") span.classList.add("mc-" + part.colour)
+			if (part.colourType == "hex") span.style.color = part.colour
 		}
-		
+
 		return span
 	}
-	
-	static parseFormattingCodes(value){
+
+	static parseFormattingCodes(value) {
 		const parts = []
-		
+
 		const firstIdx = value.matchAll(Display.FORMATTING_CODE_REGEX).next().value?.index
-		if(firstIdx == undefined || firstIdx > 0){
-			parts.push({text: value.substring(0, firstIdx)})
+		if (firstIdx == undefined || firstIdx > 0) {
+			parts.push({ text: value.substring(0, firstIdx) })
 		}
-		
-		for(const match of value.matchAll(Display.FORMATTING_CODE_REGEX)){
-			parts.push(Display.parseFormattingCode(match[1], match[2], parts[parts.length-1]))
+
+		for (const match of value.matchAll(Display.FORMATTING_CODE_REGEX)) {
+			parts.push(Display.parseFormattingCode(match[1], match[2], parts[parts.length - 1]))
 		}
-		
+
 		return parts
 	}
-	
-	static parseFormattingCode(code, text, prev){
+
+	static parseFormattingCode(code, text, prev) {
 		// Simple colour codes and formatting codes
-		if(Display.COLOUR_CODES[code]){
+		if (Display.COLOUR_CODES[code]) {
 			return {
 				text,
 				colour: Display.COLOUR_CODES[code],
 				colourType: "simple",
 			}
 		}
-		if(Display.FORMATTING_CODES[code]){
+		if (Display.FORMATTING_CODES[code]) {
 			return {
 				text,
 				format: Display.FORMATTING_CODES[code],
@@ -324,19 +329,19 @@ export default class Display {
 				colourType: prev?.colourType,
 			}
 		}
-		
+
 		// Hex colour codes
 		const matches = code.match(/§x§(.)§(.)§(.)§(.)§(.)§(.)/m)
-		if(matches){
+		if (matches) {
 			return {
 				text,
 				colour: "#" + matches.slice(1).join(""),
 				colourType: "hex",
 			}
 		}
-		
+
 		// Not a valid formatting code, just return the input unaltered
-		return {text}
+		return { text }
 	}
 
 	static appendElement<K extends keyof HTMLElementTagNameMap>(base: HTMLElement, type: K) {

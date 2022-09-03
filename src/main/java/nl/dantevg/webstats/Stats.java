@@ -23,6 +23,8 @@ public class Stats {
 		if (WebStats.databaseSource != null) entriesScores.add(WebStats.databaseSource.getStats());
 		if (WebStats.placeholderSource != null) entriesScores.add(WebStats.placeholderSource.getStats());
 		
+		if (WebStats.config.contains("server-columns")) entriesScores.entries.add("#server");
+		
 		if (WebStats.config.contains("columns")) {
 			List<String> columns = new ArrayList<>(WebStats.config.getStringList("columns"));
 			return new StatData.Stats(entriesScores, columns);

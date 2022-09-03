@@ -69,6 +69,11 @@ public class PlaceholderSource {
 		return isPlaceholderSet(placeholder, score) ? score : null;
 	}
 	
+	private @Nullable String getPlaceholderForServer(String placeholder) {
+		String score = PlaceholderAPI.setPlaceholders(null, placeholder);
+		return isPlaceholderSet(placeholder, score) ? score : null;
+	}
+	
 	// Get all scores for all players from PlaceholderAPI
 	// Alternatively find stored scores from PlaceholderStorage
 	private @NotNull Table<String, String, String> getScores() {
@@ -76,10 +81,15 @@ public class PlaceholderSource {
 		Set<OfflinePlayer> players = getEntriesAsPlayers();
 		
 		placeholders.forEach((placeholder, placeholderName) -> {
-			for (OfflinePlayer player : players) {
-				String score = getPlaceholderForPlayer(player, placeholder, (String) placeholderName);
-				// Only add the score if it is not empty
-				if (score != null) values.put((String) placeholderName, player.getName(), score);
+			if (WebStats.config.getStringList("server-columns").contains((String) placeholderName)) {
+				String score = getPlaceholderForServer(placeholder);
+				if (score != null) values.put((String) placeholderName, "#server", score);
+			} else {
+				for (OfflinePlayer player : players) {
+					String score = getPlaceholderForPlayer(player, placeholder, (String) placeholderName);
+					// Only add the score if it is not empty
+					if (score != null) values.put((String) placeholderName, player.getName(), score);
+				}
 			}
 		});
 		return values;
