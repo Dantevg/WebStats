@@ -48,6 +48,8 @@ export default class Display {
 	// § followed by a single character, or of the form §x§r§r§g§g§b§b
 	// (also capture rest of string, until next §)
 	static FORMATTING_CODE_REGEX = /(§x§.§.§.§.§.§.|§.)([^§]*)/gm
+	
+	static CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NUUlL6z0ABYBw1gGE0DBioHAZ3795lUFZWJildosQCRQaQoxnkVLgL0A2A8dFpdP8NfEICAMkiK2HeQ9JUAAAAAElFTkSuQmCC"
 
 	constructor({ table, sortBy = "Player", descending = false, showSkins = true, displayCount = 100 }) {
 		this.table = table
@@ -169,9 +171,11 @@ export default class Display {
 	}
 
 	setSkin(entry: string, row: HTMLTableRowElement) {
-		if (entry == "#server") return;
 		const img = row.getElementsByTagName("img")[0]
-		if (img) img.src = `https://www.mc-heads.net/avatar/${entry}.png`
+		if (img) {
+			if (entry == "#server") img.src = Display.CONSOLE_IMAGE
+			else img.src = `https://www.mc-heads.net/avatar/${entry}.png`
+		}
 	}
 
 	updateScoreboard() {
