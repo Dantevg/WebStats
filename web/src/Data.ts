@@ -62,7 +62,7 @@ export default class Data {
 	filter() {
 		// Remove non-player / empty entries and sort
 		this.scoreboard.entries = this.scoreboard.entries
-			.filter(Data.isPlayer)
+			.filter(Data.isPlayerOrServer)
 			.filter(this.isNonemptyEntry.bind(this))
 			.sort(Intl.Collator().compare)
 
@@ -97,11 +97,12 @@ export default class Data {
 
 	// Valid player names only contain between 3 and 16 characters [A-Za-z0-9_],
 	// entries with only digits are ignored as well (common for datapacks)
-	static isPlayer = (entry: string) => entry.match(/^\w{3,16}$/) && !entry.match(/^\d*$/)
+	static isPlayerOrServer = (entry: string) =>
+		entry == "#server" || (entry.match(/^\w{3,16}$/) && !entry.match(/^\d*$/))
 
 	// Whether any entry has a value for this objective
 	static isNonemptyObjective = (objective: { [entry: string]: string | number }) =>
-		Object.keys(objective).filter(Data.isPlayer).length > 0
+		Object.keys(objective).filter(Data.isPlayerOrServer).length > 0
 
 	// Array-like filter function for objects
 	// https://stackoverflow.com/a/37616104
