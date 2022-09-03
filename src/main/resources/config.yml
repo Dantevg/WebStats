@@ -10,6 +10,10 @@ port: 8080
 # The 'Player' column will always be displayed, as the first column.
 #columns: []
 
+# These columns will not be displayed on individual player's rows, but on a
+# separate 'Server' column.
+server-columns: []
+
 # Whether to store IP to player name mapping in 'ip-to-names.yml',
 # used for matching your IP to your player name
 store-player-ips: true
