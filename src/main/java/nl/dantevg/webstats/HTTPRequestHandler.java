@@ -1,5 +1,6 @@
 package nl.dantevg.webstats;
 
+import com.google.common.base.Splitter;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -55,7 +56,12 @@ public class HTTPRequestHandler implements HttpHandler {
 		switch (path) {
 			case "/stats.json":
 				InetAddress ip = exchange.getRemoteAddress().getAddress();
-				httpConnection.sendJson(new Gson().toJson(Stats.getAll(ip)));
+				Map<String, String> query = Splitter.on('&')
+						.trimResults()
+						.withKeyValueSeparator('=')
+						.split(exchange.getRequestURI().getQuery());
+				String table = query.get("table");
+				httpConnection.sendJson(new Gson().toJson(Stats.getAll(table, ip)));
 				break;
 			case "/online.json":
 				httpConnection.sendJson(new Gson().toJson(Stats.getOnline()));

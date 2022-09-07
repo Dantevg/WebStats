@@ -71,7 +71,7 @@ public class DiscordWebhook implements Runnable {
 	@Override
 	public void run() {
 		WebStats.logger.log(Level.CONFIG, "Sending Discord webhook update");
-		final StatData.Stats stats = Stats.getStats();
+		final StatData.Stats stats = Stats.getStats(null);
 		
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 			List<String> entries = new ArrayList<>(stats.entries);
