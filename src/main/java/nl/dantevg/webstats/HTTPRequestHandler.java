@@ -56,11 +56,15 @@ public class HTTPRequestHandler implements HttpHandler {
 		switch (path) {
 			case "/stats.json":
 				InetAddress ip = exchange.getRemoteAddress().getAddress();
-				Map<String, String> query = Splitter.on('&')
-						.trimResults()
-						.withKeyValueSeparator('=')
-						.split(exchange.getRequestURI().getQuery());
-				String table = query.get("table");
+				String query = exchange.getRequestURI().getQuery();
+				String table = null;
+				if (query != null) {
+					table = Splitter.on('&')
+							.trimResults()
+							.withKeyValueSeparator('=')
+							.split(query)
+							.get("table");
+				}
 				httpConnection.sendJson(new Gson().toJson(Stats.getAll(table, ip)));
 				break;
 			case "/online.json":

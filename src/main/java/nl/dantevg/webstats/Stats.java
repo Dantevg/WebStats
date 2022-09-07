@@ -17,7 +17,7 @@ public class Stats {
 		return players;
 	}
 	
-	public static @NotNull StatData.Stats getStats(String table) {
+	public static @NotNull StatData.Stats getStats(@Nullable String table) {
 		EntriesScores entriesScores = new EntriesScores();
 		
 		if (WebStats.scoreboardSource != null) entriesScores.add(WebStats.scoreboardSource.getStats());
@@ -34,11 +34,11 @@ public class Stats {
 		}
 	}
 	
-	public static @NotNull StatData getAll(String table) {
+	public static @NotNull StatData getAll(@Nullable String table) {
 		return new StatData(getOnline(), getStats(table));
 	}
 	
-	public static @NotNull StatData getAll(String table, @NotNull InetAddress ip) {
+	public static @NotNull StatData getAll(@Nullable String table, @NotNull InetAddress ip) {
 		Set<String> playernames = WebStats.playerIPStorage.getNames(ip);
 		return new StatData(getOnline(), getStats(table), playernames);
 	}
@@ -52,6 +52,8 @@ public class Stats {
 					return (List<String>) tableConfig.get("columns");
 				}
 			}
+			// No such table, return no columns
+			return Collections.emptyList();
 		}
 		
 		if (WebStats.config.contains("columns")) {
