@@ -2,6 +2,7 @@ import Data from "./Data"
 
 export default class Display {
 	table: HTMLTableElement
+	columns: string[]
 	sortBy: string
 	descending: boolean
 	showSkins: boolean
@@ -48,13 +49,14 @@ export default class Display {
 	// § followed by a single character, or of the form §x§r§r§g§g§b§b
 	// (also capture rest of string, until next §)
 	static FORMATTING_CODE_REGEX = /(§x§.§.§.§.§.§.|§.)([^§]*)/gm
-	
+
 	static CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NUUlL6z0ABYBw1gGE0DBioHAZ3795lUFZWJildosQCRQaQoxnkVLgL0A2A8dFpdP8NfEICAMkiK2HeQ9JUAAAAAElFTkSuQmCC"
 
-	constructor({ table, sortBy = "Player", descending = false, showSkins = true, displayCount = 100 }) {
+	constructor({ table, showSkins = true, displayCount = 100 }, {columns = [], sortBy = "Player", sortDescending = false}) {
 		this.table = table
+		this.columns = columns
 		this.sortBy = sortBy
-		this.descending = descending
+		this.descending = sortDescending
 		this.showSkins = showSkins
 		this.displayCount = displayCount
 		this.hideOffline = false
@@ -78,7 +80,7 @@ export default class Display {
 		this.table.append(this.headerElem)
 		Display.appendTh(this.headerElem, "Player", this.thClick.bind(this),
 			this.showSkins ? 2 : undefined)
-		for (const column of this.data.columns) {
+		for (const column of this.columns) {
 			Display.appendTh(this.headerElem, column, this.thClick.bind(this))
 		}
 
@@ -162,10 +164,10 @@ export default class Display {
 		if (this.data.isCurrentPlayer(entry)) tr.classList.add("current-player")
 
 		// Append empty elements for alignment
-		for (const objective of this.data.columns) {
+		for (const column of this.columns) {
 			let td = Display.appendElement(tr, "td")
 			td.classList.add("empty")
-			td.setAttribute("objective", Display.quoteEscape(objective))
+			td.setAttribute("objective", Display.quoteEscape(column))
 		}
 		this.rows.push(tr)
 	}
@@ -180,7 +182,7 @@ export default class Display {
 
 	updateScoreboard() {
 		for (const row of this.data.scores) {
-			for (const column of this.data.columns) {
+			for (const column of this.columns) {
 				let value = row[this.data.columns_[column]] as string
 				if (!value) continue
 				const td = this.rows[row[0]].querySelector(`td[objective='${column}']`) as HTMLTableCellElement
