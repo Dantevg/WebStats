@@ -3,10 +3,10 @@ package nl.dantevg.webstats;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.net.InetAddress;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Stats {
 	public static @NotNull Map<String, Object> getOnline() {
@@ -17,7 +17,7 @@ public class Stats {
 		return players;
 	}
 	
-	public static @NotNull StatData.Stats getStats(@Nullable String table) {
+	public static @NotNull StatData.Stats getStats() {
 		EntriesScores entriesScores = new EntriesScores();
 		
 		if (WebStats.scoreboardSource != null) entriesScores.add(WebStats.scoreboardSource.getStats());
@@ -26,51 +26,36 @@ public class Stats {
 		
 		if (WebStats.config.contains("server-columns")) entriesScores.entries.add("#server");
 		
-		if (WebStats.config.contains("tables")) {
-			Map<?, ?> tableConfig = getTableConfig(table);
-			if (tableConfig == null) {
-				return new StatData.Stats(entriesScores, Collections.emptyList());
-			}
-			List<String> columns = (List<String>) tableConfig.get("columns");
-			String sortBy = (String) tableConfig.get("sort-by");
-			Boolean sortDescending = (Boolean) tableConfig.get("sort-descending");
-			return new StatData.Stats(entriesScores, columns, sortBy, sortDescending);
-		} else {
+		if (WebStats.config.contains("columns")) {
 			return new StatData.Stats(entriesScores, WebStats.config.getStringList("columns"));
+		} else {
+			return new StatData.Stats(entriesScores);
 		}
 	}
 	
-	public static @NotNull List<String> getTables() {
+	public static @NotNull List<TableConfig> getTables() {
 		if (!WebStats.config.contains("tables")) return Collections.emptyList();
 		
-		List<String> tables = new ArrayList<>();
-		for (Map<?, ?> tableConfig : WebStats.config.getMapList("tables")) {
-			tables.add((String) tableConfig.get("name"));
-		}
-		
-		return tables;
+		return WebStats.config.getMapList("tables").stream()
+				.map(Stats::getTableConfigFromMap)
+				.collect(Collectors.toList());
 	}
 	
-	public static @NotNull StatData getAll(@Nullable String table) {
-		return new StatData(getOnline(), getStats(table));
+	public static @NotNull StatData getAll() {
+		return new StatData(getOnline(), getStats());
 	}
 	
-	public static @NotNull StatData getAll(@Nullable String table, @NotNull InetAddress ip) {
+	public static @NotNull StatData getAll(@NotNull InetAddress ip) {
 		Set<String> playernames = WebStats.playerIPStorage.getNames(ip);
-		return new StatData(getOnline(), getStats(table), playernames);
+		return new StatData(getOnline(), getStats(), playernames);
 	}
 	
-	private static Map<?, ?> getTableConfig(String table) {
-		if (WebStats.config.contains("tables")) {
-			List<Map<?, ?>> tablesConfig = WebStats.config.getMapList("tables");
-			for (Map<?, ?> tableConfig : tablesConfig) {
-				String tableName = (String) tableConfig.get("name");
-				if (table == null || tableName.equals(table)) {
-					return tableConfig;
-				}
-			}
-		}
-		return null;
+	private static TableConfig getTableConfigFromMap(Map<?, ?> tableConfig) {
+		String name = (String) tableConfig.get("name");
+		List<String> columns = (List<String>) tableConfig.get("columns");
+		String sortBy = (String) tableConfig.get("sort-by");
+		Boolean sortDescending = (Boolean) tableConfig.get("sort-descending");
+		return new TableConfig(name, columns, sortBy, sortDescending);
 	}
 	
 }

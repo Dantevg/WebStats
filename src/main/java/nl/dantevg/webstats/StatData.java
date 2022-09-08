@@ -41,16 +41,6 @@ public class StatData {
 		public List<String> columns;
 		@JsonAdapter(TableAdapter.class)
 		public Table<String, String, String> scores;
-		public String sortBy;
-		public Boolean sortDescending;
-		
-		public Stats(@NotNull EntriesScores entriesScores, List<String> columns, String sortBy, Boolean sortDescending) {
-			this.entries = entriesScores.entries;
-			this.scores = entriesScores.scores;
-			this.columns = columns;
-			this.sortBy = sortBy;
-			this.sortDescending = sortDescending;
-		}
 		
 		public Stats(@NotNull EntriesScores entriesScores, List<String> columns) {
 			this.entries = entriesScores.entries;
