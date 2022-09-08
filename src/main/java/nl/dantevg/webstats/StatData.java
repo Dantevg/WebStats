@@ -38,7 +38,8 @@ public class StatData {
 	
 	public static class Stats {
 		public Set<String> entries;
-		public List<String> columns;
+		@Deprecated()
+		public List<String> columns; // For backwards compatibility with older web front-ends
 		@JsonAdapter(TableAdapter.class)
 		public Table<String, String, String> scores;
 		
