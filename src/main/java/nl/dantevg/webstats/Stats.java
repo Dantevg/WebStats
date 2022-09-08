@@ -26,12 +26,29 @@ public class Stats {
 		
 		if (WebStats.config.contains("server-columns")) entriesScores.entries.add("#server");
 		
-		List<String> columns = getColumnsByTableName(table);
-		if (columns != null) {
-			return new StatData.Stats(entriesScores, columns);
+		if (WebStats.config.contains("tables")) {
+			Map<?, ?> tableConfig = getTableConfig(table);
+			if (tableConfig == null) {
+				return new StatData.Stats(entriesScores, Collections.emptyList());
+			}
+			List<String> columns = (List<String>) tableConfig.get("columns");
+			String sortBy = (String) tableConfig.get("sort-by");
+			Boolean sortDescending = (Boolean) tableConfig.get("sort-descending");
+			return new StatData.Stats(entriesScores, columns, sortBy, sortDescending);
 		} else {
-			return new StatData.Stats(entriesScores);
+			return new StatData.Stats(entriesScores, WebStats.config.getStringList("columns"));
 		}
+	}
+	
+	public static @NotNull List<String> getTables() {
+		if (!WebStats.config.contains("tables")) return Collections.emptyList();
+		
+		List<String> tables = new ArrayList<>();
+		for (Map<?, ?> tableConfig : WebStats.config.getMapList("tables")) {
+			tables.add((String) tableConfig.get("name"));
+		}
+		
+		return tables;
 	}
 	
 	public static @NotNull StatData getAll(@Nullable String table) {
@@ -43,24 +60,17 @@ public class Stats {
 		return new StatData(getOnline(), getStats(table), playernames);
 	}
 	
-	private static @Nullable List<String> getColumnsByTableName(@Nullable String table) {
+	private static Map<?, ?> getTableConfig(String table) {
 		if (WebStats.config.contains("tables")) {
 			List<Map<?, ?>> tablesConfig = WebStats.config.getMapList("tables");
 			for (Map<?, ?> tableConfig : tablesConfig) {
 				String tableName = (String) tableConfig.get("name");
 				if (table == null || tableName.equals(table)) {
-					return (List<String>) tableConfig.get("columns");
+					return tableConfig;
 				}
 			}
-			// No such table, return no columns
-			return Collections.emptyList();
 		}
-		
-		if (WebStats.config.contains("columns")) {
-			return new ArrayList<>(WebStats.config.getStringList("columns"));
-		} else {
-			return null;
-		}
+		return null;
 	}
 	
 }
