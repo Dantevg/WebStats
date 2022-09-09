@@ -54,15 +54,16 @@ export default class WebStats {
 			})
 		)
 
-		// TODO: re-implement
-		// const optionHideOffline = document.querySelector("input.webstats-option#hide-offline") as HTMLInputElement
-		// if (optionHideOffline) {
-		// 	// Re-show if displayCount is set
-		// 	optionHideOffline.addEventListener("change", (e) => {
-		// 		if (this.display.displayCount > 0) this.display.changeHideOffline((e.target as HTMLInputElement).checked)
-		// 	})
-		// 	this.display.hideOffline = optionHideOffline.checked
-		// }
+		const optionHideOffline = document.querySelector("input.webstats-option#hide-offline") as HTMLInputElement
+		if (optionHideOffline) {
+			// Re-show if displayCount is set
+			optionHideOffline.addEventListener("change", (e) => {
+				this.displays.forEach(display => {
+					if (display.displayCount > 0) display.changeHideOffline((e.target as HTMLInputElement).checked)
+				})
+			})
+			this.displays.forEach(display => display.hideOffline = optionHideOffline.checked)
+		}
 
 		window.webstats = this
 	}
@@ -80,8 +81,15 @@ export default class WebStats {
 			}
 		} else {
 			for (const tableConfig of tableConfigs) {
+				const headerElem = (config.tableParent as HTMLElement)
+					.appendChild(document.createElement("span"))
+				headerElem.innerText = String(tableConfig.name)
+				headerElem.classList.add("webstats-tablename")
+				headerElem.setAttribute("webstats-table", tableConfig.name)
+				
 				const tableElem = (config.tableParent as HTMLElement)
 					.appendChild(document.createElement("table"))
+				tableElem.setAttribute("webstats-table", tableConfig.name)
 				this.displays.push(new Display(
 					{ ...config, table: tableElem },
 					tableConfig
@@ -91,14 +99,6 @@ export default class WebStats {
 
 		this.data = new Data(data)
 		this.displays.forEach(display => display.init(this.data)) // Display data in table
-
-		// Get sorting from url params, if present
-		// TODO: re-implement
-		// const params = (new URL(document.location.href)).searchParams
-		// let sortBy = params.get("sort") ?? this.display.sortBy
-		// let order = params.get("order")
-		// let descending = order ? order.startsWith("d") : this.display.descending
-		// this.display.sort(sortBy, descending)
 	}
 
 	update() {

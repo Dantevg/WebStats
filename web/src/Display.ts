@@ -268,11 +268,6 @@ export default class Display {
 		this.sortBy = objective
 		if (this.displayCount > 0) this.changePage(1, false)
 		this.sort()
-
-		// Set URL query string, for sharing
-		window.history.replaceState({}, "",
-			location.pathname + "?sort=" + this.sortBy.replace(/\s/g, "+")
-			+ "&order=" + (this.descending ? "desc" : "asc"))
 	}
 
 	// Replace single quotes by '&quot;' (html-escape)
