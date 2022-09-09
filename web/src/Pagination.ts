@@ -44,6 +44,17 @@ export default class Pagination {
 
 	update(nEntries: number) {
 		this.maxPage = Math.ceil(nEntries / this.displayCount)
+		
+		// Hide all controls when there is only one page
+		if (this.maxPage == 1) {
+			this.selectElem.style.display = "none"
+			this.prevButton.style.display = "none"
+			this.nextButton.style.display = "none"
+		} else {
+			this.selectElem.style.display = "initial"
+			this.prevButton.style.display = "initial"
+			this.nextButton.style.display = "initial"
+		}
 
 		// Page selector
 		if (this.selectElem) {
