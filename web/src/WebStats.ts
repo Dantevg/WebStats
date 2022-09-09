@@ -1,6 +1,7 @@
 import Connection from "./Connection"
 import Data from "./Data"
 import Display from "./Display"
+import Pagination from "./Pagination"
 
 declare global {
 	interface Window { webstats: WebStats }
@@ -58,9 +59,7 @@ export default class WebStats {
 		if (optionHideOffline) {
 			// Re-show if displayCount is set
 			optionHideOffline.addEventListener("change", (e) => {
-				this.displays.forEach(display => {
-					if (display.displayCount > 0) display.changeHideOffline((e.target as HTMLInputElement).checked)
-				})
+				this.displays.forEach(display => display.changeHideOffline(optionHideOffline.checked))
 			})
 			this.displays.forEach(display => display.hideOffline = optionHideOffline.checked)
 		}
@@ -72,28 +71,11 @@ export default class WebStats {
 		if (config.tables) {
 			for (const tableName in config.tables) {
 				const tableConfig = tableConfigs.find(config => config.name == tableName)
-				if (tableConfig) {
-					this.displays.push(new Display(
-						{ ...config, table: config.tables[tableName] },
-						tableConfig
-					))
-				}
+				if (tableConfig) this.addTableManual(config, tableConfig)
 			}
 		} else {
 			for (const tableConfig of tableConfigs) {
-				const headerElem = (config.tableParent as HTMLElement)
-					.appendChild(document.createElement("span"))
-				headerElem.innerText = String(tableConfig.name)
-				headerElem.classList.add("webstats-tablename")
-				headerElem.setAttribute("webstats-table", tableConfig.name)
-				
-				const tableElem = (config.tableParent as HTMLElement)
-					.appendChild(document.createElement("table"))
-				tableElem.setAttribute("webstats-table", tableConfig.name)
-				this.displays.push(new Display(
-					{ ...config, table: tableElem },
-					tableConfig
-				))
+				this.addTableAutomatic(config, tableConfig)
 			}
 		}
 
@@ -106,12 +88,12 @@ export default class WebStats {
 		if (this.data.nOnline > 0) {
 			this.connection.getStats().then(data => {
 				this.data.setStats(data)
-				this.displays.forEach(display => display.updateStats())
+				this.displays.forEach(display => display.updateStatsAndShow())
 			})
 		} else {
 			this.connection.getOnline().then(data => {
 				this.data.setOnlineStatus(data)
-				this.displays.forEach(display => display.updateOnlineStatus())
+				this.displays.forEach(display => display.updateOnlineStatusAndShow())
 			})
 		}
 	}
@@ -123,6 +105,43 @@ export default class WebStats {
 
 	stopUpdateInterval() {
 		clearInterval(this.interval)
+	}
+
+	addTableManual(config, tableConfig: TableConfig) {
+		let pagination: Pagination
+		if (config.displayCount > 0) {
+			const selectElem = document.querySelector("select.webstats-pagination") as HTMLSelectElement
+			const prevButton = document.querySelector("button.webstats-pagination[name=prev]") as HTMLButtonElement
+			const nextButton = document.querySelector("button.webstats-pagination[name=next]") as HTMLButtonElement
+			pagination = new Pagination(config.displayCount, selectElem, prevButton, nextButton)
+		}
+		this.displays.push(new Display(
+			{ ...config, table: config.tables[tableConfig.name], pagination: pagination },
+			tableConfig
+		))
+	}
+
+	addTableAutomatic(config, tableConfig: TableConfig) {
+		const headerElem = (config.tableParent as HTMLElement)
+			.appendChild(document.createElement("div"))
+		headerElem.innerText = String(tableConfig.name)
+		headerElem.classList.add("webstats-tableheading")
+		headerElem.setAttribute("webstats-table", tableConfig.name)
+
+		let pagination: Pagination
+		if (config.displayCount > 0) {
+			const paginationControls = headerElem.appendChild(document.createElement("span"))
+			paginationControls.classList.add("webstats-pagination")
+			pagination = Pagination.create(config.displayCount, paginationControls)
+		}
+
+		const tableElem = (config.tableParent as HTMLElement)
+			.appendChild(document.createElement("table"))
+		tableElem.setAttribute("webstats-table", tableConfig.name)
+		this.displays.push(new Display(
+			{ ...config, table: tableElem, pagination: pagination },
+			tableConfig
+		))
 	}
 
 }

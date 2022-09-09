@@ -1,22 +1,18 @@
 import Data from "./Data"
+import Pagination from "./Pagination"
 
 export default class Display {
 	table: HTMLTableElement
+	pagination?: Pagination
 	columns: string[]
 	sortBy: string
 	descending: boolean
 	showSkins: boolean
-	displayCount: number
 	hideOffline: boolean
-	currentPage: number
-	maxPage: number
 
 	data: Data
 	headerElem: HTMLTableRowElement
 	rows: HTMLTableRowElement[]
-	selectElem: HTMLSelectElement
-	prevButton: HTMLButtonElement
-	nextButton: HTMLButtonElement
 
 	static COLOUR_CODES = {
 		["§0"]: "black",
@@ -52,23 +48,27 @@ export default class Display {
 
 	static CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NUUlL6z0ABYBw1gGE0DBioHAZ3795lUFZWJildosQCRQaQoxnkVLgL0A2A8dFpdP8NfEICAMkiK2HeQ9JUAAAAAElFTkSuQmCC"
 
-	constructor({ table, showSkins = true, displayCount = 100 }, {columns = [], sortBy = "Player", sortDescending = false}) {
+	constructor({ table, pagination, showSkins = true }, { columns = [], sortBy = "Player", sortDescending = false }) {
 		this.table = table
+		this.pagination = pagination
 		this.columns = columns
 		this.sortBy = sortBy
 		this.descending = sortDescending
 		this.showSkins = showSkins
-		this.displayCount = displayCount
 		this.hideOffline = false
-		this.currentPage = 1
+		
+		if (this.pagination) this.pagination.onPageChange = (page) => {
+			this.updatePagination()
+			this.show()
+		}
 	}
 
 	init(data: Data) {
 		this.data = data
 
 		// Set pagination controls
-		if (this.displayCount > 0) {
-			this.initPagination()
+		if (this.pagination) {
+			this.updatePagination()
 		} else {
 			// Hide pagination controls when pagination is disabled
 			const paginationSpanElem = document.querySelector("span.webstats-pagination") as HTMLElement
@@ -91,52 +91,14 @@ export default class Display {
 		}
 
 		// Fill entries
-		this.updateStats()
-	}
-
-	initPagination() {
-		this.maxPage = Math.ceil(this.data.entries.length / this.displayCount)
-
-		// Page selector
-		this.selectElem = document.querySelector("select.webstats-pagination")
-		if (this.selectElem) this.selectElem.onchange = (e) => this.changePage(Number((e.target as HTMLSelectElement).value))
-		else console.warn("WebStats: no/invalid page control elements")
-
-		// "Prev" button
-		this.prevButton = document.querySelector("button.webstats-pagination[name=prev]")
-		if (this.prevButton) this.prevButton.onclick = () => this.changePage(this.currentPage - 1)
-		else console.warn("WebStats: no/invalid page control elements")
-
-		// "Next" button
-		this.nextButton = document.querySelector("button.webstats-pagination[name=next]")
-		if (this.nextButton) this.nextButton.onclick = () => this.changePage(this.currentPage + 1)
-		else console.warn("WebStats: no/invalid page control elements")
-
-		this.updatePagination()
+		this.updateStatsAndShow()
 	}
 
 	updatePagination() {
 		const entries = this.hideOffline
 			? this.data.entries.filter(entry => this.data.isOnline(entry))
 			: this.data.entries
-		this.maxPage = Math.ceil(entries.length / this.displayCount)
-
-		// Page selector
-		if (this.selectElem) {
-			this.selectElem.innerHTML = ""
-			for (let i = 1; i <= this.maxPage; i++) {
-				const optionElem = document.createElement("option")
-				optionElem.innerText = String(i)
-				this.selectElem.append(optionElem)
-			}
-			this.selectElem.value = String(this.currentPage)
-		}
-
-		// "Prev" button
-		if (this.prevButton) this.prevButton.toggleAttribute("disabled", this.currentPage <= 1)
-
-		// "Next" button
-		if (this.nextButton) this.nextButton.toggleAttribute("disabled", this.currentPage >= this.maxPage)
+		this.pagination.update(entries.length)
 	}
 
 	appendEntry(entry: string) {
@@ -198,6 +160,11 @@ export default class Display {
 			}
 		}
 	}
+	
+	updateScoreboardAndShow() {
+		this.updateScoreboard()
+		this.show()
+	}
 
 	updateOnlineStatus() {
 		for (const row of this.rows) {
@@ -212,29 +179,29 @@ export default class Display {
 			statusElement.classList.add(status.toLowerCase())
 			statusElement.setAttribute("title", this.data.getStatus(entry))
 		}
-		// Re-display if pagination is enabled
-		if (this.displayCount > 0) this.show()
+	}
+	
+	updateOnlineStatusAndShow() {
+		this.updateOnlineStatus()
+		if (this.pagination && this.hideOffline) this.show()
 	}
 
 	updateStats() {
 		this.updateScoreboard()
 		this.updateOnlineStatus()
 	}
-
-	// Change the page, re-display if `show` is not false and set page controls
-	changePage(page: number, show?: boolean) {
-		page = Math.max(1, Math.min(page, this.maxPage))
-		this.currentPage = page
-		if (show != false) this.show()
-
-		if (this.displayCount > 0) this.updatePagination()
+	
+	updateStatsAndShow() {
+		this.updateScoreboard()
+		this.updateOnlineStatus()
+		this.show()
 	}
 
 	changeHideOffline(hideOffline: boolean) {
 		this.hideOffline = hideOffline
-		if (this.displayCount > 0) {
-			this.updatePagination()
-			this.changePage(1)
+		if (this.pagination) {
+			this.pagination.changePage(1)
+			this.show()
 		}
 	}
 
@@ -245,10 +212,9 @@ export default class Display {
 		const scores = this.hideOffline
 			? this.data.scores.filter(row => this.data.isOnline(row[1]))
 			: this.data.scores
-		const min = (this.currentPage - 1) * this.displayCount
-		const max = (this.displayCount > 0)
-			? Math.min(this.currentPage * this.displayCount, scores.length)
-			: scores.length
+		const [min, max] = this.pagination
+			? this.pagination.getRange(scores.length)
+			: [0, scores.length]
 		for (let i = min; i < max; i++) {
 			if (this.showSkins) this.setSkin(scores[i][1], this.rows[scores[i][0]])
 			this.table.append(this.rows[scores[i][0]])
@@ -266,7 +232,7 @@ export default class Display {
 		let objective = (e.target as HTMLTableCellElement).innerText
 		this.descending = (objective === this.sortBy) ? !this.descending : true
 		this.sortBy = objective
-		if (this.displayCount > 0) this.changePage(1, false)
+		if (this.pagination) this.pagination.changePage(1)
 		this.sort()
 	}
 
