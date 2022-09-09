@@ -11,13 +11,12 @@ export default class Connection {
 		this.tables = tables
 	}
 
-	static json(ip: string, port: string | number) {
-		const baseURL = `http://${ip}:${port}`
+	static json(host: string) {
 		return new Connection({
-			all: baseURL + "/stats.json",
-			scores: baseURL + "/scoreboard.json",
-			online: baseURL + "/online.json",
-			tables: baseURL + "/tables.json",
+			all:  `http://${host}/stats.json`,
+			scores:  `http://${host}/scoreboard.json`,
+			online:  `http://${host}/online.json`,
+			tables:  `http://${host}/tables.json`,
 		})
 	}
 

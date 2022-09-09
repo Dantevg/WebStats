@@ -47,13 +47,13 @@ export default class Pagination {
 		
 		// Hide all controls when there is only one page
 		if (this.maxPage == 1) {
-			this.selectElem.style.display = "none"
-			this.prevButton.style.display = "none"
-			this.nextButton.style.display = "none"
+			this.selectElem.classList.add("pagination-hidden")
+			this.prevButton.classList.add("pagination-hidden")
+			this.nextButton.classList.add("pagination-hidden")
 		} else {
-			this.selectElem.style.display = "initial"
-			this.prevButton.style.display = "initial"
-			this.nextButton.style.display = "initial"
+			this.selectElem.classList.remove("pagination-hidden")
+			this.prevButton.classList.remove("pagination-hidden")
+			this.nextButton.classList.remove("pagination-hidden")
 		}
 
 		// Page selector

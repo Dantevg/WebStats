@@ -23,7 +23,7 @@ export default class WebStats {
 
 	constructor(config) {
 		this.displays = []
-		this.connection = config.connection ?? Connection.json(config.ip, config.port)
+		this.connection = config.connection ?? Connection.json(config.host)
 		this.updateInterval = config.updateInterval ?? 10000
 
 		// Set online status update interval
