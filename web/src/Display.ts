@@ -1,4 +1,5 @@
 import Data from "./Data"
+import FormattingCodes from "./FormattingCodes"
 import Pagination from "./Pagination"
 
 export default class Display {
@@ -13,38 +14,6 @@ export default class Display {
 	data: Data
 	headerElem: HTMLTableRowElement
 	rows: HTMLTableRowElement[]
-
-	static COLOUR_CODES = {
-		["§0"]: "black",
-		["§1"]: "dark_blue",
-		["§2"]: "dark_green",
-		["§3"]: "dark_aqua",
-		["§4"]: "dark_red",
-		["§5"]: "dark_purple",
-		["§6"]: "gold",
-		["§7"]: "gray",
-		["§8"]: "dark_gray",
-		["§9"]: "blue",
-		["§a"]: "green",
-		["§b"]: "aqua",
-		["§c"]: "red",
-		["§d"]: "light_purple",
-		["§e"]: "yellow",
-		["§f"]: "white",
-	}
-
-	static FORMATTING_CODES = {
-		["§k"]: "obfuscated",
-		["§l"]: "bold",
-		["§m"]: "strikethrough",
-		["§n"]: "underline",
-		["§o"]: "italic",
-		["§r"]: "reset",
-	}
-
-	// § followed by a single character, or of the form §x§r§r§g§g§b§b
-	// (also capture rest of string, until next §)
-	static FORMATTING_CODE_REGEX = /(§x§.§.§.§.§.§.|§.)([^§]*)/gm
 
 	static CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NUUlL6z0ABYBw1gGE0DBioHAZ3795lUFZWJildosQCRQaQoxnkVLgL0A2A8dFpdP8NfEICAMkiK2HeQ9JUAAAAAElFTkSuQmCC"
 
@@ -156,7 +125,7 @@ export default class Display {
 
 				// Convert Minecraft formatting codes
 				td.innerHTML = ""
-				td.append(...Display.convertFormattingCodes(value))
+				td.append(...FormattingCodes.convertFormattingCodes(value))
 			}
 		}
 	}
@@ -238,74 +207,6 @@ export default class Display {
 
 	// Replace single quotes by '&quot;' (html-escape)
 	static quoteEscape = (string: string) => string.replace(/'/g, "&quot;")
-
-	// Replace all formatting codes by <span> elements
-	static convertFormattingCodes = (value) =>
-		Display.parseFormattingCodes(value).map(Display.convertFormattingCode)
-
-	// Convert a single formatting code to a <span> element
-	static convertFormattingCode(part) {
-		if (!part.format && !part.colour) return part.text
-
-		const span = document.createElement("span")
-		span.innerText = part.text
-		span.classList.add("mc-format")
-
-		if (part.format) span.classList.add("mc-" + part.format)
-		if (part.colour) {
-			if (part.colourType == "simple") span.classList.add("mc-" + part.colour)
-			if (part.colourType == "hex") span.style.color = part.colour
-		}
-
-		return span
-	}
-
-	static parseFormattingCodes(value) {
-		const parts = []
-
-		const firstIdx = value.matchAll(Display.FORMATTING_CODE_REGEX).next().value?.index
-		if (firstIdx == undefined || firstIdx > 0) {
-			parts.push({ text: value.substring(0, firstIdx) })
-		}
-
-		for (const match of value.matchAll(Display.FORMATTING_CODE_REGEX)) {
-			parts.push(Display.parseFormattingCode(match[1], match[2], parts[parts.length - 1]))
-		}
-
-		return parts
-	}
-
-	static parseFormattingCode(code, text, prev) {
-		// Simple colour codes and formatting codes
-		if (Display.COLOUR_CODES[code]) {
-			return {
-				text,
-				colour: Display.COLOUR_CODES[code],
-				colourType: "simple",
-			}
-		}
-		if (Display.FORMATTING_CODES[code]) {
-			return {
-				text,
-				format: Display.FORMATTING_CODES[code],
-				colour: prev?.colour,
-				colourType: prev?.colourType,
-			}
-		}
-
-		// Hex colour codes
-		const matches = code.match(/§x§(.)§(.)§(.)§(.)§(.)§(.)/m)
-		if (matches) {
-			return {
-				text,
-				colour: "#" + matches.slice(1).join(""),
-				colourType: "hex",
-			}
-		}
-
-		// Not a valid formatting code, just return the input unaltered
-		return { text }
-	}
 
 	static appendElement<K extends keyof HTMLElementTagNameMap>(base: HTMLElement, type: K) {
 		let el = document.createElement(type)
