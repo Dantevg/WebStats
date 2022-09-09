@@ -36,13 +36,7 @@ export default class Display {
 		this.data = data
 
 		// Set pagination controls
-		if (this.pagination) {
-			this.updatePagination()
-		} else {
-			// Hide pagination controls when pagination is disabled
-			const paginationSpanElem = document.querySelector("span.webstats-pagination") as HTMLElement
-			if (paginationSpanElem) paginationSpanElem.style.display = "none"
-		}
+		if (this.pagination) this.updatePagination()
 
 		// Create header of columns
 		this.headerElem = document.createElement("tr")

@@ -80,7 +80,10 @@ export default class WebStats {
 		}
 
 		this.data = new Data(data)
-		this.displays.forEach(display => display.init(this.data)) // Display data in table
+		this.displays.forEach(display => {
+			display.init(this.data)
+			display.sort()
+		})
 	}
 
 	update() {
@@ -109,14 +112,15 @@ export default class WebStats {
 
 	addTableManual(config, tableConfig: TableConfig) {
 		let pagination: Pagination
-		if (config.displayCount > 0) {
-			const selectElem = document.querySelector("select.webstats-pagination") as HTMLSelectElement
-			const prevButton = document.querySelector("button.webstats-pagination[name=prev]") as HTMLButtonElement
-			const nextButton = document.querySelector("button.webstats-pagination[name=next]") as HTMLButtonElement
+		if (config.displayCount > 0 && config.tables[tableConfig.name].pagination) {
+			const paginationParent = config.tables[tableConfig.name].pagination
+			const selectElem = paginationParent.querySelector("select.webstats-pagination") as HTMLSelectElement
+			const prevButton = paginationParent.querySelector("button.webstats-pagination[name=prev]") as HTMLButtonElement
+			const nextButton = paginationParent.querySelector("button.webstats-pagination[name=next]") as HTMLButtonElement
 			pagination = new Pagination(config.displayCount, selectElem, prevButton, nextButton)
 		}
 		this.displays.push(new Display(
-			{ ...config, table: config.tables[tableConfig.name], pagination: pagination },
+			{ ...config, table: config.tables[tableConfig.name].table, pagination: pagination },
 			tableConfig
 		))
 	}
