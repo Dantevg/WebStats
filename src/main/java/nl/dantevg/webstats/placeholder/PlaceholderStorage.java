@@ -164,7 +164,7 @@ public class PlaceholderStorage {
 		try {
 			storage = getDatabaseStorage();
 		} catch (InvalidConfigurationException e) {
-			WebStats.logger.log(Level.WARNING, "Migration failed");
+			WebStats.logger.log(Level.WARNING, "Migration failed", e);
 			return false;
 		}
 		source.close();
