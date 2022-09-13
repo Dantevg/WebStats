@@ -5,28 +5,25 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
 	<title>Web Stats</title>
 	
-	<script src="WebStats-dist.js"></script>
-	
 	<link rel="stylesheet" href="style.css">
 	
-	<script>
+	<script type="module">
+		import WebStats from "./WebStats-dist.js"
+		
 		const getCookie = (cookie) => document.cookie.match(`${cookie}=([^;]+)`)?.[1]
 		
-		// Get port from cookie set by standalone WebStats web server
-		const ip = getCookie("ip") ?? "localhost"
-		const port = getCookie("port") ?? 8080
+		// Get host from cookie set by standalone WebStats web server
+		const host = getCookie("host")
+			?? (getCookie("ip") ?? "localhost") + ":" + (getCookie("port") ?? 8080)
 		
 		// Will be executed after page is loaded
 		window.addEventListener("load", () => {
 			const stats = new WebStats({
 				// required:
-				table: document.getElementById("webstats-table"), // The <table> element to use
-				ip: ip,                // The IP of the server
-				port: port,            // The port set in the config.yml on the server
+				host: host, // The IP and port of WebStats on the MC server
+				tableParent: document.getElementById("webstats-tables"),
 				// optional:
 				updateInterval: 10000, // Set to 0 to disable auto-updating (in ms, default 10000)
-				sortBy: "Player",      // The initial sorted objective (default "Player")
-				descending: false,     // The initial sorting direction (default false)
 				showSkins: true,       // Whether to show player heads (default true)
 				displayCount: 100,     // Max rows to show on one page (default 100, set to -1 to disable pagination)
 			})
@@ -45,15 +42,9 @@
 			<input type="checkbox" name="hide-offline" id="hide-offline" class="webstats-option">
 			<label for="hide-offline">Hide offline players</label>
 		</span>
-		<span class="webstats-pagination">
-			<!-- pagination controls (optional) -->
-			<button name="prev" class="webstats-pagination">Prev</button>
-			<select name="page" class="webstats-pagination"></select>
-			<button name="next" class="webstats-pagination">Next</button>
-		</span>
 		
 		<!-- the table which will be populated by WebStats (required) -->
-		<table id="webstats-table"></table>
+		<div id="webstats-tables"></div>
 	</main>
 </body>
 </html>
