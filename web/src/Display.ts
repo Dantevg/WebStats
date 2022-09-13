@@ -13,7 +13,7 @@ export default class Display {
 
 	data: Data
 	headerElem: HTMLTableRowElement
-	rows: HTMLTableRowElement[]
+	rows: Map<string, HTMLTableRowElement>
 
 	static CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NUUlL6z0ABYBw1gGE0DBioHAZ3795lUFZWJildosQCRQaQoxnkVLgL0A2A8dFpdP8NfEICAMkiK2HeQ9JUAAAAAElFTkSuQmCC"
 
@@ -25,7 +25,7 @@ export default class Display {
 		this.descending = sortDescending
 		this.showSkins = showSkins
 		this.hideOffline = false
-		
+
 		if (this.pagination) this.pagination.onPageChange = (page) => {
 			this.updatePagination()
 			this.show()
@@ -48,8 +48,8 @@ export default class Display {
 		}
 
 		// Create rows of (empty) entries
-		this.rows = []
-		for (const entry of this.data.entries) {
+		this.rows = new Map()
+		for (const entry of this.getEntries()) {
 			this.appendEntry(entry)
 		}
 
@@ -57,11 +57,27 @@ export default class Display {
 		this.updateStatsAndShow()
 	}
 
+	getEntries() {
+		const entriesHere = this.data.entries.filter((entry: string) =>
+			this.columns.some((column: string) =>
+				this.data.scoreboard.scores[column][entry]
+				&& this.data.scoreboard.scores[column][entry] != "0"))
+
+		return this.hideOffline
+			? entriesHere.filter(entry => this.data.isOnline(entry))
+			: entriesHere
+	}
+
+	getScores() {
+		const scoresHere = this.data.scores.filter(row => this.rows.has(row[1]))
+
+		return this.hideOffline
+			? scoresHere.filter(row => this.data.isOnline(row[1]))
+			: scoresHere
+	}
+
 	updatePagination() {
-		const entries = this.hideOffline
-			? this.data.entries.filter(entry => this.data.isOnline(entry))
-			: this.data.entries
-		this.pagination.update(entries.length)
+		this.pagination.update(this.getEntries().length)
 	}
 
 	appendEntry(entry: string) {
@@ -94,7 +110,7 @@ export default class Display {
 			td.classList.add("empty")
 			td.setAttribute("objective", Display.quoteEscape(column))
 		}
-		this.rows.push(tr)
+		this.rows.set(entry, tr)
 	}
 
 	setSkin(entry: string, row: HTMLTableRowElement) {
@@ -110,7 +126,7 @@ export default class Display {
 			for (const column of this.columns) {
 				let value = row[this.data.columns_[column]] as string
 				if (!value) continue
-				const td = this.rows[row[0]].querySelector(`td[objective='${column}']`) as HTMLTableCellElement
+				const td = this.rows.get(row[1]).querySelector(`td[objective='${column}']`) as HTMLTableCellElement
 				td.classList.remove("empty")
 				td.setAttribute("value", value)
 
@@ -123,14 +139,14 @@ export default class Display {
 			}
 		}
 	}
-	
+
 	updateScoreboardAndShow() {
 		this.updateScoreboard()
 		this.show()
 	}
 
 	updateOnlineStatus() {
-		for (const row of this.rows) {
+		for (const [_, row] of this.rows) {
 			const statusElement = row.querySelector("td .status")
 			if (!statusElement) continue
 			const entry = row.getAttribute("entry")
@@ -143,7 +159,7 @@ export default class Display {
 			statusElement.setAttribute("title", this.data.getStatus(entry))
 		}
 	}
-	
+
 	updateOnlineStatusAndShow() {
 		this.updateOnlineStatus()
 		if (this.pagination && this.hideOffline) this.show()
@@ -153,7 +169,7 @@ export default class Display {
 		this.updateScoreboard()
 		this.updateOnlineStatus()
 	}
-	
+
 	updateStatsAndShow() {
 		this.updateScoreboard()
 		this.updateOnlineStatus()
@@ -172,15 +188,13 @@ export default class Display {
 	show() {
 		this.table.innerHTML = ""
 		this.table.append(this.headerElem)
-		const scores = this.hideOffline
-			? this.data.scores.filter(row => this.data.isOnline(row[1]))
-			: this.data.scores
+		const scores = this.getScores()
 		const [min, max] = this.pagination
 			? this.pagination.getRange(scores.length)
 			: [0, scores.length]
 		for (let i = min; i < max; i++) {
-			if (this.showSkins) this.setSkin(scores[i][1], this.rows[scores[i][0]])
-			this.table.append(this.rows[scores[i][0]])
+			if (this.showSkins) this.setSkin(scores[i][1], this.rows.get(scores[i][1]))
+			this.table.append(this.rows.get(scores[i][1]))
 		}
 	}
 

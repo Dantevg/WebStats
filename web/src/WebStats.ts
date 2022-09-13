@@ -67,7 +67,7 @@ export default class WebStats {
 		window.webstats = this
 	}
 
-	init(data: Data, tableConfigs: TableConfig[], config) {
+	init(data, tableConfigs: TableConfig[], config) {
 		if (config.tables) {
 			for (const tableName in config.tables) {
 				const tableConfig = tableConfigs.find(config => config.name == tableName)
