@@ -67,16 +67,21 @@ export default class WebStats {
 		window.webstats = this
 	}
 
-	init(data, tableConfigs: TableConfig[], config) {
+	init(data, tableConfigs: TableConfig[] | undefined, config) {
 		if (config.tables) {
 			for (const tableName in config.tables) {
-				const tableConfig = tableConfigs.find(config =>
-					config.name == tableName || (tableName == "" && config.name == undefined))
+				const tableConfig = tableConfigs
+					? tableConfigs.find(tc => (tc.name ?? "") == tableName)
+					: { colums: data.scoreboard.columns as string[] } as TableConfig
 				if (tableConfig) this.addTableManual(config, tableConfig)
 			}
 		} else {
-			for (const tableConfig of tableConfigs) {
-				this.addTableAutomatic(config, tableConfig)
+			if (tableConfigs) {
+				for (const tableConfig of tableConfigs) {
+					this.addTableAutomatic(config, tableConfig)
+				}
+			} else {
+				this.addTableAutomatic(config, { colums: data.scoreboard.columns as string[] } as TableConfig)
 			}
 		}
 
@@ -113,12 +118,12 @@ export default class WebStats {
 
 	addTableManual(config, tableConfig: TableConfig) {
 		let pagination: Pagination
-		if (config.displayCount > 0 && config.tables[tableConfig.name].pagination) {
-			const paginationParent = config.tables[tableConfig.name].pagination
+		if (config.displayCount > 0 && config.tables[tableConfig.name ?? ""].pagination) {
+			const paginationParent = config.tables[tableConfig.name ?? ""].pagination
 			pagination = new Pagination(config.displayCount, paginationParent)
 		}
 		this.displays.push(new Display(
-			{ ...config, table: config.tables[tableConfig.name].table, pagination: pagination },
+			{ ...config, table: config.tables[tableConfig.name ?? ""].table, pagination: pagination },
 			tableConfig
 		))
 	}

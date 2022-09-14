@@ -28,7 +28,7 @@ export default class Connection {
 			return { online, scoreboard }
 		}
 	}
-	getScoreboard = () => fetch(this.scores).then(response => response.json())
-	getOnline = () => fetch(this.online).then(response => response.json())
-	getTables = () => fetch(this.tables).then(response => response.json())
+	getScoreboard = () => fetch(this.scores).then(response => response.json()).catch(() => {})
+	getOnline = () => fetch(this.online).then(response => response.json()).catch(() => {})
+	getTables = () => fetch(this.tables).then(response => response.json()).catch(() => {})
 }
