@@ -18,9 +18,9 @@ class Connection {
                 return { online, scoreboard };
             }
         };
-        this.getScoreboard = () => fetch(this.scores).then(response => response.json());
-        this.getOnline = () => fetch(this.online).then(response => response.json());
-        this.getTables = () => fetch(this.tables).then(response => response.json());
+        this.getScoreboard = () => fetch(this.scores).then(response => response.json()).catch(() => { });
+        this.getOnline = () => fetch(this.online).then(response => response.json()).catch(() => { });
+        this.getTables = () => fetch(this.tables).then(response => response.json()).catch(() => { });
         this.all = all;
         this.scores = scores;
         this.online = online;
@@ -210,7 +210,7 @@ FormattingCodes.FORMATTING_CODE_REGEX = /(§x§.§.§.§.§.§.|§.)([^§]*)/gm;
 FormattingCodes.convertFormattingCodes = (value) => FormattingCodes.parseFormattingCodes(value).map(FormattingCodes.convertFormattingCode);
 
 class Display {
-    constructor({ table, pagination, showSkins = true }, { columns = [], sortBy = "Player", sortDescending = false }) {
+    constructor({ table, pagination, showSkins = true }, { columns, sortBy = "Player", sortDescending = false }) {
         this.table = table;
         this.pagination = pagination;
         this.columns = columns;
@@ -233,7 +233,7 @@ class Display {
         this.headerElem = document.createElement("tr");
         this.table.append(this.headerElem);
         Display.appendTh(this.headerElem, "Player", this.thClick.bind(this), this.showSkins ? 2 : undefined);
-        for (const column of this.columns) {
+        for (const column of this.columns ?? this.data.columns) {
             Display.appendTh(this.headerElem, column, this.thClick.bind(this));
         }
         // Create rows of (empty) entries
@@ -245,7 +245,7 @@ class Display {
         this.updateStatsAndShow();
     }
     getEntries() {
-        const entriesHere = this.data.entries.filter((entry) => this.columns.some((column) => this.data.scoreboard.scores[column][entry]
+        const entriesHere = this.data.entries.filter((entry) => (this.columns ?? this.data.columns).some((column) => this.data.scoreboard.scores[column][entry]
             && this.data.scoreboard.scores[column][entry] != "0"));
         return this.hideOffline
             ? entriesHere.filter(entry => this.data.isOnline(entry))
@@ -281,7 +281,7 @@ class Display {
         if (this.data.isCurrentPlayer(entry))
             tr.classList.add("current-player");
         // Append empty elements for alignment
-        for (const column of this.columns) {
+        for (const column of this.columns ?? this.data.columns) {
             let td = Display.appendElement(tr, "td");
             td.classList.add("empty");
             td.setAttribute("objective", Display.quoteEscape(column));
@@ -299,7 +299,7 @@ class Display {
     }
     updateScoreboard() {
         for (const row of this.data.scores) {
-            for (const column of this.columns) {
+            for (const column of this.columns ?? this.data.columns) {
                 let value = row[this.data.columns_[column]];
                 if (!value)
                     continue;
@@ -415,12 +415,13 @@ Display.CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQC
 Display.quoteEscape = (string) => string.replace(/'/g, "&quot;");
 
 class Pagination {
-    constructor(displayCount, selectElem, prevButton, nextButton) {
+    constructor(displayCount, elem) {
         this.displayCount = displayCount;
         this.currentPage = 1;
-        this.selectElem = selectElem;
-        this.prevButton = prevButton;
-        this.nextButton = nextButton;
+        this.parentElem = elem;
+        this.selectElem = elem.querySelector("select.webstats-pagination[name=page]");
+        this.prevButton = elem.querySelector("button.webstats-pagination[name=prev]");
+        this.nextButton = elem.querySelector("button.webstats-pagination[name=next]");
         this.selectElem.addEventListener("change", (e) => this.changePageAndCallback(Number(e.target.value)));
         this.prevButton.addEventListener("click", () => this.changePageAndCallback(this.currentPage - 1));
         this.nextButton.addEventListener("click", () => this.changePageAndCallback(this.currentPage + 1));
@@ -437,20 +438,16 @@ class Pagination {
         nextButton.classList.add("webstats-pagination");
         nextButton.name = "next";
         nextButton.innerText = "Next";
-        return new Pagination(displayCount, pageSelect, prevButton, nextButton);
+        return new Pagination(displayCount, elem);
     }
     update(nEntries) {
         this.maxPage = Math.ceil(nEntries / this.displayCount);
         // Hide all controls when there is only one page
         if (this.maxPage == 1) {
-            this.selectElem.classList.add("pagination-hidden");
-            this.prevButton.classList.add("pagination-hidden");
-            this.nextButton.classList.add("pagination-hidden");
+            this.parentElem.classList.add("pagination-hidden");
         }
         else {
-            this.selectElem.classList.remove("pagination-hidden");
-            this.prevButton.classList.remove("pagination-hidden");
-            this.nextButton.classList.remove("pagination-hidden");
+            this.parentElem.classList.remove("pagination-hidden");
         }
         // Page selector
         if (this.selectElem) {
@@ -531,14 +528,21 @@ class WebStats {
     init(data, tableConfigs, config) {
         if (config.tables) {
             for (const tableName in config.tables) {
-                const tableConfig = tableConfigs.find(config => config.name == tableName);
+                const tableConfig = tableConfigs
+                    ? tableConfigs.find(tc => (tc.name ?? "") == tableName)
+                    : { colums: data.scoreboard.columns };
                 if (tableConfig)
                     this.addTableManual(config, tableConfig);
             }
         }
         else {
-            for (const tableConfig of tableConfigs) {
-                this.addTableAutomatic(config, tableConfig);
+            if (tableConfigs) {
+                for (const tableConfig of tableConfigs) {
+                    this.addTableAutomatic(config, tableConfig);
+                }
+            }
+            else {
+                this.addTableAutomatic(config, { colums: data.scoreboard.columns });
             }
         }
         this.data = new Data(data);
@@ -572,21 +576,20 @@ class WebStats {
     }
     addTableManual(config, tableConfig) {
         let pagination;
-        if (config.displayCount > 0 && config.tables[tableConfig.name].pagination) {
-            const paginationParent = config.tables[tableConfig.name].pagination;
-            const selectElem = paginationParent.querySelector("select.webstats-pagination");
-            const prevButton = paginationParent.querySelector("button.webstats-pagination[name=prev]");
-            const nextButton = paginationParent.querySelector("button.webstats-pagination[name=next]");
-            pagination = new Pagination(config.displayCount, selectElem, prevButton, nextButton);
+        if (config.displayCount > 0 && config.tables[tableConfig.name ?? ""].pagination) {
+            const paginationParent = config.tables[tableConfig.name ?? ""].pagination;
+            pagination = new Pagination(config.displayCount, paginationParent);
         }
-        this.displays.push(new Display({ ...config, table: config.tables[tableConfig.name].table, pagination: pagination }, tableConfig));
+        this.displays.push(new Display({ ...config, table: config.tables[tableConfig.name ?? ""].table, pagination: pagination }, tableConfig));
     }
     addTableAutomatic(config, tableConfig) {
         const headerElem = config.tableParent
             .appendChild(document.createElement("div"));
-        headerElem.innerText = String(tableConfig.name);
         headerElem.classList.add("webstats-tableheading");
-        headerElem.setAttribute("webstats-table", tableConfig.name);
+        if (tableConfig.name) {
+            headerElem.innerText = tableConfig.name;
+            headerElem.setAttribute("webstats-table", tableConfig.name);
+        }
         let pagination;
         if (config.displayCount > 0) {
             const paginationControls = headerElem.appendChild(document.createElement("span"));
@@ -595,7 +598,8 @@ class WebStats {
         }
         const tableElem = config.tableParent
             .appendChild(document.createElement("table"));
-        tableElem.setAttribute("webstats-table", tableConfig.name);
+        if (tableConfig.name)
+            tableElem.setAttribute("webstats-table", tableConfig.name);
         this.displays.push(new Display({ ...config, table: tableElem, pagination: pagination }, tableConfig));
     }
 }

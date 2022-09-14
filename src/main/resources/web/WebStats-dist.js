@@ -8,7 +8,7 @@
 */
 
 class Connection {
-    constructor({ all, scores, online }) {
+    constructor({ all, scores, online, tables }) {
         this.getStats = async () => {
             if (this.all) {
                 return await (await fetch(this.all)).json();
@@ -18,18 +18,20 @@ class Connection {
                 return { online, scoreboard };
             }
         };
-        this.getScoreboard = () => fetch(this.scores).then(response => response.json());
-        this.getOnline = () => fetch(this.online).then(response => response.json());
+        this.getScoreboard = () => fetch(this.scores).then(response => response.json()).catch(() => { });
+        this.getOnline = () => fetch(this.online).then(response => response.json()).catch(() => { });
+        this.getTables = () => fetch(this.tables).then(response => response.json()).catch(() => { });
         this.all = all;
         this.scores = scores;
         this.online = online;
+        this.tables = tables;
     }
-    static json(ip, port) {
-        const baseURL = `http://${ip}:${port}`;
+    static json(host) {
         return new Connection({
-            all: baseURL + "/stats.json",
-            scores: baseURL + "/scoreboard.json",
-            online: baseURL + "/online.json"
+            all: `http://${host}/stats.json`,
+            scores: `http://${host}/scoreboard.json`,
+            online: `http://${host}/online.json`,
+            tables: `http://${host}/tables.json`,
         });
     }
 }
@@ -53,8 +55,7 @@ class Data {
     get nOnline() { return Object.keys(this.players).length; }
     setScoreboard(scoreboard) {
         this.scoreboard = scoreboard;
-        this.columns = scoreboard.columns
-            ?? Object.keys(scoreboard.scores).sort();
+        this.columns = Object.keys(scoreboard.scores).sort();
         this.filter();
         this.scores = [];
         for (const entryName of this.entries) {
@@ -117,86 +118,147 @@ Data.filter = (obj, predicate) => Object.fromEntries(Object.entries(obj).filter(
 // Likewise, array-like map function for objects
 Data.map = (obj, mapper) => Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, mapper(k, v)]));
 
+class FormattingCodes {
+    // Convert a single formatting code to a <span> element
+    static convertFormattingCode(part) {
+        if (!part.format && !part.colour)
+            return part.text;
+        const span = document.createElement("span");
+        span.innerText = part.text;
+        span.classList.add("mc-format");
+        if (part.format)
+            span.classList.add("mc-" + part.format);
+        if (part.colour) {
+            if (part.colourType == "simple")
+                span.classList.add("mc-" + part.colour);
+            if (part.colourType == "hex")
+                span.style.color = part.colour;
+        }
+        return span;
+    }
+    static parseFormattingCodes(value) {
+        const parts = [];
+        const firstIdx = value.matchAll(FormattingCodes.FORMATTING_CODE_REGEX).next().value?.index;
+        if (firstIdx == undefined || firstIdx > 0) {
+            parts.push({ text: value.substring(0, firstIdx) });
+        }
+        for (const match of value.matchAll(FormattingCodes.FORMATTING_CODE_REGEX)) {
+            parts.push(FormattingCodes.parseFormattingCode(match[1], match[2], parts[parts.length - 1]));
+        }
+        return parts;
+    }
+    static parseFormattingCode(code, text, prev) {
+        // Simple colour codes and formatting codes
+        if (FormattingCodes.COLOUR_CODES[code]) {
+            return {
+                text,
+                colour: FormattingCodes.COLOUR_CODES[code],
+                colourType: "simple",
+            };
+        }
+        if (FormattingCodes.FORMATTING_CODES[code]) {
+            return {
+                text,
+                format: FormattingCodes.FORMATTING_CODES[code],
+                colour: prev?.colour,
+                colourType: prev?.colourType,
+            };
+        }
+        // Hex colour codes
+        const matches = code.match(/§x§(.)§(.)§(.)§(.)§(.)§(.)/m);
+        if (matches) {
+            return {
+                text,
+                colour: "#" + matches.slice(1).join(""),
+                colourType: "hex",
+            };
+        }
+        // Not a valid formatting code, just return the input unaltered
+        return { text };
+    }
+}
+FormattingCodes.COLOUR_CODES = {
+    ["§0"]: "black",
+    ["§1"]: "dark_blue",
+    ["§2"]: "dark_green",
+    ["§3"]: "dark_aqua",
+    ["§4"]: "dark_red",
+    ["§5"]: "dark_purple",
+    ["§6"]: "gold",
+    ["§7"]: "gray",
+    ["§8"]: "dark_gray",
+    ["§9"]: "blue",
+    ["§a"]: "green",
+    ["§b"]: "aqua",
+    ["§c"]: "red",
+    ["§d"]: "light_purple",
+    ["§e"]: "yellow",
+    ["§f"]: "white",
+};
+FormattingCodes.FORMATTING_CODES = {
+    ["§k"]: "obfuscated",
+    ["§l"]: "bold",
+    ["§m"]: "strikethrough",
+    ["§n"]: "underline",
+    ["§o"]: "italic",
+    ["§r"]: "reset",
+};
+// § followed by a single character, or of the form §x§r§r§g§g§b§b
+// (also capture rest of string, until next §)
+FormattingCodes.FORMATTING_CODE_REGEX = /(§x§.§.§.§.§.§.|§.)([^§]*)/gm;
+// Replace all formatting codes by <span> elements
+FormattingCodes.convertFormattingCodes = (value) => FormattingCodes.parseFormattingCodes(value).map(FormattingCodes.convertFormattingCode);
+
 class Display {
-    constructor({ table, sortBy = "Player", descending = false, showSkins = true, displayCount = 100 }) {
+    constructor({ table, pagination, showSkins = true }, { columns, sortBy = "Player", sortDescending = false }) {
         this.table = table;
+        this.pagination = pagination;
+        this.columns = columns;
         this.sortBy = sortBy;
-        this.descending = descending;
+        this.descending = sortDescending;
         this.showSkins = showSkins;
-        this.displayCount = displayCount;
         this.hideOffline = false;
-        this.currentPage = 1;
+        if (this.pagination)
+            this.pagination.onPageChange = (page) => {
+                this.updatePagination();
+                this.show();
+            };
     }
     init(data) {
         this.data = data;
         // Set pagination controls
-        if (this.displayCount > 0) {
-            this.initPagination();
-        }
-        else {
-            // Hide pagination controls when pagination is disabled
-            const paginationSpanElem = document.querySelector("span.webstats-pagination");
-            if (paginationSpanElem)
-                paginationSpanElem.style.display = "none";
-        }
+        if (this.pagination)
+            this.updatePagination();
         // Create header of columns
         this.headerElem = document.createElement("tr");
         this.table.append(this.headerElem);
         Display.appendTh(this.headerElem, "Player", this.thClick.bind(this), this.showSkins ? 2 : undefined);
-        for (const column of this.data.columns) {
+        for (const column of this.columns ?? this.data.columns) {
             Display.appendTh(this.headerElem, column, this.thClick.bind(this));
         }
         // Create rows of (empty) entries
-        this.rows = [];
-        for (const entry of this.data.entries) {
+        this.rows = new Map();
+        for (const entry of this.getEntries()) {
             this.appendEntry(entry);
         }
         // Fill entries
-        this.updateStats();
+        this.updateStatsAndShow();
     }
-    initPagination() {
-        this.maxPage = Math.ceil(this.data.entries.length / this.displayCount);
-        // Page selector
-        this.selectElem = document.querySelector("select.webstats-pagination");
-        if (this.selectElem)
-            this.selectElem.onchange = (e) => this.changePage(Number(e.target.value));
-        else
-            console.warn("WebStats: no/invalid page control elements");
-        // "Prev" button
-        this.prevButton = document.querySelector("button.webstats-pagination[name=prev]");
-        if (this.prevButton)
-            this.prevButton.onclick = () => this.changePage(this.currentPage - 1);
-        else
-            console.warn("WebStats: no/invalid page control elements");
-        // "Next" button
-        this.nextButton = document.querySelector("button.webstats-pagination[name=next]");
-        if (this.nextButton)
-            this.nextButton.onclick = () => this.changePage(this.currentPage + 1);
-        else
-            console.warn("WebStats: no/invalid page control elements");
-        this.updatePagination();
+    getEntries() {
+        const entriesHere = this.data.entries.filter((entry) => (this.columns ?? this.data.columns).some((column) => this.data.scoreboard.scores[column][entry]
+            && this.data.scoreboard.scores[column][entry] != "0"));
+        return this.hideOffline
+            ? entriesHere.filter(entry => this.data.isOnline(entry))
+            : entriesHere;
+    }
+    getScores() {
+        const scoresHere = this.data.scores.filter(row => this.rows.has(row[1]));
+        return this.hideOffline
+            ? scoresHere.filter(row => this.data.isOnline(row[1]))
+            : scoresHere;
     }
     updatePagination() {
-        const entries = this.hideOffline
-            ? this.data.entries.filter(entry => this.data.isOnline(entry))
-            : this.data.entries;
-        this.maxPage = Math.ceil(entries.length / this.displayCount);
-        // Page selector
-        if (this.selectElem) {
-            this.selectElem.innerHTML = "";
-            for (let i = 1; i <= this.maxPage; i++) {
-                const optionElem = document.createElement("option");
-                optionElem.innerText = String(i);
-                this.selectElem.append(optionElem);
-            }
-            this.selectElem.value = String(this.currentPage);
-        }
-        // "Prev" button
-        if (this.prevButton)
-            this.prevButton.toggleAttribute("disabled", this.currentPage <= 1);
-        // "Next" button
-        if (this.nextButton)
-            this.nextButton.toggleAttribute("disabled", this.currentPage >= this.maxPage);
+        this.pagination.update(this.getEntries().length);
     }
     appendEntry(entry) {
         let tr = document.createElement("tr");
@@ -219,41 +281,45 @@ class Display {
         if (this.data.isCurrentPlayer(entry))
             tr.classList.add("current-player");
         // Append empty elements for alignment
-        for (const objective of this.data.columns) {
+        for (const column of this.columns ?? this.data.columns) {
             let td = Display.appendElement(tr, "td");
             td.classList.add("empty");
-            td.setAttribute("objective", Display.quoteEscape(objective));
+            td.setAttribute("objective", Display.quoteEscape(column));
         }
-        this.rows.push(tr);
+        this.rows.set(entry, tr);
     }
     setSkin(entry, row) {
         const img = row.getElementsByTagName("img")[0];
         if (img) {
             if (entry == "#server")
-                img.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NUUlL6z0ABYBw1gGE0DBioHAZ3795lUFZWJildosQCRQaQoxnkVLgL0A2A8dFpdP8NfEICAMkiK2HeQ9JUAAAAAElFTkSuQmCC";
+                img.src = Display.CONSOLE_IMAGE;
             else
                 img.src = `https://www.mc-heads.net/avatar/${entry}.png`;
         }
     }
     updateScoreboard() {
         for (const row of this.data.scores) {
-            for (const column of this.data.columns) {
+            for (const column of this.columns ?? this.data.columns) {
                 let value = row[this.data.columns_[column]];
                 if (!value)
                     continue;
-                const td = this.rows[row[0]].querySelector(`td[objective='${column}']`);
+                const td = this.rows.get(row[1]).querySelector(`td[objective='${column}']`);
                 td.classList.remove("empty");
                 td.setAttribute("value", value);
                 // Convert numbers to locale
                 value = isNaN(value) ? value : Number(value).toLocaleString();
                 // Convert Minecraft formatting codes
                 td.innerHTML = "";
-                td.append(...Display.convertFormattingCodes(value));
+                td.append(...FormattingCodes.convertFormattingCodes(value));
             }
         }
     }
+    updateScoreboardAndShow() {
+        this.updateScoreboard();
+        this.show();
+    }
     updateOnlineStatus() {
-        for (const row of this.rows) {
+        for (const [_, row] of this.rows) {
             const statusElement = row.querySelector("td .status");
             if (!statusElement)
                 continue;
@@ -265,45 +331,40 @@ class Display {
             statusElement.classList.add(status.toLowerCase());
             statusElement.setAttribute("title", this.data.getStatus(entry));
         }
-        // Re-display if pagination is enabled
-        if (this.displayCount > 0)
+    }
+    updateOnlineStatusAndShow() {
+        this.updateOnlineStatus();
+        if (this.pagination && this.hideOffline)
             this.show();
     }
     updateStats() {
         this.updateScoreboard();
         this.updateOnlineStatus();
     }
-    // Change the page, re-display if `show` is not false and set page controls
-    changePage(page, show) {
-        page = Math.max(1, Math.min(page, this.maxPage));
-        this.currentPage = page;
-        if (show != false)
-            this.show();
-        if (this.displayCount > 0)
-            this.updatePagination();
+    updateStatsAndShow() {
+        this.updateScoreboard();
+        this.updateOnlineStatus();
+        this.show();
     }
     changeHideOffline(hideOffline) {
         this.hideOffline = hideOffline;
-        if (this.displayCount > 0) {
-            this.updatePagination();
-            this.changePage(1);
+        if (this.pagination) {
+            this.pagination.changePage(1);
+            this.show();
         }
     }
     // Re-display table contents
     show() {
         this.table.innerHTML = "";
         this.table.append(this.headerElem);
-        const scores = this.hideOffline
-            ? this.data.scores.filter(row => this.data.isOnline(row[1]))
-            : this.data.scores;
-        const min = (this.currentPage - 1) * this.displayCount;
-        const max = (this.displayCount > 0)
-            ? Math.min(this.currentPage * this.displayCount, scores.length)
-            : scores.length;
+        const scores = this.getScores();
+        const [min, max] = this.pagination
+            ? this.pagination.getRange(scores.length)
+            : [0, scores.length];
         for (let i = min; i < max; i++) {
             if (this.showSkins)
-                this.setSkin(scores[i][1], this.rows[scores[i][0]]);
-            this.table.append(this.rows[scores[i][0]]);
+                this.setSkin(scores[i][1], this.rows.get(scores[i][1]));
+            this.table.append(this.rows.get(scores[i][1]));
         }
     }
     // Sort a HTML table element
@@ -316,69 +377,9 @@ class Display {
         let objective = e.target.innerText;
         this.descending = (objective === this.sortBy) ? !this.descending : true;
         this.sortBy = objective;
-        if (this.displayCount > 0)
-            this.changePage(1, false);
+        if (this.pagination)
+            this.pagination.changePage(1);
         this.sort();
-        // Set URL query string, for sharing
-        window.history.replaceState({}, "", location.pathname + "?sort=" + this.sortBy.replace(/\s/g, "+")
-            + "&order=" + (this.descending ? "desc" : "asc"));
-    }
-    // Convert a single formatting code to a <span> element
-    static convertFormattingCode(part) {
-        if (!part.format && !part.colour)
-            return part.text;
-        const span = document.createElement("span");
-        span.innerText = part.text;
-        span.classList.add("mc-format");
-        if (part.format)
-            span.classList.add("mc-" + part.format);
-        if (part.colour) {
-            if (part.colourType == "simple")
-                span.classList.add("mc-" + part.colour);
-            if (part.colourType == "hex")
-                span.style.color = part.colour;
-        }
-        return span;
-    }
-    static parseFormattingCodes(value) {
-        const parts = [];
-        const firstIdx = value.matchAll(Display.FORMATTING_CODE_REGEX).next().value?.index;
-        if (firstIdx == undefined || firstIdx > 0) {
-            parts.push({ text: value.substring(0, firstIdx) });
-        }
-        for (const match of value.matchAll(Display.FORMATTING_CODE_REGEX)) {
-            parts.push(Display.parseFormattingCode(match[1], match[2], parts[parts.length - 1]));
-        }
-        return parts;
-    }
-    static parseFormattingCode(code, text, prev) {
-        // Simple colour codes and formatting codes
-        if (Display.COLOUR_CODES[code]) {
-            return {
-                text,
-                colour: Display.COLOUR_CODES[code],
-                colourType: "simple",
-            };
-        }
-        if (Display.FORMATTING_CODES[code]) {
-            return {
-                text,
-                format: Display.FORMATTING_CODES[code],
-                colour: prev?.colour,
-                colourType: prev?.colourType,
-            };
-        }
-        // Hex colour codes
-        const matches = code.match(/§x§(.)§(.)§(.)§(.)§(.)§(.)/m);
-        if (matches) {
-            return {
-                text,
-                colour: "#" + matches.slice(1).join(""),
-                colourType: "hex",
-            };
-        }
-        // Not a valid formatting code, just return the input unaltered
-        return { text };
     }
     static appendElement(base, type) {
         let el = document.createElement(type);
@@ -409,44 +410,85 @@ class Display {
         return img;
     }
 }
-Display.COLOUR_CODES = {
-    ["§0"]: "black",
-    ["§1"]: "dark_blue",
-    ["§2"]: "dark_green",
-    ["§3"]: "dark_aqua",
-    ["§4"]: "dark_red",
-    ["§5"]: "dark_purple",
-    ["§6"]: "gold",
-    ["§7"]: "gray",
-    ["§8"]: "dark_gray",
-    ["§9"]: "blue",
-    ["§a"]: "green",
-    ["§b"]: "aqua",
-    ["§c"]: "red",
-    ["§d"]: "light_purple",
-    ["§e"]: "yellow",
-    ["§f"]: "white",
-};
-Display.FORMATTING_CODES = {
-    ["§k"]: "obfuscated",
-    ["§l"]: "bold",
-    ["§m"]: "strikethrough",
-    ["§n"]: "underline",
-    ["§o"]: "italic",
-    ["§r"]: "reset",
-};
-// § followed by a single character, or of the form §x§r§r§g§g§b§b
-// (also capture rest of string, until next §)
-Display.FORMATTING_CODE_REGEX = /(§x§.§.§.§.§.§.|§.)([^§]*)/gm;
+Display.CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NUUlL6z0ABYBw1gGE0DBioHAZ3795lUFZWJildosQCRQaQoxnkVLgL0A2A8dFpdP8NfEICAMkiK2HeQ9JUAAAAAElFTkSuQmCC";
 // Replace single quotes by '&quot;' (html-escape)
 Display.quoteEscape = (string) => string.replace(/'/g, "&quot;");
-// Replace all formatting codes by <span> elements
-Display.convertFormattingCodes = (value) => Display.parseFormattingCodes(value).map(Display.convertFormattingCode);
+
+class Pagination {
+    constructor(displayCount, elem) {
+        this.displayCount = displayCount;
+        this.currentPage = 1;
+        this.parentElem = elem;
+        this.selectElem = elem.querySelector("select.webstats-pagination[name=page]");
+        this.prevButton = elem.querySelector("button.webstats-pagination[name=prev]");
+        this.nextButton = elem.querySelector("button.webstats-pagination[name=next]");
+        this.selectElem.addEventListener("change", (e) => this.changePageAndCallback(Number(e.target.value)));
+        this.prevButton.addEventListener("click", () => this.changePageAndCallback(this.currentPage - 1));
+        this.nextButton.addEventListener("click", () => this.changePageAndCallback(this.currentPage + 1));
+    }
+    static create(displayCount, elem) {
+        const prevButton = elem.appendChild(document.createElement("button"));
+        prevButton.classList.add("webstats-pagination");
+        prevButton.name = "prev";
+        prevButton.innerText = "Prev";
+        const pageSelect = elem.appendChild(document.createElement("select"));
+        pageSelect.classList.add("webstats-pagination");
+        pageSelect.name = "page";
+        const nextButton = elem.appendChild(document.createElement("button"));
+        nextButton.classList.add("webstats-pagination");
+        nextButton.name = "next";
+        nextButton.innerText = "Next";
+        return new Pagination(displayCount, elem);
+    }
+    update(nEntries) {
+        this.maxPage = Math.ceil(nEntries / this.displayCount);
+        // Hide all controls when there is only one page
+        if (this.maxPage == 1) {
+            this.parentElem.classList.add("pagination-hidden");
+        }
+        else {
+            this.parentElem.classList.remove("pagination-hidden");
+        }
+        // Page selector
+        if (this.selectElem) {
+            this.selectElem.innerHTML = "";
+            for (let i = 1; i <= this.maxPage; i++) {
+                const optionElem = document.createElement("option");
+                optionElem.innerText = String(i);
+                this.selectElem.append(optionElem);
+            }
+            this.selectElem.value = String(this.currentPage);
+        }
+        // "Prev" button
+        if (this.prevButton)
+            this.prevButton.toggleAttribute("disabled", this.currentPage <= 1);
+        // "Next" button
+        if (this.nextButton)
+            this.nextButton.toggleAttribute("disabled", this.currentPage >= this.maxPage);
+    }
+    changePage(page) {
+        page = Math.max(1, Math.min(page, this.maxPage));
+        this.currentPage = page;
+    }
+    changePageAndCallback(page) {
+        this.changePage(page);
+        console.log("callback");
+        if (this.onPageChange)
+            this.onPageChange(this.currentPage);
+    }
+    getRange(nEntries) {
+        const min = (this.currentPage - 1) * this.displayCount;
+        const max = (this.displayCount > 0)
+            ? Math.min(this.currentPage * this.displayCount, nEntries)
+            : nEntries;
+        return [min, max];
+    }
+}
 
 class WebStats {
     constructor(config) {
-        this.display = new Display(config);
-        this.connection = config.connection ?? Connection.json(config.ip, config.port);
+        this.displays = [];
+        this.connection = config.connection ?? Connection.json(config.host);
         this.updateInterval = config.updateInterval ?? 10000;
         // Set online status update interval
         if (this.updateInterval > 0)
@@ -454,7 +496,10 @@ class WebStats {
         document.addEventListener("visibilitychange", () => document.hidden
             ? this.stopUpdateInterval() : this.startUpdateInterval());
         // Get data and init
-        this.connection.getStats().then(data => this.init(data));
+        const statsPromise = this.connection.getStats();
+        const tableConfigsPromise = this.connection.getTables();
+        Promise.all([statsPromise, tableConfigsPromise])
+            .then(([stats, tableConfigs]) => this.init(stats, tableConfigs, config));
         // Get saved toggles from cookies
         const cookies = document.cookie.split("; ") ?? [];
         cookies.filter(str => str.length > 0).forEach(cookie => {
@@ -474,35 +519,50 @@ class WebStats {
         if (optionHideOffline) {
             // Re-show if displayCount is set
             optionHideOffline.addEventListener("change", (e) => {
-                if (this.display.displayCount > 0)
-                    this.display.changeHideOffline(e.target.checked);
+                this.displays.forEach(display => display.changeHideOffline(optionHideOffline.checked));
             });
-            this.display.hideOffline = optionHideOffline.checked;
+            this.displays.forEach(display => display.hideOffline = optionHideOffline.checked);
         }
         window.webstats = this;
     }
-    init(data) {
+    init(data, tableConfigs, config) {
+        if (config.tables) {
+            for (const tableName in config.tables) {
+                const tableConfig = tableConfigs
+                    ? tableConfigs.find(tc => (tc.name ?? "") == tableName)
+                    : { colums: data.scoreboard.columns };
+                if (tableConfig)
+                    this.addTableManual(config, tableConfig);
+            }
+        }
+        else {
+            if (tableConfigs) {
+                for (const tableConfig of tableConfigs) {
+                    this.addTableAutomatic(config, tableConfig);
+                }
+            }
+            else {
+                this.addTableAutomatic(config, { colums: data.scoreboard.columns });
+            }
+        }
         this.data = new Data(data);
-        this.display.init(this.data); // Display data in table
-        // Get sorting from url params, if present
-        const params = (new URL(document.location.href)).searchParams;
-        let sortBy = params.get("sort") ?? this.display.sortBy;
-        let order = params.get("order");
-        let descending = order ? order.startsWith("d") : this.display.descending;
-        this.display.sort(sortBy, descending);
+        this.displays.forEach(display => {
+            display.init(this.data);
+            display.sort();
+        });
     }
     update() {
         // When nobody is online, assume scoreboard does not change
         if (this.data.nOnline > 0) {
             this.connection.getStats().then(data => {
                 this.data.setStats(data);
-                this.display.updateStats();
+                this.displays.forEach(display => display.updateStatsAndShow());
             });
         }
         else {
             this.connection.getOnline().then(data => {
                 this.data.setOnlineStatus(data);
-                this.display.updateOnlineStatus();
+                this.displays.forEach(display => display.updateOnlineStatusAndShow());
             });
         }
     }
@@ -513,6 +573,34 @@ class WebStats {
     }
     stopUpdateInterval() {
         clearInterval(this.interval);
+    }
+    addTableManual(config, tableConfig) {
+        let pagination;
+        if (config.displayCount > 0 && config.tables[tableConfig.name ?? ""].pagination) {
+            const paginationParent = config.tables[tableConfig.name ?? ""].pagination;
+            pagination = new Pagination(config.displayCount, paginationParent);
+        }
+        this.displays.push(new Display({ ...config, table: config.tables[tableConfig.name ?? ""].table, pagination: pagination }, tableConfig));
+    }
+    addTableAutomatic(config, tableConfig) {
+        const headerElem = config.tableParent
+            .appendChild(document.createElement("div"));
+        headerElem.classList.add("webstats-tableheading");
+        if (tableConfig.name) {
+            headerElem.innerText = tableConfig.name;
+            headerElem.setAttribute("webstats-table", tableConfig.name);
+        }
+        let pagination;
+        if (config.displayCount > 0) {
+            const paginationControls = headerElem.appendChild(document.createElement("span"));
+            paginationControls.classList.add("webstats-pagination");
+            pagination = Pagination.create(config.displayCount, paginationControls);
+        }
+        const tableElem = config.tableParent
+            .appendChild(document.createElement("table"));
+        if (tableConfig.name)
+            tableElem.setAttribute("webstats-table", tableConfig.name);
+        this.displays.push(new Display({ ...config, table: tableElem, pagination: pagination }, tableConfig));
     }
 }
 
