@@ -7,7 +7,7 @@ declare global {
 	interface Window { webstats: WebStats }
 }
 
-type TableConfig = {
+export type TableConfig = {
 	name?: string
 	columns?: string[]
 	sortBy?: string
@@ -70,7 +70,8 @@ export default class WebStats {
 	init(data, tableConfigs: TableConfig[], config) {
 		if (config.tables) {
 			for (const tableName in config.tables) {
-				const tableConfig = tableConfigs.find(config => config.name == tableName)
+				const tableConfig = tableConfigs.find(config =>
+					config.name == tableName || (tableName == "" && config.name == undefined))
 				if (tableConfig) this.addTableManual(config, tableConfig)
 			}
 		} else {
@@ -114,10 +115,7 @@ export default class WebStats {
 		let pagination: Pagination
 		if (config.displayCount > 0 && config.tables[tableConfig.name].pagination) {
 			const paginationParent = config.tables[tableConfig.name].pagination
-			const selectElem = paginationParent.querySelector("select.webstats-pagination") as HTMLSelectElement
-			const prevButton = paginationParent.querySelector("button.webstats-pagination[name=prev]") as HTMLButtonElement
-			const nextButton = paginationParent.querySelector("button.webstats-pagination[name=next]") as HTMLButtonElement
-			pagination = new Pagination(config.displayCount, selectElem, prevButton, nextButton)
+			pagination = new Pagination(config.displayCount, paginationParent)
 		}
 		this.displays.push(new Display(
 			{ ...config, table: config.tables[tableConfig.name].table, pagination: pagination },
@@ -128,9 +126,11 @@ export default class WebStats {
 	addTableAutomatic(config, tableConfig: TableConfig) {
 		const headerElem = (config.tableParent as HTMLElement)
 			.appendChild(document.createElement("div"))
-		headerElem.innerText = String(tableConfig.name)
 		headerElem.classList.add("webstats-tableheading")
-		headerElem.setAttribute("webstats-table", tableConfig.name)
+		if (tableConfig.name) {
+			headerElem.innerText = tableConfig.name
+			headerElem.setAttribute("webstats-table", tableConfig.name)
+		}
 
 		let pagination: Pagination
 		if (config.displayCount > 0) {
@@ -141,7 +141,7 @@ export default class WebStats {
 
 		const tableElem = (config.tableParent as HTMLElement)
 			.appendChild(document.createElement("table"))
-		tableElem.setAttribute("webstats-table", tableConfig.name)
+		if (tableConfig.name) tableElem.setAttribute("webstats-table", tableConfig.name)
 		this.displays.push(new Display(
 			{ ...config, table: tableElem, pagination: pagination },
 			tableConfig

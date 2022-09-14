@@ -3,18 +3,21 @@ export default class Pagination {
 	displayCount: number
 	currentPage: number
 
+	parentElem: HTMLElement
 	selectElem: HTMLSelectElement
 	prevButton: HTMLButtonElement
 	nextButton: HTMLButtonElement
 
 	onPageChange: (page: number) => void
 
-	constructor(displayCount: number, selectElem: HTMLSelectElement, prevButton: HTMLButtonElement, nextButton: HTMLButtonElement) {
+	constructor(displayCount: number, elem: HTMLElement) {
 		this.displayCount = displayCount
 		this.currentPage = 1
-		this.selectElem = selectElem
-		this.prevButton = prevButton
-		this.nextButton = nextButton
+		
+		this.parentElem = elem
+		this.selectElem = elem.querySelector("select.webstats-pagination[name=page]")
+		this.prevButton = elem.querySelector("button.webstats-pagination[name=prev]")
+		this.nextButton = elem.querySelector("button.webstats-pagination[name=next]")
 
 		this.selectElem.addEventListener("change",
 			(e) => this.changePageAndCallback(Number((e.target as HTMLSelectElement).value)))
@@ -39,7 +42,7 @@ export default class Pagination {
 		nextButton.name = "next"
 		nextButton.innerText = "Next"
 
-		return new Pagination(displayCount, pageSelect, prevButton, nextButton)
+		return new Pagination(displayCount, elem)
 	}
 
 	update(nEntries: number) {
@@ -47,13 +50,9 @@ export default class Pagination {
 		
 		// Hide all controls when there is only one page
 		if (this.maxPage == 1) {
-			this.selectElem.classList.add("pagination-hidden")
-			this.prevButton.classList.add("pagination-hidden")
-			this.nextButton.classList.add("pagination-hidden")
+			this.parentElem.classList.add("pagination-hidden")
 		} else {
-			this.selectElem.classList.remove("pagination-hidden")
-			this.prevButton.classList.remove("pagination-hidden")
-			this.nextButton.classList.remove("pagination-hidden")
+			this.parentElem.classList.remove("pagination-hidden")
 		}
 
 		// Page selector
