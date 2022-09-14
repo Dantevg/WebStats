@@ -38,14 +38,15 @@ public class StatData {
 	
 	public static class Stats {
 		public Set<String> entries;
-		public List<String> columns;
+		@Deprecated()
+		public List<String> columns; // For backwards compatibility with older web front-ends
 		@JsonAdapter(TableAdapter.class)
 		public Table<String, String, String> scores;
 		
 		public Stats(@NotNull EntriesScores entriesScores, List<String> columns) {
 			this.entries = entriesScores.entries;
-			this.columns = columns;
 			this.scores = entriesScores.scores;
+			this.columns = columns;
 		}
 		
 		public Stats(@NotNull EntriesScores entriesScores) {

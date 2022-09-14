@@ -12,6 +12,22 @@ a {
 	color: inherit;
 }
 
+.webstats-tableheading {
+	margin-top: 20px;
+	font-size: 1.5em;
+	font-weight: bold;
+}
+
+.webstats-tableheading > .webstats-pagination {
+	margin-left: 50px;
+}
+.webstats-tableheading > .webstats-pagination * {
+	margin-right: 3px;
+}
+.webstats-pagination.pagination-hidden {
+	display: none;
+}
+
 table {
 	border-spacing: 2px;
 }

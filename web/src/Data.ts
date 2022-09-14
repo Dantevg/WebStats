@@ -31,8 +31,7 @@ export default class Data {
 
 	setScoreboard(scoreboard: Scoreboard) {
 		this.scoreboard = scoreboard
-		this.columns = scoreboard.columns
-			?? Object.keys(scoreboard.scores).sort()
+		this.columns = Object.keys(scoreboard.scores).sort()
 
 		this.filter()
 

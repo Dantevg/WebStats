@@ -26,6 +26,9 @@ public class HTTPConnection {
 		// Add cookies for javascript where to find the server
 		// No "expires" attribute, so session cookies
 		String host = exchange.getRequestHeaders().getFirst("Host");
+		headers.add("Set-Cookie", "host=" + host + "; SameSite=Lax");
+		
+		// For pre-1.8 backwards-compatibility
 		headers.add("Set-Cookie", "ip=" + host.split(":")[0]
 				+ "; SameSite=Lax");
 		headers.add("Set-Cookie", "port=" + exchange.getLocalAddress().getPort()
@@ -68,6 +71,7 @@ public class HTTPConnection {
 		exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, input.available());
 		OutputStream output = exchange.getResponseBody();
 		ByteStreams.copy(input, output);
+		input.close();
 		output.close();
 	}
 	

@@ -2,19 +2,21 @@ export default class Connection {
 	all: string
 	scores: string
 	online: string
+	tables: string
 
-	constructor({ all, scores, online }) {
+	constructor({ all, scores, online, tables }) {
 		this.all = all
 		this.scores = scores
 		this.online = online
+		this.tables = tables
 	}
 
-	static json(ip: string, port: string | number) {
-		const baseURL = `http://${ip}:${port}`
+	static json(host: string) {
 		return new Connection({
-			all: baseURL + "/stats.json",
-			scores: baseURL + "/scoreboard.json",
-			online: baseURL + "/online.json"
+			all:  `http://${host}/stats.json`,
+			scores:  `http://${host}/scoreboard.json`,
+			online:  `http://${host}/online.json`,
+			tables:  `http://${host}/tables.json`,
 		})
 	}
 
@@ -26,6 +28,7 @@ export default class Connection {
 			return { online, scoreboard }
 		}
 	}
-	getScoreboard = () => fetch(this.scores).then(response => response.json())
-	getOnline = () => fetch(this.online).then(response => response.json())
+	getScoreboard = () => fetch(this.scores).then(response => response.json()).catch(() => {})
+	getOnline = () => fetch(this.online).then(response => response.json()).catch(() => {})
+	getTables = () => fetch(this.tables).then(response => response.json()).catch(() => {})
 }

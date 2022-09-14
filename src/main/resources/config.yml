@@ -5,13 +5,18 @@
 # to the one set in the web page js script.
 port: 8080
 
-# Only these columns will appear, in the order specified.
-# When commented out, all columns will be displayed, in alphabetical order (default).
-# The 'Player' column will always be displayed, as the first column.
-#columns: []
+tables:
+  - # The name of the table, will be displayed above it.
+    #name: main
+    # Only these columns will appear, in the order specified.
+    # When commented out, all columns will be displayed, in alphabetical order (default).
+    # The 'Player' column will always be displayed, as the first column.
+    #columns: []
+    #sort-by: Player
+    #sort-descending: false
 
 # These columns will not be displayed on individual player's rows, but on a
-# separate 'Server' column.
+# separate 'Server' row.
 server-columns: []
 
 # Whether to store IP to player name mapping in 'ip-to-names.yml',

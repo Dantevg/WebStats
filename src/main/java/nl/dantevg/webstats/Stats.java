@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.net.InetAddress;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Stats {
 	public static @NotNull Map<String, Object> getOnline() {
@@ -26,11 +27,22 @@ public class Stats {
 		if (WebStats.config.contains("server-columns")) entriesScores.entries.add("#server");
 		
 		if (WebStats.config.contains("columns")) {
-			List<String> columns = new ArrayList<>(WebStats.config.getStringList("columns"));
-			return new StatData.Stats(entriesScores, columns);
+			// For backwards-compatibility with older web front-ends
+			return new StatData.Stats(entriesScores, WebStats.config.getStringList("columns"));
 		} else {
 			return new StatData.Stats(entriesScores);
 		}
+	}
+	
+	public static @NotNull List<TableConfig> getTables() {
+		if (!WebStats.config.contains("tables")) return Collections.emptyList();
+		
+		if (WebStats.config.getMapList("tables").isEmpty())
+			return Arrays.asList(new TableConfig(null, null, null, null));
+		
+		return WebStats.config.getMapList("tables").stream()
+				.map(Stats::getTableConfigFromMap)
+				.collect(Collectors.toList());
 	}
 	
 	public static @NotNull StatData getAll() {
@@ -40,6 +52,14 @@ public class Stats {
 	public static @NotNull StatData getAll(@NotNull InetAddress ip) {
 		Set<String> playernames = WebStats.playerIPStorage.getNames(ip);
 		return new StatData(getOnline(), getStats(), playernames);
+	}
+	
+	private static TableConfig getTableConfigFromMap(Map<?, ?> tableConfig) {
+		String name = (String) tableConfig.get("name");
+		List<String> columns = (List<String>) tableConfig.get("columns");
+		String sortBy = (String) tableConfig.get("sort-by");
+		Boolean sortDescending = (Boolean) tableConfig.get("sort-descending");
+		return new TableConfig(name, columns, sortBy, sortDescending);
 	}
 	
 }

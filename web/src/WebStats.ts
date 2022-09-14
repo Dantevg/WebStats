@@ -1,21 +1,29 @@
 import Connection from "./Connection"
 import Data from "./Data"
 import Display from "./Display"
+import Pagination from "./Pagination"
 
 declare global {
 	interface Window { webstats: WebStats }
 }
 
+export type TableConfig = {
+	name?: string
+	columns?: string[]
+	sortBy?: string
+	sortDescending?: boolean
+}
+
 export default class WebStats {
-	display: Display
+	displays: Display[]
 	connection: Connection
 	data: Data
 	updateInterval: number
 	interval: number
 
 	constructor(config) {
-		this.display = new Display(config)
-		this.connection = config.connection ?? Connection.json(config.ip, config.port)
+		this.displays = []
+		this.connection = config.connection ?? Connection.json(config.host)
 		this.updateInterval = config.updateInterval ?? 10000
 
 		// Set online status update interval
@@ -24,7 +32,10 @@ export default class WebStats {
 			? this.stopUpdateInterval() : this.startUpdateInterval())
 
 		// Get data and init
-		this.connection.getStats().then(data => this.init(data))
+		const statsPromise = this.connection.getStats()
+		const tableConfigsPromise = this.connection.getTables()
+		Promise.all([statsPromise, tableConfigsPromise])
+			.then(([stats, tableConfigs]) => this.init(stats, tableConfigs, config))
 
 		// Get saved toggles from cookies
 		const cookies = document.cookie.split("; ") ?? []
@@ -48,24 +59,37 @@ export default class WebStats {
 		if (optionHideOffline) {
 			// Re-show if displayCount is set
 			optionHideOffline.addEventListener("change", (e) => {
-				if (this.display.displayCount > 0) this.display.changeHideOffline((e.target as HTMLInputElement).checked)
+				this.displays.forEach(display => display.changeHideOffline(optionHideOffline.checked))
 			})
-			this.display.hideOffline = optionHideOffline.checked
+			this.displays.forEach(display => display.hideOffline = optionHideOffline.checked)
 		}
 
 		window.webstats = this
 	}
 
-	init(data: Data) {
-		this.data = new Data(data)
-		this.display.init(this.data) // Display data in table
+	init(data, tableConfigs: TableConfig[] | undefined, config) {
+		if (config.tables) {
+			for (const tableName in config.tables) {
+				const tableConfig = tableConfigs
+					? tableConfigs.find(tc => (tc.name ?? "") == tableName)
+					: { colums: data.scoreboard.columns as string[] } as TableConfig
+				if (tableConfig) this.addTableManual(config, tableConfig)
+			}
+		} else {
+			if (tableConfigs) {
+				for (const tableConfig of tableConfigs) {
+					this.addTableAutomatic(config, tableConfig)
+				}
+			} else {
+				this.addTableAutomatic(config, { colums: data.scoreboard.columns as string[] } as TableConfig)
+			}
+		}
 
-		// Get sorting from url params, if present
-		const params = (new URL(document.location.href)).searchParams
-		let sortBy = params.get("sort") ?? this.display.sortBy
-		let order = params.get("order")
-		let descending = order ? order.startsWith("d") : this.display.descending
-		this.display.sort(sortBy, descending)
+		this.data = new Data(data)
+		this.displays.forEach(display => {
+			display.init(this.data)
+			display.sort()
+		})
 	}
 
 	update() {
@@ -73,12 +97,12 @@ export default class WebStats {
 		if (this.data.nOnline > 0) {
 			this.connection.getStats().then(data => {
 				this.data.setStats(data)
-				this.display.updateStats()
+				this.displays.forEach(display => display.updateStatsAndShow())
 			})
 		} else {
 			this.connection.getOnline().then(data => {
 				this.data.setOnlineStatus(data)
-				this.display.updateOnlineStatus()
+				this.displays.forEach(display => display.updateOnlineStatusAndShow())
 			})
 		}
 	}
@@ -90,6 +114,43 @@ export default class WebStats {
 
 	stopUpdateInterval() {
 		clearInterval(this.interval)
+	}
+
+	addTableManual(config, tableConfig: TableConfig) {
+		let pagination: Pagination
+		if (config.displayCount > 0 && config.tables[tableConfig.name ?? ""].pagination) {
+			const paginationParent = config.tables[tableConfig.name ?? ""].pagination
+			pagination = new Pagination(config.displayCount, paginationParent)
+		}
+		this.displays.push(new Display(
+			{ ...config, table: config.tables[tableConfig.name ?? ""].table, pagination: pagination },
+			tableConfig
+		))
+	}
+
+	addTableAutomatic(config, tableConfig: TableConfig) {
+		const headerElem = (config.tableParent as HTMLElement)
+			.appendChild(document.createElement("div"))
+		headerElem.classList.add("webstats-tableheading")
+		if (tableConfig.name) {
+			headerElem.innerText = tableConfig.name
+			headerElem.setAttribute("webstats-table", tableConfig.name)
+		}
+
+		let pagination: Pagination
+		if (config.displayCount > 0) {
+			const paginationControls = headerElem.appendChild(document.createElement("span"))
+			paginationControls.classList.add("webstats-pagination")
+			pagination = Pagination.create(config.displayCount, paginationControls)
+		}
+
+		const tableElem = (config.tableParent as HTMLElement)
+			.appendChild(document.createElement("table"))
+		if (tableConfig.name) tableElem.setAttribute("webstats-table", tableConfig.name)
+		this.displays.push(new Display(
+			{ ...config, table: tableElem, pagination: pagination },
+			tableConfig
+		))
 	}
 
 }

@@ -60,6 +60,8 @@ public class HTTPRequestHandler implements HttpHandler {
 			case "/online.json":
 				httpConnection.sendJson(new Gson().toJson(Stats.getOnline()));
 				break;
+			case "/tables.json":
+				httpConnection.sendJson(new Gson().toJson(Stats.getTables()));
 			default:
 				if (resources.containsKey(path)) {
 					httpConnection.sendFile(resources.get(path), "web" + path);

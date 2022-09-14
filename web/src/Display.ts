@@ -1,140 +1,84 @@
 import Data from "./Data"
+import FormattingCodes from "./FormattingCodes"
+import Pagination from "./Pagination"
+import { TableConfig } from "./WebStats"
 
 export default class Display {
 	table: HTMLTableElement
+	pagination?: Pagination
+	columns: string[]
 	sortBy: string
 	descending: boolean
 	showSkins: boolean
-	displayCount: number
 	hideOffline: boolean
-	currentPage: number
-	maxPage: number
 
 	data: Data
 	headerElem: HTMLTableRowElement
-	rows: HTMLTableRowElement[]
-	selectElem: HTMLSelectElement
-	prevButton: HTMLButtonElement
-	nextButton: HTMLButtonElement
+	rows: Map<string, HTMLTableRowElement>
 
-	static COLOUR_CODES = {
-		["§0"]: "black",
-		["§1"]: "dark_blue",
-		["§2"]: "dark_green",
-		["§3"]: "dark_aqua",
-		["§4"]: "dark_red",
-		["§5"]: "dark_purple",
-		["§6"]: "gold",
-		["§7"]: "gray",
-		["§8"]: "dark_gray",
-		["§9"]: "blue",
-		["§a"]: "green",
-		["§b"]: "aqua",
-		["§c"]: "red",
-		["§d"]: "light_purple",
-		["§e"]: "yellow",
-		["§f"]: "white",
-	}
-
-	static FORMATTING_CODES = {
-		["§k"]: "obfuscated",
-		["§l"]: "bold",
-		["§m"]: "strikethrough",
-		["§n"]: "underline",
-		["§o"]: "italic",
-		["§r"]: "reset",
-	}
-
-	// § followed by a single character, or of the form §x§r§r§g§g§b§b
-	// (also capture rest of string, until next §)
-	static FORMATTING_CODE_REGEX = /(§x§.§.§.§.§.§.|§.)([^§]*)/gm
-	
 	static CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NUUlL6z0ABYBw1gGE0DBioHAZ3795lUFZWJildosQCRQaQoxnkVLgL0A2A8dFpdP8NfEICAMkiK2HeQ9JUAAAAAElFTkSuQmCC"
 
-	constructor({ table, sortBy = "Player", descending = false, showSkins = true, displayCount = 100 }) {
+	constructor({ table, pagination, showSkins = true }, { columns, sortBy = "Player", sortDescending = false }: TableConfig) {
 		this.table = table
+		this.pagination = pagination
+		this.columns = columns
 		this.sortBy = sortBy
-		this.descending = descending
+		this.descending = sortDescending
 		this.showSkins = showSkins
-		this.displayCount = displayCount
 		this.hideOffline = false
-		this.currentPage = 1
+
+		if (this.pagination) this.pagination.onPageChange = (page) => {
+			this.updatePagination()
+			this.show()
+		}
 	}
 
 	init(data: Data) {
 		this.data = data
 
 		// Set pagination controls
-		if (this.displayCount > 0) {
-			this.initPagination()
-		} else {
-			// Hide pagination controls when pagination is disabled
-			const paginationSpanElem = document.querySelector("span.webstats-pagination") as HTMLElement
-			if (paginationSpanElem) paginationSpanElem.style.display = "none"
-		}
+		if (this.pagination) this.updatePagination()
 
 		// Create header of columns
 		this.headerElem = document.createElement("tr")
 		this.table.append(this.headerElem)
 		Display.appendTh(this.headerElem, "Player", this.thClick.bind(this),
 			this.showSkins ? 2 : undefined)
-		for (const column of this.data.columns) {
+		for (const column of this.columns ?? this.data.columns) {
 			Display.appendTh(this.headerElem, column, this.thClick.bind(this))
 		}
 
 		// Create rows of (empty) entries
-		this.rows = []
-		for (const entry of this.data.entries) {
+		this.rows = new Map()
+		for (const entry of this.getEntries()) {
 			this.appendEntry(entry)
 		}
 
 		// Fill entries
-		this.updateStats()
+		this.updateStatsAndShow()
 	}
 
-	initPagination() {
-		this.maxPage = Math.ceil(this.data.entries.length / this.displayCount)
+	getEntries() {
+		const entriesHere = this.data.entries.filter((entry: string) =>
+			(this.columns ?? this.data.columns).some((column: string) =>
+				this.data.scoreboard.scores[column][entry]
+				&& this.data.scoreboard.scores[column][entry] != "0"))
 
-		// Page selector
-		this.selectElem = document.querySelector("select.webstats-pagination")
-		if (this.selectElem) this.selectElem.onchange = (e) => this.changePage(Number((e.target as HTMLSelectElement).value))
-		else console.warn("WebStats: no/invalid page control elements")
+		return this.hideOffline
+			? entriesHere.filter(entry => this.data.isOnline(entry))
+			: entriesHere
+	}
 
-		// "Prev" button
-		this.prevButton = document.querySelector("button.webstats-pagination[name=prev]")
-		if (this.prevButton) this.prevButton.onclick = () => this.changePage(this.currentPage - 1)
-		else console.warn("WebStats: no/invalid page control elements")
+	getScores() {
+		const scoresHere = this.data.scores.filter(row => this.rows.has(row[1]))
 
-		// "Next" button
-		this.nextButton = document.querySelector("button.webstats-pagination[name=next]")
-		if (this.nextButton) this.nextButton.onclick = () => this.changePage(this.currentPage + 1)
-		else console.warn("WebStats: no/invalid page control elements")
-
-		this.updatePagination()
+		return this.hideOffline
+			? scoresHere.filter(row => this.data.isOnline(row[1]))
+			: scoresHere
 	}
 
 	updatePagination() {
-		const entries = this.hideOffline
-			? this.data.entries.filter(entry => this.data.isOnline(entry))
-			: this.data.entries
-		this.maxPage = Math.ceil(entries.length / this.displayCount)
-
-		// Page selector
-		if (this.selectElem) {
-			this.selectElem.innerHTML = ""
-			for (let i = 1; i <= this.maxPage; i++) {
-				const optionElem = document.createElement("option")
-				optionElem.innerText = String(i)
-				this.selectElem.append(optionElem)
-			}
-			this.selectElem.value = String(this.currentPage)
-		}
-
-		// "Prev" button
-		if (this.prevButton) this.prevButton.toggleAttribute("disabled", this.currentPage <= 1)
-
-		// "Next" button
-		if (this.nextButton) this.nextButton.toggleAttribute("disabled", this.currentPage >= this.maxPage)
+		this.pagination.update(this.getEntries().length)
 	}
 
 	appendEntry(entry: string) {
@@ -162,12 +106,12 @@ export default class Display {
 		if (this.data.isCurrentPlayer(entry)) tr.classList.add("current-player")
 
 		// Append empty elements for alignment
-		for (const objective of this.data.columns) {
+		for (const column of this.columns ?? this.data.columns) {
 			let td = Display.appendElement(tr, "td")
 			td.classList.add("empty")
-			td.setAttribute("objective", Display.quoteEscape(objective))
+			td.setAttribute("objective", Display.quoteEscape(column))
 		}
-		this.rows.push(tr)
+		this.rows.set(entry, tr)
 	}
 
 	setSkin(entry: string, row: HTMLTableRowElement) {
@@ -180,10 +124,10 @@ export default class Display {
 
 	updateScoreboard() {
 		for (const row of this.data.scores) {
-			for (const column of this.data.columns) {
+			for (const column of this.columns ?? this.data.columns) {
 				let value = row[this.data.columns_[column]] as string
 				if (!value) continue
-				const td = this.rows[row[0]].querySelector(`td[objective='${column}']`) as HTMLTableCellElement
+				const td = this.rows.get(row[1]).querySelector(`td[objective='${column}']`) as HTMLTableCellElement
 				td.classList.remove("empty")
 				td.setAttribute("value", value)
 
@@ -192,13 +136,18 @@ export default class Display {
 
 				// Convert Minecraft formatting codes
 				td.innerHTML = ""
-				td.append(...Display.convertFormattingCodes(value))
+				td.append(...FormattingCodes.convertFormattingCodes(value))
 			}
 		}
 	}
 
+	updateScoreboardAndShow() {
+		this.updateScoreboard()
+		this.show()
+	}
+
 	updateOnlineStatus() {
-		for (const row of this.rows) {
+		for (const [_, row] of this.rows) {
 			const statusElement = row.querySelector("td .status")
 			if (!statusElement) continue
 			const entry = row.getAttribute("entry")
@@ -210,8 +159,11 @@ export default class Display {
 			statusElement.classList.add(status.toLowerCase())
 			statusElement.setAttribute("title", this.data.getStatus(entry))
 		}
-		// Re-display if pagination is enabled
-		if (this.displayCount > 0) this.show()
+	}
+
+	updateOnlineStatusAndShow() {
+		this.updateOnlineStatus()
+		if (this.pagination && this.hideOffline) this.show()
 	}
 
 	updateStats() {
@@ -219,20 +171,17 @@ export default class Display {
 		this.updateOnlineStatus()
 	}
 
-	// Change the page, re-display if `show` is not false and set page controls
-	changePage(page: number, show?: boolean) {
-		page = Math.max(1, Math.min(page, this.maxPage))
-		this.currentPage = page
-		if (show != false) this.show()
-
-		if (this.displayCount > 0) this.updatePagination()
+	updateStatsAndShow() {
+		this.updateScoreboard()
+		this.updateOnlineStatus()
+		this.show()
 	}
 
 	changeHideOffline(hideOffline: boolean) {
 		this.hideOffline = hideOffline
-		if (this.displayCount > 0) {
-			this.updatePagination()
-			this.changePage(1)
+		if (this.pagination) {
+			this.pagination.changePage(1)
+			this.show()
 		}
 	}
 
@@ -240,16 +189,13 @@ export default class Display {
 	show() {
 		this.table.innerHTML = ""
 		this.table.append(this.headerElem)
-		const scores = this.hideOffline
-			? this.data.scores.filter(row => this.data.isOnline(row[1]))
-			: this.data.scores
-		const min = (this.currentPage - 1) * this.displayCount
-		const max = (this.displayCount > 0)
-			? Math.min(this.currentPage * this.displayCount, scores.length)
-			: scores.length
+		const scores = this.getScores()
+		const [min, max] = this.pagination
+			? this.pagination.getRange(scores.length)
+			: [0, scores.length]
 		for (let i = min; i < max; i++) {
-			if (this.showSkins) this.setSkin(scores[i][1], this.rows[scores[i][0]])
-			this.table.append(this.rows[scores[i][0]])
+			if (this.showSkins) this.setSkin(scores[i][1], this.rows.get(scores[i][1]))
+			this.table.append(this.rows.get(scores[i][1]))
 		}
 	}
 
@@ -264,85 +210,12 @@ export default class Display {
 		let objective = (e.target as HTMLTableCellElement).innerText
 		this.descending = (objective === this.sortBy) ? !this.descending : true
 		this.sortBy = objective
-		if (this.displayCount > 0) this.changePage(1, false)
+		if (this.pagination) this.pagination.changePage(1)
 		this.sort()
-
-		// Set URL query string, for sharing
-		window.history.replaceState({}, "",
-			location.pathname + "?sort=" + this.sortBy.replace(/\s/g, "+")
-			+ "&order=" + (this.descending ? "desc" : "asc"))
 	}
 
 	// Replace single quotes by '&quot;' (html-escape)
 	static quoteEscape = (string: string) => string.replace(/'/g, "&quot;")
-
-	// Replace all formatting codes by <span> elements
-	static convertFormattingCodes = (value) =>
-		Display.parseFormattingCodes(value).map(Display.convertFormattingCode)
-
-	// Convert a single formatting code to a <span> element
-	static convertFormattingCode(part) {
-		if (!part.format && !part.colour) return part.text
-
-		const span = document.createElement("span")
-		span.innerText = part.text
-		span.classList.add("mc-format")
-
-		if (part.format) span.classList.add("mc-" + part.format)
-		if (part.colour) {
-			if (part.colourType == "simple") span.classList.add("mc-" + part.colour)
-			if (part.colourType == "hex") span.style.color = part.colour
-		}
-
-		return span
-	}
-
-	static parseFormattingCodes(value) {
-		const parts = []
-
-		const firstIdx = value.matchAll(Display.FORMATTING_CODE_REGEX).next().value?.index
-		if (firstIdx == undefined || firstIdx > 0) {
-			parts.push({ text: value.substring(0, firstIdx) })
-		}
-
-		for (const match of value.matchAll(Display.FORMATTING_CODE_REGEX)) {
-			parts.push(Display.parseFormattingCode(match[1], match[2], parts[parts.length - 1]))
-		}
-
-		return parts
-	}
-
-	static parseFormattingCode(code, text, prev) {
-		// Simple colour codes and formatting codes
-		if (Display.COLOUR_CODES[code]) {
-			return {
-				text,
-				colour: Display.COLOUR_CODES[code],
-				colourType: "simple",
-			}
-		}
-		if (Display.FORMATTING_CODES[code]) {
-			return {
-				text,
-				format: Display.FORMATTING_CODES[code],
-				colour: prev?.colour,
-				colourType: prev?.colourType,
-			}
-		}
-
-		// Hex colour codes
-		const matches = code.match(/§x§(.)§(.)§(.)§(.)§(.)§(.)/m)
-		if (matches) {
-			return {
-				text,
-				colour: "#" + matches.slice(1).join(""),
-				colourType: "hex",
-			}
-		}
-
-		// Not a valid formatting code, just return the input unaltered
-		return { text }
-	}
 
 	static appendElement<K extends keyof HTMLElementTagNameMap>(base: HTMLElement, type: K) {
 		let el = document.createElement(type)
