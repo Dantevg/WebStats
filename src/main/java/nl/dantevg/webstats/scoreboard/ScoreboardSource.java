@@ -35,8 +35,11 @@ public class ScoreboardSource {
 	private @NotNull Table<String, String, String> getScores() {
 		Table<String, String, String> values = HashBasedTable.create();
 		for (Objective objective : scoreboard.getObjectives()) {
-			// Filter objectives
-			if (!allObjectives && !objectivesFilter.contains(objective.getDisplayName())) continue;
+			// Filter out objectives that do not appear in the list by either
+			// their internal name or their display name
+			if (!allObjectives
+					&& !objectivesFilter.contains(objective.getDisplayName())
+					&& !objectivesFilter.contains(objective.getName())) continue;
 			
 			// Get player scores
 			for (String entry : scoreboard.getEntries()) {
