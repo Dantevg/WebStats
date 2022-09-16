@@ -3,6 +3,7 @@ package nl.dantevg.webstats;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.InetAddress;
 import java.util.*;
@@ -26,9 +27,10 @@ public class Stats {
 		
 		if (WebStats.config.contains("server-columns")) entriesScores.entries.add("#server");
 		
-		if (WebStats.config.contains("columns")) {
-			// For backwards-compatibility with older web front-ends
-			return new StatData.Stats(entriesScores, WebStats.config.getStringList("columns"));
+		// For backwards-compatibility with older web front-ends
+		List<String> defaultColumns = getDefaultColumns();
+		if (defaultColumns != null) {
+			return new StatData.Stats(entriesScores, defaultColumns);
 		} else {
 			return new StatData.Stats(entriesScores);
 		}
@@ -54,7 +56,25 @@ public class Stats {
 		return new StatData(getOnline(), getStats(), playernames);
 	}
 	
-	private static TableConfig getTableConfigFromMap(Map<?, ?> tableConfig) {
+	private static @Nullable List<String> getDefaultColumns() {
+		// Need to check for `columns` before `tables`, because `tables` will
+		// always be present in the default (in-jar) config.
+		if (WebStats.config.contains("columns")) {
+			// Old config
+			return WebStats.config.getStringList("columns");
+		} else if (WebStats.config.contains("tables")) {
+			// New config
+			List<Map<?, ?>> tableConfigs = WebStats.config.getMapList("tables");
+			if (tableConfigs.isEmpty()) {
+				return Collections.emptyList();
+			} else {
+				return getTableConfigFromMap(tableConfigs.get(0)).columns;
+			}
+		}
+		return null;
+	}
+	
+	private static @NotNull TableConfig getTableConfigFromMap(@NotNull Map<?, ?> tableConfig) {
 		String name = (String) tableConfig.get("name");
 		List<String> columns = (List<String>) tableConfig.get("columns");
 		String sortBy = (String) tableConfig.get("sort-by");
