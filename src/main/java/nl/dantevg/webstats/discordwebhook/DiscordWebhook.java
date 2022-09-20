@@ -83,13 +83,13 @@ public class DiscordWebhook implements Runnable {
 				// Add one default embed
 				List<String> columns = (stats.columns != null)
 						? stats.columns
-						: stats.scores.rowKeySet().stream().sorted().collect(Collectors.toList());
+						: stats.scores.columnKeySet().stream().sorted().collect(Collectors.toList());
 				sortEntries(entries, null, SortDirection.DESCENDING);
 				message.addEmbed(makeEmbed(stats, columns, entries));
 			} else {
 				// Add embeds according to config
 				for (EmbedConfig embedConfig : embeds) {
-					Map<String, String> columnToSortBy = stats.scores.row(embedConfig.sortColumn);
+					Map<String, String> columnToSortBy = stats.scores.column(embedConfig.sortColumn);
 					sortEntries(entries, columnToSortBy, embedConfig.sortDirection);
 					DiscordEmbed embed = makeEmbed(stats, embedConfig.columns, entries);
 					if (embedConfig.title != null) embed.title = embedConfig.title;
@@ -156,7 +156,7 @@ public class DiscordWebhook implements Runnable {
 		// Filter out empty rows
 		List<String> nonEmptyEntries = entries.stream()
 				.filter(entry -> columns.stream()
-						.map(stats.scores::row)
+						.map(stats.scores::column)
 						.filter(Objects::nonNull)
 						.anyMatch(column -> column.get(entry) != null
 								&& !column.get(entry).trim().isEmpty()))
@@ -171,7 +171,7 @@ public class DiscordWebhook implements Runnable {
 				true));
 		
 		for (String columnName : columns) {
-			Map<String, String> column = stats.scores.row(columnName);
+			Map<String, String> column = stats.scores.column(columnName);
 			if (column == null) continue;
 			
 			String values = nonEmptyEntries.stream()
