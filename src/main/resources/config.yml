@@ -98,6 +98,10 @@ objectives:
 #      sort-direction: ascending
 #      columns: [Mine All Diamond, Mine Ancient Debris]
 
+# Which columns to export when executing /webstats export. Leave commented to
+# export all columns.
+#export-columns: []
+
 # Whether to save placeholders before any plugins are disabled on server shutdown
 # This is a fix for error "java.lang.IllegalStateException: zip file closed."
 # You can leave this off if you don't experience this error.

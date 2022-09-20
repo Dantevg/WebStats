@@ -170,8 +170,11 @@ public class CSVStorage implements StorageMethod {
 	 * @throws IOException if the file is not found
 	 */
 	private @Nullable List<String> readColumns() throws IOException {
-		List<String> columns = CSVFormat.DEFAULT.parse(new FileReader(file)).getHeaderNames();
-		return columns.size() > 0 ? columns : null;
+		try (FileReader reader = new FileReader(file)) {
+			CSVFormat csvFormat = CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(true).build();
+			List<String> columns = csvFormat.parse(reader).getHeaderNames();
+			return columns.size() > 0 ? columns : null;
+		}
 	}
 	
 	private boolean ensureFileExists() {
