@@ -8,6 +8,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class CommandWebstats implements CommandExecutor, TabCompleter {
 	private final WebStats webstats;
@@ -28,6 +30,29 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 		} else if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {
 			webstats.reload();
 			if (!(sender instanceof ConsoleCommandSender)) sender.sendMessage("Reload complete");
+			return true;
+		} else if (args.length == 1 || args.length == 2 && args[0].equalsIgnoreCase("store")) {
+			CSVStorage storage = new CSVStorage("stats.csv", "Player");
+			StatData.Stats stats = Stats.getStats();
+			List<String> columns;
+			if (args.length == 2) {
+				TableConfig table = Stats.getTables().stream()
+						.filter(tc -> args[1].equalsIgnoreCase(tc.name))
+						.findFirst()
+						.orElse(null);
+				if (table == null) {
+					sender.sendMessage("No table '" + args[1] + "'");
+					return true;
+				}
+				columns = table.columns;
+			} else {
+				columns = stats.columns;
+			}
+			if (columns != null ? storage.append(stats.scores, columns) : storage.append(stats.scores)) {
+				sender.sendMessage("Storing stats finished");
+			} else {
+				sender.sendMessage("Could not store stats, check console");
+			}
 			return true;
 		} else if (args.length == 2 && args[0].equalsIgnoreCase("migrate-placeholders-to")) {
 			if (!args[1].equalsIgnoreCase("csv") && !args[1].equalsIgnoreCase("database")) {
@@ -54,10 +79,16 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 		if (args.length == 1) {
 			completions.add("debug");
 			completions.add("reload");
+			completions.add("store");
 			completions.add("migrate-placeholders-to");
-		} else if (args.length == 2) {
+		} else if (args.length == 2 && args[0].equalsIgnoreCase("migrate-placeholders-to")) {
 			completions.add("database");
 			completions.add("csv");
+		} else if (args.length == 2 && args[0].equalsIgnoreCase("store")) {
+			completions.addAll(Stats.getTables().stream()
+					.map(tc -> tc.name)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toList()));
 		}
 		return completions;
 	}
