@@ -2,7 +2,11 @@ package nl.dantevg.webstats;
 
 import nl.dantevg.webstats.storage.CSVStorage;
 
-import java.util.List;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
 
 public class StatExporter {
 	private static final String FILENAME = "stats.csv";
@@ -10,17 +14,19 @@ public class StatExporter {
 	private final CSVStorage storage;
 	
 	public StatExporter() {
-		storage = new CSVStorage(FILENAME, "Player");
+		Map<String, Function<String, String>> mapper = new HashMap<>();
+		
+		// Number of seconds since unix epoch, in UTC+0 timezone
+		mapper.put("timestamp", entry -> Instant.now().getEpochSecond() + "");
+		
+		// Date in YYYY-MM-DD format, local timezone
+		mapper.put("date", entry -> LocalDate.now().toString());
+		
+		storage = new CSVStorage(FILENAME, mapper, "Player");
 	}
 	
 	public boolean export() {
-		StatData.Stats stats = Stats.getStats();
-		if (WebStats.config.contains("export-columns")) {
-			List<String> columns = WebStats.config.getStringList("export-columns");
-			return storage.append(stats.scores, columns);
-		} else {
-			return storage.append(stats.scores);
-		}
+		return storage.append(Stats.getStats().scores);
 	}
 	
 }
