@@ -1,12 +1,14 @@
-package nl.dantevg.webstats;
+package nl.dantevg.webstats.webserver;
 
 import com.google.common.io.ByteStreams;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
+import nl.dantevg.webstats.WebStats;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
@@ -58,7 +60,7 @@ public class HTTPConnection {
 	
 	public void sendFile(@NotNull String contentType, @NotNull String path) throws IOException {
 		// Get input stream
-		InputStream input = getResourceInputStream(path);
+		InputStream input = WebStats.getResourceInputStream(path);
 		if (input == null) {
 			WebStats.logger.log(Level.WARNING, "Could not find resource " + path);
 			sendEmptyStatus(HttpURLConnection.HTTP_NOT_FOUND);
@@ -73,17 +75,6 @@ public class HTTPConnection {
 		ByteStreams.copy(input, output);
 		input.close();
 		output.close();
-	}
-	
-	private @Nullable InputStream getResourceInputStream(@NotNull String path) {
-		try {
-			// Find resource in plugin data folder
-			File file = new File(WebStats.getPlugin(WebStats.class).getDataFolder(), path);
-			return new FileInputStream(file);
-		} catch (FileNotFoundException e) {
-			// Find resource in jar
-			return WebStats.getPlugin(WebStats.class).getResource(path);
-		}
 	}
 	
 }

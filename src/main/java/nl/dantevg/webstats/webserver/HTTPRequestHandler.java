@@ -1,8 +1,10 @@
-package nl.dantevg.webstats;
+package nl.dantevg.webstats.webserver;
 
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import nl.dantevg.webstats.Stats;
+import nl.dantevg.webstats.WebStats;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
