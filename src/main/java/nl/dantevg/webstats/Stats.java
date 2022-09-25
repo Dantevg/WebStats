@@ -59,10 +59,10 @@ public class Stats {
 	private static @Nullable List<String> getDefaultColumns() {
 		// Need to check for `columns` before `tables`, because `tables` will
 		// always be present in the default (in-jar) config.
-		if (WebStats.config.contains("columns")) {
+		if (WebStats.config.contains("columns", true)) {
 			// Old config
 			return WebStats.config.getStringList("columns");
-		} else if (WebStats.config.contains("tables")) {
+		} else if (WebStats.config.contains("tables", true)) {
 			// New config
 			List<Map<?, ?>> tableConfigs = WebStats.config.getMapList("tables");
 			if (tableConfigs.isEmpty()) {
