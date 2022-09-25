@@ -45,8 +45,8 @@ public class ScoreboardSource {
 			for (String entry : scoreboard.getEntries()) {
 				Score s = objective.getScore(entry);
 				if (s.isScoreSet()) values.put(
-						objective.getDisplayName(),
 						entry,
+						objective.getDisplayName(),
 						String.valueOf(s.getScore()));
 			}
 		}

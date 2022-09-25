@@ -83,12 +83,12 @@ public class PlaceholderSource {
 		placeholders.forEach((placeholder, placeholderName) -> {
 			if (WebStats.config.getStringList("server-columns").contains((String) placeholderName)) {
 				String score = getPlaceholderForServer(placeholder);
-				if (score != null) values.put((String) placeholderName, "#server", score);
+				if (score != null) values.put("#server", (String) placeholderName, score);
 			} else {
 				for (OfflinePlayer player : players) {
 					String score = getPlaceholderForPlayer(player, placeholder, (String) placeholderName);
 					// Only add the score if it is not empty
-					if (score != null) values.put((String) placeholderName, player.getName(), score);
+					if (score != null) values.put(player.getName(), (String) placeholderName, score);
 				}
 			}
 		});

@@ -26,6 +26,7 @@ public class WebStats extends JavaPlugin {
 	protected static DiscordWebhook discordWebhook;
 	
 	protected static PlayerIPStorage playerIPStorage;
+	protected static StatExporter statExporter;
 	
 	public static Logger logger;
 	public static FileConfiguration config;
@@ -42,6 +43,7 @@ public class WebStats extends JavaPlugin {
 		hasEssentials = Bukkit.getPluginManager().getPlugin("Essentials") != null;
 		
 		playerIPStorage = new PlayerIPStorage(this);
+		statExporter = new StatExporter();
 		
 		// Config
 		saveDefaultConfig();

@@ -64,7 +64,7 @@ public class DatabaseSource {
 		EntriesScores data = new EntriesScores();
 		players.forEach((playerName, scores) -> {
 			data.entries.add(playerName);
-			scores.forEach((statName, score) -> data.scores.put(statName, playerName, score));
+			scores.forEach((statName, score) -> data.scores.put(playerName, statName, score));
 		});
 		
 		return data;
