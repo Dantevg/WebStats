@@ -135,6 +135,20 @@ public class CSVStorage implements StorageMethod {
 	}
 	
 	/**
+	 * Attempt to read the columns from the CSV file header.
+	 *
+	 * @return the list of columns if the CSV header was present, or null otherwise
+	 * @throws IOException if the file is not found
+	 */
+	public @Nullable List<String> readColumns() throws IOException {
+		try (FileReader reader = new FileReader(file)) {
+			CSVFormat csvFormat = CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(true).build();
+			List<String> columns = csvFormat.parse(reader).getHeaderNames();
+			return columns.size() > 0 ? columns : null;
+		}
+	}
+	
+	/**
 	 * Write the scores to the file.
 	 *
 	 * @param printer the printer to write to
@@ -169,20 +183,6 @@ public class CSVStorage implements StorageMethod {
 				}
 			}
 			if (hasScores) printer.printRecord(scoreList);
-		}
-	}
-	
-	/**
-	 * Attempt to read the columns from the CSV file header.
-	 *
-	 * @return the list of columns if the CSV header was present, or null otherwise
-	 * @throws IOException if the file is not found
-	 */
-	private @Nullable List<String> readColumns() throws IOException {
-		try (FileReader reader = new FileReader(file)) {
-			CSVFormat csvFormat = CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(true).build();
-			List<String> columns = csvFormat.parse(reader).getHeaderNames();
-			return columns.size() > 0 ? columns : null;
 		}
 	}
 	
