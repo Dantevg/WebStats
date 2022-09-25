@@ -166,8 +166,8 @@ public class CSVStorage implements StorageMethod {
 			for (String column : columns) {
 				if (column.equalsIgnoreCase(rowKey)) {
 					scoreList.add(entry); // Player's name or UUID
-				} else if (mapper.containsKey(column)) {
-					String mapped = mapper.get(column).apply(entry);
+				} else if (mapper.containsKey(column.toLowerCase())) {
+					String mapped = mapper.get(column.toLowerCase()).apply(entry);
 					if (mapped != null) {
 						scoreList.add(mapped);
 						hasScores = true;
