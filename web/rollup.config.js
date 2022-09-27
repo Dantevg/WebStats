@@ -7,7 +7,7 @@ export default {
 		file: "WebStats-dist.js",
 		sourcemap: true,
 		banner: `\
-/*
+/*!
 	WebStats version 1.7
 	https://github.com/Dantevg/WebStats
 	
@@ -20,6 +20,6 @@ export default {
 	treeshake: false,
 	plugins: [
 		typescript(),
-		terser()
+		terser({format: {comments: /^!/}})
 	],
 }
