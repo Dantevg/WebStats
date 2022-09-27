@@ -1,4 +1,5 @@
 import typescript from "@rollup/plugin-typescript"
+import { terser } from "rollup-plugin-terser"
 
 export default {
 	input: "src/WebStats.ts",
@@ -6,7 +7,7 @@ export default {
 		file: "WebStats-dist.js",
 		sourcemap: true,
 		banner: `\
-/*
+/*!
 	WebStats version 1.7
 	https://github.com/Dantevg/WebStats
 	
@@ -17,5 +18,8 @@ export default {
 `,
 	},
 	treeshake: false,
-	plugins: [typescript()],
+	plugins: [
+		typescript(),
+		terser({format: {comments: /^!/}})
+	],
 }
