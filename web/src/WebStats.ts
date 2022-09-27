@@ -16,7 +16,7 @@ export type TableConfig = {
 
 export default class WebStats {
 	static CONNECTION_ERROR_MSG = "No connection to server. Either the server is offline, or the 'host' setting in index.html is incorrect."
-	
+
 	displays: Display[]
 	connection: Connection
 	data: Data
