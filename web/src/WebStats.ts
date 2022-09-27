@@ -15,6 +15,8 @@ export type TableConfig = {
 }
 
 export default class WebStats {
+	static CONNECTION_ERROR_MSG = "No connection to server. Either the server is offline, or the 'host' setting in index.html is incorrect."
+	
 	displays: Display[]
 	connection: Connection
 	data: Data
@@ -41,10 +43,9 @@ export default class WebStats {
 		Promise.all([statsPromise, tableConfigsPromise])
 			.then(([stats, tableConfigs]) => this.init(stats, tableConfigs, config))
 			.catch(e => {
-				const msg = "No connection to server. Either the server is offline, or the 'host' setting in index.html is incorrect."
 				console.error(e)
-				console.warn(msg)
-				this.setErrorMessage(msg, config)
+				console.warn(WebStats.CONNECTION_ERROR_MSG)
+				this.setErrorMessage(WebStats.CONNECTION_ERROR_MSG, config)
 				this.setLoadingStatus(false)
 			})
 
@@ -116,11 +117,21 @@ export default class WebStats {
 			this.connection.getStats().then(data => {
 				this.data.setStats(data)
 				this.displays.forEach(display => display.updateStatsAndShow())
+			}).catch(e => {
+				console.error(e)
+				console.warn(WebStats.CONNECTION_ERROR_MSG)
+				this.setErrorMessage(WebStats.CONNECTION_ERROR_MSG)
+				this.stopUpdateInterval()
 			})
 		} else {
 			this.connection.getOnline().then(data => {
 				this.data.setOnlineStatus(data)
 				this.displays.forEach(display => display.updateOnlineStatusAndShow())
+			}).catch(e => {
+				console.error(e)
+				console.warn(WebStats.CONNECTION_ERROR_MSG)
+				this.setErrorMessage(WebStats.CONNECTION_ERROR_MSG)
+				this.stopUpdateInterval()
 			})
 		}
 	}
@@ -176,15 +187,15 @@ export default class WebStats {
 		this.loadingElem.style.display = loading ? "inline" : "none"
 	}
 
-	setErrorMessage(msg: string, config) {
+	setErrorMessage(msg: string, config?) {
 		if (this.errorElem) this.errorElem.innerText = msg
 		else {
 			const spanElem = document.createElement("span")
 			spanElem.innerText = msg
 			spanElem.classList.add("webstats-error-message")
-			if (config.tableParent) {
+			if (config?.tableParent) {
 				config.tableParent.appendChild(spanElem)
-			} else if (config.tables) {
+			} else if (config?.tables) {
 				for (const tablename in config.tables) {
 					if (config.tables[tablename].table) config.tables[tablename].table.appendChild(spanElem)
 				}
