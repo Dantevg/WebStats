@@ -25,6 +25,7 @@ public class HTTPRequestHandler implements HttpHandler {
 			resources.put("/index.html", "text/html");
 			resources.put("/style.css", "text/css");
 			resources.put("/WebStats-dist.js", "application/javascript");
+			resources.put("/WebStats-dist.js.map", "application/json");
 		}
 		
 		attemptMigrateResources();
