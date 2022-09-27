@@ -137,7 +137,7 @@ export default class WebStats {
 	}
 
 	startUpdateInterval(first?: boolean) {
-		this.interval = setInterval(this.update.bind(this), this.updateInterval)
+		this.interval = setInterval(this.update.bind(this) as TimerHandler, this.updateInterval)
 		if (!first) this.update()
 	}
 
