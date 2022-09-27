@@ -3,6 +3,7 @@ package nl.dantevg.webstats.placeholder;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import nl.dantevg.webstats.WebStats;
+import nl.dantevg.webstats.database.DatabaseConfig;
 import nl.dantevg.webstats.database.DatabaseConnection;
 import nl.dantevg.webstats.storage.CSVStorage;
 import nl.dantevg.webstats.storage.DatabaseStorage;
@@ -25,7 +26,6 @@ public class PlaceholderStorage {
 	
 	private final PlaceholderSource placeholderSource;
 	private final HashBasedTable<UUID, String, String> data = HashBasedTable.create();
-	private final boolean saveOnPluginDisable;
 	private @NotNull StorageMethod storage;
 	
 	public PlaceholderStorage(PlaceholderSource placeholderSource) throws InvalidConfigurationException {
@@ -34,12 +34,11 @@ public class PlaceholderStorage {
 		this.placeholderSource = placeholderSource;
 		
 		// Register events
-		saveOnPluginDisable = WebStats.config.getBoolean("save-placeholders-on-plugin-disable");
 		Bukkit.getPluginManager().registerEvents(
-				new PlaceholderListener(this, saveOnPluginDisable),
+				new PlaceholderListener(this, placeholderSource.config.saveOnPluginDisable),
 				WebStats.getPlugin(WebStats.class));
 		
-		if (WebStats.config.getBoolean("store-placeholders-in-file")) {
+		if (placeholderSource.config.storeInFile) {
 			storage = getCSVStorage();
 		} else {
 			storage = getDatabaseStorage();
@@ -53,17 +52,11 @@ public class PlaceholderStorage {
 	}
 	
 	private DatabaseStorage getDatabaseStorage() throws InvalidConfigurationException {
-		String hostname = WebStats.config.getString("database.hostname");
-		String username = WebStats.config.getString("database.username");
-		String password = WebStats.config.getString("database.password");
-		String dbname = WebStats.config.getString("store-placeholders-database");
-		
-		if (hostname == null || username == null || password == null || dbname == null) {
-			throw new InvalidConfigurationException("Invalid configuration: missing hostname, username, password or database name");
-		}
+		DatabaseConfig dbConfig = DatabaseConfig.getInstance();
 		
 		return new DatabaseStorage(
-				new DatabaseConnection(hostname, username, password, dbname),
+				new DatabaseConnection(dbConfig.hostname, dbConfig.username,
+						dbConfig.password, placeholderSource.config.storeInDatabase),
 				TABLE_NAME, "uuid", "placeholder");
 	}
 	
@@ -73,7 +66,7 @@ public class PlaceholderStorage {
 	
 	public void disable() {
 		// Don't save on server close if we already saved on plugin disable
-		if (saveOnPluginDisable) return;
+		if (placeholderSource.config.saveOnPluginDisable) return;
 		
 		// since this is called when the server closes,
 		// save all data to persistent csv storage now

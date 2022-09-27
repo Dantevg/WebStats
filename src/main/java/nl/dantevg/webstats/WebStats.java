@@ -33,6 +33,7 @@ public class WebStats extends JavaPlugin {
 	public static boolean hasEssentials;
 	
 	private HttpServer webserver;
+	private WebStatsConfig configData;
 	
 	// Gets run when the plugin is enabled on server startup
 	@Override
@@ -47,7 +48,7 @@ public class WebStats extends JavaPlugin {
 		
 		// Config
 		saveDefaultConfig();
-		int port = config.getInt("port");
+		configData = WebStatsConfig.getInstance(true);
 		
 		// Register debug command
 		CommandWebstats command = new CommandWebstats(this);
@@ -55,15 +56,15 @@ public class WebStats extends JavaPlugin {
 		getCommand("webstats").setTabCompleter(command);
 		
 		// Enable sources
-		if (config.contains("objectives")) scoreboardSource = new ScoreboardSource();
-		if (config.contains("database.config")) {
+		if (configData.useScoreboardSource) scoreboardSource = new ScoreboardSource();
+		if (configData.useDatabaseSource) {
 			try {
 				databaseSource = new DatabaseSource();
 			} catch (InvalidConfigurationException e) {
 				logger.log(Level.SEVERE, "Invalid database configuration", e);
 			}
 		}
-		if (config.contains("placeholders")) {
+		if (configData.usePlaceholderSource) {
 			if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
 				try {
 					placeholderSource = new PlaceholderSource();
@@ -75,7 +76,7 @@ public class WebStats extends JavaPlugin {
 			}
 		}
 		
-		if (config.contains("discord-webhook")) {
+		if (configData.useDiscordWebhook) {
 			try {
 				discordWebhook = new DiscordWebhook(this);
 			} catch (InvalidConfigurationException e) {
@@ -85,13 +86,13 @@ public class WebStats extends JavaPlugin {
 		
 		try {
 			// Start web server
-			webserver = HttpServer.create(new InetSocketAddress(port), 0);
+			webserver = HttpServer.create(new InetSocketAddress(configData.port), 0);
 			webserver.createContext("/", new HTTPRequestHandler());
 			webserver.start();
-			logger.log(Level.INFO, "Web server started on port " + port);
+			logger.log(Level.INFO, "Web server started on port " + configData.port);
 		} catch (IOException e) {
 			logger.log(Level.SEVERE, "Failed to start web server with port "
-					+ port + ": " + e.getMessage(), e);
+					+ configData.port + ": " + e.getMessage(), e);
 		}
 	}
 	

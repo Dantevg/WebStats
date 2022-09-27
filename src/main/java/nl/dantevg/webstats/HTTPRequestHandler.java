@@ -19,9 +19,7 @@ public class HTTPRequestHandler implements HttpHandler {
 	private final Map<String, String> resources = new HashMap<>();
 	
 	public HTTPRequestHandler() {
-		boolean serveWebpage = WebStats.config.getBoolean("serve-webpage");
-		
-		if (serveWebpage) {
+		if (WebStatsConfig.getInstance().serveWebpage) {
 			resources.put("/index.html", "text/html");
 			resources.put("/style.css", "text/css");
 			resources.put("/WebStats-dist.js", "application/javascript");
@@ -62,7 +60,7 @@ public class HTTPRequestHandler implements HttpHandler {
 				httpConnection.sendJson(new Gson().toJson(Stats.getOnline()));
 				break;
 			case "/tables.json":
-				httpConnection.sendJson(new Gson().toJson(Stats.getTables()));
+				httpConnection.sendJson(new Gson().toJson(WebStatsConfig.getInstance().tables));
 			default:
 				if (resources.containsKey(path)) {
 					httpConnection.sendFile(resources.get(path), "web" + path);

@@ -6,10 +6,10 @@ import me.clip.placeholderapi.PlaceholderAPI;
 import nl.dantevg.webstats.EntriesScores;
 import nl.dantevg.webstats.EssentialsHelper;
 import nl.dantevg.webstats.WebStats;
+import nl.dantevg.webstats.WebStatsConfig;
 import nl.dantevg.webstats.storage.StorageMethod;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,20 +19,15 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class PlaceholderSource {
-	private final Map<String, Object> placeholders;
+	final PlaceholderConfig config;
+	
 	private PlaceholderStorage storage;
 	
 	public PlaceholderSource() throws InvalidConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling placeholder source");
+		config = PlaceholderConfig.getInstance(true);
 		
-		ConfigurationSection section = WebStats.config.getConfigurationSection("placeholders");
-		if (section == null) {
-			throw new InvalidConfigurationException("Invalid configuration: placeholders should be a key-value map");
-		}
-		
-		placeholders = section.getValues(false);
-		if (WebStats.config.contains("store-placeholders-database")
-				|| WebStats.config.getBoolean("store-placeholders-in-file")) {
+		if (config.storeInFile || config.storeInDatabase != null) {
 			storage = new PlaceholderStorage(this);
 		}
 	}
@@ -80,8 +75,8 @@ public class PlaceholderSource {
 		Table<String, String, String> values = HashBasedTable.create();
 		Set<OfflinePlayer> players = getEntriesAsPlayers();
 		
-		placeholders.forEach((placeholder, placeholderName) -> {
-			if (WebStats.config.getStringList("server-columns").contains((String) placeholderName)) {
+		config.placeholders.forEach((placeholder, placeholderName) -> {
+			if (WebStatsConfig.getInstance().serverColumns.contains((String) placeholderName)) {
 				String score = getPlaceholderForServer(placeholder);
 				if (score != null) values.put("#server", (String) placeholderName, score);
 			} else {
@@ -102,7 +97,7 @@ public class PlaceholderSource {
 		String name = player.getName();
 		if (name == null) return scores;
 		
-		placeholders.forEach((placeholder, placeholderName) -> {
+		config.placeholders.forEach((placeholder, placeholderName) -> {
 			String score = PlaceholderAPI.setPlaceholders(player, placeholder);
 			if (isPlaceholderSet(placeholder, score)) scores.put((String) placeholderName, score);
 		});
