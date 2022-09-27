@@ -21,21 +21,32 @@ export default class WebStats {
 	updateInterval: number
 	interval: number
 
+	loadingElem?: HTMLElement
+	errorElem?: HTMLElement
+
 	constructor(config) {
 		this.displays = []
 		this.connection = config.connection ?? Connection.json(config.host)
 		this.updateInterval = config.updateInterval ?? 10000
 
-		// Set online status update interval
-		if (this.updateInterval > 0) this.startUpdateInterval(true)
-		document.addEventListener("visibilitychange", () => document.hidden
-			? this.stopUpdateInterval() : this.startUpdateInterval())
+		// Status HTML elements
+		const statusElem = document.querySelector(".webstats-status")
+		this.loadingElem = statusElem?.querySelector(".webstats-loading-indicator")
+		this.errorElem = statusElem?.querySelector(".webstats-error-message")
+		this.setLoadingStatus(true)
 
 		// Get data and init
 		const statsPromise = this.connection.getStats()
 		const tableConfigsPromise = this.connection.getTables()
 		Promise.all([statsPromise, tableConfigsPromise])
 			.then(([stats, tableConfigs]) => this.init(stats, tableConfigs, config))
+			.catch(e => {
+				const msg = "No connection to server. Either the server is offline, or the 'host' setting in index.html is incorrect."
+				console.error(e)
+				console.warn(msg)
+				this.setErrorMessage(msg, config)
+				this.setLoadingStatus(false)
+			})
 
 		// Get saved toggles from cookies
 		const cookies = document.cookie.split("; ") ?? []
@@ -61,7 +72,7 @@ export default class WebStats {
 			optionHideOffline.addEventListener("change", (e) => {
 				this.displays.forEach(display => display.changeHideOffline(optionHideOffline.checked))
 			})
-			this.displays.forEach(display => display.hideOffline = optionHideOffline.checked)
+			this.displays.forEach(display => display.changeHideOffline(optionHideOffline.checked))
 		}
 
 		window.webstats = this
@@ -90,6 +101,13 @@ export default class WebStats {
 			display.init(this.data)
 			display.sort()
 		})
+
+		// Set update interval
+		if (this.updateInterval > 0) this.startUpdateInterval(true)
+		document.addEventListener("visibilitychange", () => document.hidden
+			? this.stopUpdateInterval() : this.startUpdateInterval())
+
+		this.setLoadingStatus(false)
 	}
 
 	update() {
@@ -151,6 +169,27 @@ export default class WebStats {
 			{ ...config, table: tableElem, pagination: pagination },
 			tableConfig
 		))
+	}
+
+	setLoadingStatus(loading) {
+		if (!this.loadingElem) return
+		this.loadingElem.style.display = loading ? "inline" : "none"
+	}
+
+	setErrorMessage(msg: string, config) {
+		if (this.errorElem) this.errorElem.innerText = msg
+		else {
+			const spanElem = document.createElement("span")
+			spanElem.innerText = msg
+			spanElem.classList.add("webstats-error-message")
+			if (config.tableParent) {
+				config.tableParent.appendChild(spanElem)
+			} else if (config.tables) {
+				for (const tablename in config.tables) {
+					if (config.tables[tablename].table) config.tables[tablename].table.appendChild(spanElem)
+				}
+			}
+		}
 	}
 
 }
