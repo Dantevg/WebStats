@@ -490,16 +490,22 @@ class WebStats {
         this.displays = [];
         this.connection = config.connection ?? Connection.json(config.host);
         this.updateInterval = config.updateInterval ?? 10000;
-        // Set online status update interval
-        if (this.updateInterval > 0)
-            this.startUpdateInterval(true);
-        document.addEventListener("visibilitychange", () => document.hidden
-            ? this.stopUpdateInterval() : this.startUpdateInterval());
+        // Status HTML elements
+        const statusElem = document.querySelector(".webstats-status");
+        this.loadingElem = statusElem?.querySelector(".webstats-loading-indicator");
+        this.errorElem = statusElem?.querySelector(".webstats-error-message");
+        this.setLoadingStatus(true);
         // Get data and init
         const statsPromise = this.connection.getStats();
         const tableConfigsPromise = this.connection.getTables();
         Promise.all([statsPromise, tableConfigsPromise])
-            .then(([stats, tableConfigs]) => this.init(stats, tableConfigs, config));
+            .then(([stats, tableConfigs]) => this.init(stats, tableConfigs, config))
+            .catch(e => {
+            console.error(e);
+            console.warn(WebStats.CONNECTION_ERROR_MSG);
+            this.setErrorMessage(WebStats.CONNECTION_ERROR_MSG, config);
+            this.setLoadingStatus(false);
+        });
         // Get saved toggles from cookies
         const cookies = document.cookie.split("; ") ?? [];
         cookies.filter(str => str.length > 0).forEach(cookie => {
@@ -521,7 +527,7 @@ class WebStats {
             optionHideOffline.addEventListener("change", (e) => {
                 this.displays.forEach(display => display.changeHideOffline(optionHideOffline.checked));
             });
-            this.displays.forEach(display => display.hideOffline = optionHideOffline.checked);
+            this.displays.forEach(display => display.changeHideOffline(optionHideOffline.checked));
         }
         window.webstats = this;
     }
@@ -550,6 +556,12 @@ class WebStats {
             display.init(this.data);
             display.sort();
         });
+        // Set update interval
+        if (this.updateInterval > 0)
+            this.startUpdateInterval(true);
+        document.addEventListener("visibilitychange", () => document.hidden
+            ? this.stopUpdateInterval() : this.startUpdateInterval());
+        this.setLoadingStatus(false);
     }
     update() {
         // When nobody is online, assume scoreboard does not change
@@ -557,12 +569,22 @@ class WebStats {
             this.connection.getStats().then(data => {
                 this.data.setStats(data);
                 this.displays.forEach(display => display.updateStatsAndShow());
+            }).catch(e => {
+                console.error(e);
+                console.warn(WebStats.CONNECTION_ERROR_MSG);
+                this.setErrorMessage(WebStats.CONNECTION_ERROR_MSG);
+                this.stopUpdateInterval();
             });
         }
         else {
             this.connection.getOnline().then(data => {
                 this.data.setOnlineStatus(data);
                 this.displays.forEach(display => display.updateOnlineStatusAndShow());
+            }).catch(e => {
+                console.error(e);
+                console.warn(WebStats.CONNECTION_ERROR_MSG);
+                this.setErrorMessage(WebStats.CONNECTION_ERROR_MSG);
+                this.stopUpdateInterval();
             });
         }
     }
@@ -602,7 +624,31 @@ class WebStats {
             tableElem.setAttribute("webstats-table", tableConfig.name);
         this.displays.push(new Display({ ...config, table: tableElem, pagination: pagination }, tableConfig));
     }
+    setLoadingStatus(loading) {
+        if (!this.loadingElem)
+            return;
+        this.loadingElem.style.display = loading ? "inline" : "none";
+    }
+    setErrorMessage(msg, config) {
+        if (this.errorElem)
+            this.errorElem.innerText = msg;
+        else {
+            const spanElem = document.createElement("span");
+            spanElem.innerText = msg;
+            spanElem.classList.add("webstats-error-message");
+            if (config?.tableParent) {
+                config.tableParent.appendChild(spanElem);
+            }
+            else if (config?.tables) {
+                for (const tablename in config.tables) {
+                    if (config.tables[tablename].table)
+                        config.tables[tablename].table.appendChild(spanElem);
+                }
+            }
+        }
+    }
 }
+WebStats.CONNECTION_ERROR_MSG = "No connection to server. Either the server is offline, or the 'host' setting in index.html is incorrect.";
 
 export { WebStats as default };
 //# sourceMappingURL=WebStats-dist.js.map
