@@ -12,7 +12,7 @@ and player **online/AFK** status. It can also be used as a **Discord webhook**.
 ## [Getting started](https://github.com/Dantevg/WebStats/wiki/Getting-Started)
 To use WebStats, you need:
 - A Spigot Minecraft server
-- A web server (note: the plugin will not work over https, so make sure the
+- (optional) A web server (note: the plugin will not work over https, so make sure the
   webpage isn't served over https either)
 
 See [the wiki](https://github.com/Dantevg/WebStats/wiki/Getting-Started) for installation instructions.
@@ -25,16 +25,9 @@ For information about the config file, head over to the [wiki page](https://gith
 If you want to help make WebStats more awesome, you can do so by reporting
 a bug, suggesting a feature or helping with documentation. Anything is welcome!
 
-If you like to write something yourself, pull requests are also open. You'll
-need to setup the project in a specific way, because I did things in a
-maybe-not-so-good way: (for IntelliJ idea)
-1. Clone this repo and open in IntelliJ
-3. *Project Structure -> Project*: Set project SDK to 1.8
-4. *Project Structure -> Libraries*: Download spigot-api (shaded), EssentialsX
-   and PlaceholderAPI and add each of them as a Java library
-5. *Project Structure -> Libraries*: Add org.jetbrains:annotations from maven
-6. *Project Structure -> Artifacts*: Add an empty JAR artifact and add
-   "WebStats compile output" to the jar
+If you like to write something yourself, pull requests are also open. Starting
+from version 1.8, WebStats uses maven to build, so it should be very easy to
+work on the code yourself.
 
 ### Contributors
 Thank you to these people for helping out with the plugin by suggesting features and reporting bugs!
