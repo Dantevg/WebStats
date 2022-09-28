@@ -41,15 +41,12 @@ export default class WebStats {
 
 		// Get data and init
 		const statsPromise = this.connection.getStats()
+			.catch(this.catchError(WebStats.CONNECTION_ERROR_MSG, config))
 		const tableConfigsPromise = this.connection.getTables()
+			.catch(this.catchError(WebStats.CONNECTION_ERROR_MSG, config))
 		Promise.all([statsPromise, tableConfigsPromise])
 			.then(([stats, tableConfigs]) => this.init(stats, tableConfigs, config))
-			.catch(e => {
-				console.error(e)
-				console.warn(WebStats.CONNECTION_ERROR_MSG)
-				this.setErrorMessage(WebStats.CONNECTION_ERROR_MSG, config)
-				this.setLoadingStatus(false)
-			})
+			.catch(this.catchError(undefined, config))
 
 		// Get saved toggles from cookies
 		const cookies = document.cookie.split("; ") ?? []
@@ -119,22 +116,12 @@ export default class WebStats {
 			this.connection.getStats().then(data => {
 				this.data.setStats(data)
 				this.displays.forEach(display => display.updateStatsAndShow())
-			}).catch(e => {
-				console.error(e)
-				console.warn(WebStats.CONNECTION_ERROR_MSG)
-				this.setErrorMessage(WebStats.CONNECTION_ERROR_MSG)
-				this.stopUpdateInterval()
-			})
+			}).catch(this.catchError(WebStats.CONNECTION_ERROR_MSG))
 		} else {
 			this.connection.getOnline().then(data => {
 				this.data.setOnlineStatus(data)
 				this.displays.forEach(display => display.updateOnlineStatusAndShow())
-			}).catch(e => {
-				console.error(e)
-				console.warn(WebStats.CONNECTION_ERROR_MSG)
-				this.setErrorMessage(WebStats.CONNECTION_ERROR_MSG)
-				this.stopUpdateInterval()
-			})
+			}).catch(this.catchError(WebStats.CONNECTION_ERROR_MSG))
 		}
 	}
 
@@ -202,6 +189,17 @@ export default class WebStats {
 					if (config.tables[tablename].table) config.tables[tablename].table.appendChild(spanElem)
 				}
 			}
+		}
+	}
+
+	catchError(msg?: string, config?) {
+		const self = this
+		return e => {
+			console.error(e)
+			if (msg) console.warn(msg)
+			self.setErrorMessage(msg ?? e, config)
+			self.setLoadingStatus(false)
+			self.stopUpdateInterval()
 		}
 	}
 

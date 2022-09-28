@@ -61,7 +61,7 @@ export default class Display {
 	getEntries() {
 		const entriesHere = this.data.entries.filter((entry: string) =>
 			(this.columns ?? this.data.columns).some((column: string) =>
-				this.data.scoreboard.scores[column][entry]
+				this.data.scoreboard.scores[column]?.[entry]
 				&& this.data.scoreboard.scores[column][entry] != "0"))
 
 		return this.hideOffline
