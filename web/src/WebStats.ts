@@ -7,11 +7,13 @@ declare global {
 	interface Window { webstats: WebStats }
 }
 
+export type Direction = "ascending" | "descending"
+
 export type TableConfig = {
 	name?: string
 	columns?: string[]
-	sortBy?: string
-	sortDescending?: boolean
+	sortColumn?: string
+	sortDirection?: Direction
 }
 
 export default class WebStats {

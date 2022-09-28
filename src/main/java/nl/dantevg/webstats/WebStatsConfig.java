@@ -1,6 +1,7 @@
 package nl.dantevg.webstats;
 
 import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -96,9 +97,13 @@ public class WebStatsConfig {
 	}
 	
 	public enum SortDirection {
-		ASCENDING, DESCENDING;
+		@SerializedName("ascending")
+		ASCENDING,
+		@SerializedName("descending")
+		DESCENDING;
 		
-		public static @NotNull SortDirection fromString(@NotNull String direction, @NotNull SortDirection def) {
+		public static @NotNull SortDirection fromString(@Nullable String direction, @NotNull SortDirection def) {
+			if (direction == null) return def;
 			try {
 				return SortDirection.valueOf(direction.toUpperCase());
 			} catch (IllegalArgumentException e) {
@@ -110,6 +115,7 @@ public class WebStatsConfig {
 		public int toInt() {
 			return (this == SortDirection.DESCENDING ? -1 : 1);
 		}
+		
 	}
 	
 }

@@ -1,13 +1,13 @@
 import Data from "./Data"
 import FormattingCodes from "./FormattingCodes"
 import Pagination from "./Pagination"
-import { TableConfig } from "./WebStats"
+import { Direction, TableConfig } from "./WebStats"
 
 export default class Display {
 	table: HTMLTableElement
 	pagination?: Pagination
 	columns: string[]
-	sortBy: string
+	sortColumn: string
 	descending: boolean
 	showSkins: boolean
 	hideOffline: boolean
@@ -18,12 +18,12 @@ export default class Display {
 
 	static CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NUUlL6z0ABYBw1gGE0DBioHAZ3795lUFZWJildosQCRQaQoxnkVLgL0A2A8dFpdP8NfEICAMkiK2HeQ9JUAAAAAElFTkSuQmCC"
 
-	constructor({ table, pagination, showSkins = true }, { columns, sortBy = "Player", sortDescending = false }: TableConfig) {
+	constructor({ table, pagination, showSkins = true }, { columns, sortColumn = "Player", sortDirection = "descending" }: TableConfig) {
 		this.table = table
 		this.pagination = pagination
 		this.columns = columns
-		this.sortBy = sortBy
-		this.descending = sortDescending
+		this.sortColumn = sortColumn
+		this.descending = sortDirection == "descending"
 		this.showSkins = showSkins
 		this.hideOffline = false
 
@@ -200,7 +200,7 @@ export default class Display {
 	}
 
 	// Sort a HTML table element
-	sort(by: string = this.sortBy, descending: boolean = this.descending) {
+	sort(by: string = this.sortColumn, descending: boolean = this.descending) {
 		this.data.sort(by, descending)
 		this.show()
 	}
@@ -208,8 +208,8 @@ export default class Display {
 	// When a table header is clicked, sort by that header
 	thClick(e: Event) {
 		let objective = (e.target as HTMLTableCellElement).innerText
-		this.descending = (objective === this.sortBy) ? !this.descending : true
-		this.sortBy = objective
+		this.descending = (objective === this.sortColumn) ? !this.descending : true
+		this.sortColumn = objective
 		if (this.pagination) this.pagination.changePage(1)
 		this.sort()
 	}
