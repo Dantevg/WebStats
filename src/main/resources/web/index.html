@@ -16,6 +16,9 @@
 		const host = getCookie("host")
 			?? (getCookie("ip") ?? "localhost") + ":" + (getCookie("port") ?? 8080)
 		
+		const title = getCookie("title")
+		if (title) document.title = title
+		
 		// Will be executed after page is loaded
 		window.addEventListener("load", () => {
 			const stats = new WebStats({

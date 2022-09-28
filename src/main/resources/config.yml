@@ -36,6 +36,9 @@ store-player-ips: true
 # when you do not have one.
 serve-webpage: false
 
+# When serve-webpage is enabled, this is the tab title of the webpage.
+#webpage-title: "Web Stats"
+
 # Scoreboard objectives to use. When '*' is present, uses all objectives.
 # (make sure to enclose the '*' in quotes)
 objectives:

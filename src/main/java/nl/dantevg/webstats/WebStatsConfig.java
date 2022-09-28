@@ -2,6 +2,7 @@ package nl.dantevg.webstats;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,6 +22,7 @@ public class WebStatsConfig {
 	public final boolean storePlayerIPs;
 	
 	public final boolean serveWebpage;
+	public final String webpageTitle;
 	
 	@Deprecated
 	public final @Nullable List<String> columns;
@@ -39,6 +41,7 @@ public class WebStatsConfig {
 		storePlayerIPs = WebStats.config.getBoolean("store-player-ips");
 		
 		serveWebpage = WebStats.config.getBoolean("serve-webpage");
+		webpageTitle = WebStats.config.getString("webpage-title");
 		
 		columns = WebStats.config.getStringList("columns");
 		serverColumns = WebStats.config.getStringList("server-columns");

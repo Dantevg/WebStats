@@ -27,6 +27,8 @@ public class HTTPConnection {
 		// No "expires" attribute, so session cookies
 		String host = exchange.getRequestHeaders().getFirst("Host");
 		headers.add("Set-Cookie", "host=" + host + "; SameSite=Lax");
+		headers.add("Set-Cookie", "title=" + WebStatsConfig.getInstance().webpageTitle
+				+ "; SameSite=Lax");
 		
 		// For pre-1.8 backwards-compatibility
 		headers.add("Set-Cookie", "ip=" + host.split(":")[0]
