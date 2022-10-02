@@ -33,11 +33,31 @@
 		</repository>
 	</repositories>
 
+	<profiles>
+		<profile>
+			<id>mc1.18+</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<properties>
+				<httpclientScope>provided</httpclientScope>
+				<mcversion>1.18+</mcversion>
+			</properties>
+		</profile>
+		<profile>
+			<id>mc-1.12+</id>
+			<properties>
+				<httpclientScope>compile</httpclientScope>
+				<mcversion>1.12+</mcversion>
+			</properties>
+		</profile>
+	</profiles>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
-			<version>1.12.2-R0.1-SNAPSHOT</version>
+			<version>1.13.2-R0.1-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -50,7 +70,7 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 			<version>4.5.13</version>
-			<scope>provided</scope>
+			<scope>${httpclientScope}</scope>
 		</dependency>
 		<dependency>
 			<groupId>net.essentialsx</groupId>
@@ -78,6 +98,8 @@
 	</dependencies>
 
 	<build>
+		<finalName>${project.artifactId}-${project.version}+mc${mcversion}</finalName>
+		
 		<!-- plugin.yml version filtering from https://github.com/sgrayme/SpigotPlugin/blob/master/pom.xml -->
 		<resources>
 			<resource>
@@ -105,7 +127,8 @@
 				<artifactId>maven-shade-plugin</artifactId>
 				<version>3.3.0</version>
 				<configuration>
-					<minimizeJar>true</minimizeJar>
+					<!-- Needs to be false to support MC <= 1.17 -->
+					<minimizeJar>false</minimizeJar>
 				</configuration>
 				<executions>
 					<execution>

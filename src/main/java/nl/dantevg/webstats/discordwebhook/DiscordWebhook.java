@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import nl.dantevg.webstats.StatData;
 import nl.dantevg.webstats.Stats;
 import nl.dantevg.webstats.WebStats;
+import nl.dantevg.webstats.WebStatsConfig;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -13,12 +14,10 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Instant;
 import java.util.*;
@@ -30,39 +29,22 @@ public class DiscordWebhook implements Runnable {
 	private static final String WEBSTATS_ICON_URL = "https://raw.githubusercontent.com/Dantevg/WebStats/discord-webhook/img/icon-largemargins-96.png";
 	
 	private final WebStats plugin;
-	
-	private final @NotNull URL baseURL;
-	private final int displayCount;
-	private final @NotNull List<EmbedConfig> embeds = new ArrayList<>();
+	private final DiscordConfig config;
 	
 	private final DiscordMessage message = new DiscordMessage("WebStats", WEBSTATS_ICON_URL);
 	
 	public DiscordWebhook(WebStats plugin) throws InvalidConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling Discord webhook");
 		this.plugin = plugin;
+		config = DiscordConfig.getInstance(true);
 		
-		ConfigurationSection config = WebStats.config.getConfigurationSection("discord-webhook");
-		if (config == null) {
-			throw new InvalidConfigurationException("discord-webhook must be a config section");
-		}
-		
-		try {
-			baseURL = new URL(config.getString("url", ""));
-		} catch (MalformedURLException e) {
-			throw new InvalidConfigurationException(e);
-		}
-		displayCount = config.getInt("display-count", 10);
-		for (Map<?, ?> embed : config.getMapList("embeds")) {
-			embeds.add(new EmbedConfig(embed));
-		}
-		message.content = config.getString("title");
+		message.content = config.title;
 		
 		loadMessageID();
 		
-		int updateInterval = config.getInt("update-interval", 5);
-		if (updateInterval > 0) {
+		if (config.updateInterval > 0) {
 			long delayTicks = 0;
-			long periodTicks = (long) updateInterval * 20 * 60; // assume 20 tps
+			long periodTicks = (long) config.updateInterval * 20 * 60; // assume 20 tps
 			Bukkit.getScheduler().runTaskTimer(plugin, this,
 					delayTicks, periodTicks);
 		}
@@ -79,16 +61,16 @@ public class DiscordWebhook implements Runnable {
 			message.removeEmbeds();
 			
 			// Fill message
-			if (embeds.isEmpty()) {
+			if (config.embeds.isEmpty()) {
 				// Add one default embed
 				List<String> columns = (stats.columns != null)
 						? stats.columns
 						: stats.scores.columnKeySet().stream().sorted().collect(Collectors.toList());
-				sortEntries(entries, null, SortDirection.DESCENDING);
+				sortEntries(entries, null, WebStatsConfig.SortDirection.DESCENDING);
 				message.addEmbed(makeEmbed(stats, columns, entries));
 			} else {
 				// Add embeds according to config
-				for (EmbedConfig embedConfig : embeds) {
+				for (DiscordConfig.EmbedConfig embedConfig : config.embeds) {
 					Map<String, String> columnToSortBy = stats.scores.column(embedConfig.sortColumn);
 					sortEntries(entries, columnToSortBy, embedConfig.sortDirection);
 					DiscordEmbed embed = makeEmbed(stats, embedConfig.columns, entries);
@@ -166,7 +148,7 @@ public class DiscordWebhook implements Runnable {
 		embed.addField(new DiscordEmbed.EmbedField(
 				"Player",
 				nonEmptyEntries.stream()
-						.limit(displayCount)
+						.limit(config.displayCount)
 						.collect(Collectors.joining("\n")),
 				true));
 		
@@ -175,7 +157,7 @@ public class DiscordWebhook implements Runnable {
 			if (column == null) continue;
 			
 			String values = nonEmptyEntries.stream()
-					.limit(displayCount)
+					.limit(config.displayCount)
 					.map((entryName) -> column.get(entryName) != null
 							? column.get(entryName) : "")
 					.collect(Collectors.joining("\n"));
@@ -187,12 +169,12 @@ public class DiscordWebhook implements Runnable {
 	}
 	
 	private void sendMessage(@NotNull DiscordMessage message) throws IOException {
-		URL url = new URL(baseURL + "?wait=true");
+		URL url = new URL(config.url + "?wait=true");
 		send(new HttpPost(url.toString()), message);
 	}
 	
 	private void editMessage(@NotNull DiscordMessage message) throws IOException {
-		URL url = new URL(baseURL + "/messages/" + message.id);
+		URL url = new URL(config.url + "/messages/" + message.id);
 		send(new HttpPatch(url.toString()), message);
 	}
 	
@@ -237,7 +219,7 @@ public class DiscordWebhook implements Runnable {
 		}
 	}
 	
-	private static void sortEntries(List<String> entries, Map<String, String> column, SortDirection direction) {
+	private static void sortEntries(List<String> entries, Map<String, String> column, WebStatsConfig.SortDirection direction) {
 		entries.sort((aRow, bRow) -> {
 			String a, b;
 			if (column == null) {
@@ -268,40 +250,6 @@ public class DiscordWebhook implements Runnable {
 	
 	private static boolean isStatusCodeOk(int status) {
 		return status >= 200 && status < 300;
-	}
-	
-	private static class EmbedConfig {
-		public final String title;
-		public final @NotNull String sortColumn;
-		public final @NotNull SortDirection sortDirection;
-		public final @NotNull List<String> columns;
-		
-		public EmbedConfig(Map<?, ?> map) {
-			this.title = (String) map.get("title");
-			String sortColumn = (String) map.get("sort-column");
-			this.sortColumn = (sortColumn != null) ? sortColumn : "Player";
-			String sortDirection = (String) map.get("sort-direction");
-			this.sortDirection = SortDirection.fromString(sortDirection, SortDirection.DESCENDING);
-			List<String> columns = (List<String>) map.get("columns");
-			this.columns = (columns != null) ? columns : new ArrayList<>();
-		}
-	}
-	
-	private enum SortDirection {
-		ASCENDING, DESCENDING;
-		
-		public static @NotNull SortDirection fromString(@NotNull String direction, @NotNull SortDirection def) {
-			try {
-				return SortDirection.valueOf(direction.toUpperCase());
-			} catch (IllegalArgumentException e) {
-				WebStats.logger.log(Level.WARNING, "Invalid direction value '" + direction + "', using default");
-				return def;
-			}
-		}
-		
-		public int toInt() {
-			return (this == SortDirection.DESCENDING ? -1 : 1);
-		}
 	}
 	
 }

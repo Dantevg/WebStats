@@ -14,7 +14,7 @@ public class EssentialsHelper {
 		return Essentials.getPlugin(Essentials.class).getUser(player).isAfk();
 	}
 	
-	public static Set<OfflinePlayer> getOfflinePlayers(){
+	public static Set<OfflinePlayer> getOfflinePlayers() {
 		return Essentials.getPlugin(Essentials.class).getUserMap().getAllUniqueUsers()
 				.stream().map(Bukkit::getOfflinePlayer).collect(Collectors.toSet());
 	}

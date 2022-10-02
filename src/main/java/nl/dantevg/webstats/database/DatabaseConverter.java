@@ -51,7 +51,7 @@ public class DatabaseConverter {
 		if (conn == null) return data;
 		try (PreparedStatement stmt = conn.getConnection()
 				.prepareStatement("SELECT * FROM " + table);
-		     ResultSet results = stmt.executeQuery()){
+		     ResultSet results = stmt.executeQuery()) {
 			ResultSetMetaData meta = results.getMetaData();
 			int nColumns = meta.getColumnCount();
 			while (results.next()) {

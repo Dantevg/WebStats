@@ -96,7 +96,7 @@ public class CSVStorage implements StorageMethod {
 				// No header present in CSV file, write header first.
 				if (!columns.contains(rowKey)) {
 					columns = new ArrayList<>(columns);
-					columns.add(0, rowKey);	
+					columns.add(0, rowKey);
 				}
 				CSVPrinter printer = csvPrinterFromColumns(columns, writer);
 				writeScores(printer, scores, columns);
