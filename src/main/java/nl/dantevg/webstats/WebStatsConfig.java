@@ -2,11 +2,13 @@ package nl.dantevg.webstats;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -88,8 +90,7 @@ public class WebStatsConfig {
 			this.sortColumn = (sortColumn != null) ? sortColumn : "Player";
 			String sortDirection = (String) map.get("sort-direction");
 			this.sortDirection = SortDirection.fromString(sortDirection, SortDirection.DESCENDING);
-			List<String> columns = (List<String>) map.get("columns");
-			this.columns = (columns != null) ? columns : new ArrayList<>();
+			this.columns = (List<String>) map.get("columns");
 		}
 		
 		@Override
