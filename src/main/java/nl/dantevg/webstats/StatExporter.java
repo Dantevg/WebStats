@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Function;
+import java.util.logging.Level;
 
 public class StatExporter {
 	private static final String FILENAME = "stats.csv";
@@ -29,7 +30,10 @@ public class StatExporter {
 	}
 	
 	public boolean export() {
-		return storage.append(filterChanged(Stats.getStats()));
+		boolean success = storage.append(filterChanged(Stats.getStats()));
+		if (success) WebStats.logger.log(Level.INFO, "Export finished");
+		else WebStats.logger.log(Level.INFO, "Could not export stats");
+		return success;
 	}
 	
 	/**

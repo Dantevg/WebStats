@@ -31,9 +31,9 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 			return true;
 		} else if (args.length == 1 && args[0].equalsIgnoreCase("export")) {
 			if (WebStats.statExporter.export()) {
-				sender.sendMessage("Export finished");
+				if (!(sender instanceof ConsoleCommandSender)) sender.sendMessage("Export finished");
 			} else {
-				sender.sendMessage("Could not export stats, check console");
+				if (!(sender instanceof ConsoleCommandSender)) sender.sendMessage("Could not export stats, check console");
 			}
 			return true;
 		} else if (args.length == 2 && args[0].equalsIgnoreCase("migrate-placeholders-to")) {
