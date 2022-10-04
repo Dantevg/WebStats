@@ -33,7 +33,6 @@ public class WebStats extends JavaPlugin {
 	public static boolean hasEssentials;
 	
 	private HttpServer webserver;
-	private WebStatsConfig configData;
 	
 	// Gets run when the plugin is enabled on server startup
 	@Override
@@ -41,14 +40,14 @@ public class WebStats extends JavaPlugin {
 		logger = getLogger();
 		config = getConfig();
 		
+		// Config
+		saveDefaultConfig();
+		WebStatsConfig configData = WebStatsConfig.getInstance(true);
+		
 		hasEssentials = Bukkit.getPluginManager().getPlugin("Essentials") != null;
 		
 		playerIPStorage = new PlayerIPStorage(this);
 		statExporter = new StatExporter();
-		
-		// Config
-		saveDefaultConfig();
-		configData = WebStatsConfig.getInstance(true);
 		
 		// Register debug command
 		CommandWebstats command = new CommandWebstats(this);
