@@ -187,6 +187,7 @@ export default class Display {
 
 	// Re-display table contents
 	show() {
+		this.data.sort(this.sortColumn, this.descending)
 		this.table.innerHTML = ""
 		this.table.append(this.headerElem)
 		const scores = this.getScores()
@@ -199,19 +200,13 @@ export default class Display {
 		}
 	}
 
-	// Sort a HTML table element
-	sort(by: string = this.sortColumn, descending: boolean = this.descending) {
-		this.data.sort(by, descending)
-		this.show()
-	}
-
 	// When a table header is clicked, sort by that header
 	thClick(e: Event) {
 		let objective = (e.target as HTMLTableCellElement).innerText
 		this.descending = (objective === this.sortColumn) ? !this.descending : true
 		this.sortColumn = objective
 		if (this.pagination) this.pagination.changePage(1)
-		this.sort()
+		this.show()
 	}
 
 	// Replace single quotes by '&quot;' (html-escape)

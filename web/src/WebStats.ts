@@ -99,13 +99,15 @@ export default class WebStats {
 		this.data = new Data(data)
 		this.displays.forEach(display => {
 			display.init(this.data)
-			display.sort()
+			display.show()
 		})
 
 		// Set update interval
-		if (this.updateInterval > 0) this.startUpdateInterval(true)
-		document.addEventListener("visibilitychange", () => document.hidden
-			? this.stopUpdateInterval() : this.startUpdateInterval())
+		if (this.updateInterval > 0) {
+			this.startUpdateInterval(true)
+			document.addEventListener("visibilitychange", () => document.hidden
+				? this.stopUpdateInterval() : this.startUpdateInterval())
+		}
 
 		this.setLoadingStatus(false)
 	}
