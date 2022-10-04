@@ -43,6 +43,8 @@ Thank you to these people for helping out with the plugin by suggesting features
   top-100 and performance improvements suggestion ([#12](https://github.com/Dantevg/WebStats/issues/12)),
   HTTPS reverse proxy idea ([#12](https://github.com/Dantevg/WebStats/issues/12)),
   bug report ([#14](https://github.com/Dantevg/WebStats/issues/14))
+- [@Nick Messer](https://github.com/NickMesser):
+  bug report ([#50](https://github.com/Dantevg/WebStats/issues/50))
 - [@Unkn0wn3636 (spigotmc)](https://www.spigotmc.org/members/unkn0wn3636.1457887/):
   multiple tables suggestion ([#26](https://github.com/Dantevg/WebStats/issues/26)),
   separate server entry suggestion ([#27](https://github.com/Dantevg/WebStats/issues/27)),
