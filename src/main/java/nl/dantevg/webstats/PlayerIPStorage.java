@@ -38,8 +38,18 @@ public class PlayerIPStorage {
 	}
 	
 	public void addName(String ip, String name) {
+		// Remove old IP (they change)
+		removeName(name);
+		
+		// Add new IP (could be the same one)
 		ipToNames.putIfAbsent(ip, new HashSet<>());
 		ipToNames.get(ip).add(name);
+	}
+	
+	private void removeName(String name) {
+		for (Map.Entry<String, Set<String>> entry : ipToNames.entrySet()) {
+			entry.getValue().remove(name);
+		}
 	}
 	
 	private void load() {
