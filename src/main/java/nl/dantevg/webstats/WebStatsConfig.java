@@ -24,7 +24,7 @@ public class WebStatsConfig {
 	public final boolean storePlayerIPs;
 	
 	public final boolean serveWebpage;
-	public final String webpageTitle;
+	public final @Nullable String webpageTitle;
 	
 	@Deprecated
 	public final @Nullable List<String> columns;
