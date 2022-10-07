@@ -108,10 +108,22 @@ public class WebStats extends JavaPlugin {
 		}
 		
 		// Let sources close connections
-		if (databaseSource != null) databaseSource.disable();
-		if (placeholderSource != null) placeholderSource.disable();
-		if (playerIPStorage != null) playerIPStorage.disable();
-		if (discordWebhook != null) discordWebhook.disable();
+		if (databaseSource != null) {
+			databaseSource.disable();
+			databaseSource = null;
+		}
+		if (placeholderSource != null) {
+			placeholderSource.disable();
+			placeholderSource = null;
+		}
+		if (playerIPStorage != null) {
+			playerIPStorage.disable();
+			playerIPStorage = null;
+		}
+		if (discordWebhook != null) {
+			discordWebhook.disable();
+			discordWebhook = null;
+		}
 	}
 	
 	void reload() {
