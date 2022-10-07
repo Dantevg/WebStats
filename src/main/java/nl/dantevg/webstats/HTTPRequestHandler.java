@@ -29,8 +29,15 @@ public class HTTPRequestHandler implements HttpHandler {
 		attemptMigrateResources();
 	}
 	
-	@Override
-	public void handle(@NotNull HttpExchange exchange) throws IOException {
+	public void handle(@NotNull HttpExchange exchange) {
+		try {
+			handleInternal(exchange);
+		} catch (Exception e) {
+			WebStats.logger.log(Level.WARNING, e.getMessage(), e);
+		}
+	}
+	
+	private void handleInternal(@NotNull HttpExchange exchange) throws IOException {
 		HTTPConnection httpConnection = new HTTPConnection(exchange);
 		
 		// Only handle GET-requests
