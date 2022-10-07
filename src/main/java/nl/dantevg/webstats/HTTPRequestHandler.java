@@ -29,11 +29,13 @@ public class HTTPRequestHandler implements HttpHandler {
 		attemptMigrateResources();
 	}
 	
-	public void handle(@NotNull HttpExchange exchange) {
+	public void handle(@NotNull HttpExchange exchange) throws IOException {
 		try {
 			handleInternal(exchange);
 		} catch (Exception e) {
-			WebStats.logger.log(Level.WARNING, e.getMessage(), e);
+			WebStats.logger.log(Level.SEVERE, e.getMessage(), e);
+		} finally {
+			exchange.close();
 		}
 	}
 	
@@ -43,7 +45,6 @@ public class HTTPRequestHandler implements HttpHandler {
 		// Only handle GET-requests
 		if (!exchange.getRequestMethod().equals("GET")) {
 			httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_BAD_METHOD);
-			exchange.close();
 			return;
 		}
 		
@@ -51,7 +52,6 @@ public class HTTPRequestHandler implements HttpHandler {
 		String path = exchange.getRequestURI().getPath();
 		if (path == null) {
 			httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_BAD_REQUEST);
-			exchange.close();
 			return;
 		}
 		
@@ -68,6 +68,7 @@ public class HTTPRequestHandler implements HttpHandler {
 				break;
 			case "/tables.json":
 				httpConnection.sendJson(new Gson().toJson(WebStatsConfig.getInstance().tables));
+				break;
 			default:
 				if (resources.containsKey(path)) {
 					httpConnection.sendFile(resources.get(path), "web" + path);
@@ -77,8 +78,6 @@ public class HTTPRequestHandler implements HttpHandler {
 				}
 				break;
 		}
-		
-		exchange.close();
 	}
 	
 	private void attemptMigrateResources() {
