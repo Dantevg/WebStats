@@ -3,6 +3,7 @@ package nl.dantevg.webstats;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -12,6 +13,7 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 public class HTTPRequestHandler implements HttpHandler {
@@ -29,7 +31,7 @@ public class HTTPRequestHandler implements HttpHandler {
 		attemptMigrateResources();
 	}
 	
-	public void handle(@NotNull HttpExchange exchange) throws IOException {
+	public void handle(@NotNull HttpExchange exchange) {
 		try {
 			handleInternal(exchange);
 		} catch (Exception e) {
@@ -61,7 +63,22 @@ public class HTTPRequestHandler implements HttpHandler {
 		switch (path) {
 			case "/stats.json":
 				InetAddress ip = exchange.getRemoteAddress().getAddress();
-				httpConnection.sendJson(new Gson().toJson(Stats.getAll(ip)));
+				try {
+					// Stats need to be gathered on the main thread,
+					// see https://github.com/Dantevg/WebStats/issues/52
+					StatData stats = Bukkit.getScheduler().callSyncMethod(
+							WebStats.getPlugin(WebStats.class),
+							() -> Stats.getAll(ip)).get();
+					httpConnection.sendJson(new Gson().toJson(stats));
+				} catch (InterruptedException ignored) {
+					// do nothing
+				} catch (ExecutionException e) {
+					if (e.getCause() instanceof IOException) {
+						throw (IOException) e.getCause();
+					} else {
+						throw new RuntimeException(e);
+					}
+				}
 				break;
 			case "/online.json":
 				httpConnection.sendJson(new Gson().toJson(Stats.getOnline()));
