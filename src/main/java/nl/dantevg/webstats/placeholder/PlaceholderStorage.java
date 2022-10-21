@@ -49,6 +49,13 @@ public class PlaceholderStorage {
 		
 		// Update stored data with potentially new data
 		update();
+		
+		if (placeholderSource.config.saveInterval > 0) {
+			long delayTicks = 0;
+			long periodTicks = (long) placeholderSource.config.saveInterval * 20 * 60; // assume 20 tps
+			Bukkit.getScheduler().runTaskTimer(WebStats.getPlugin(WebStats.class),
+					this::saveAll, delayTicks, periodTicks);
+		}
 	}
 	
 	private DatabaseStorage getDatabaseStorage() throws InvalidConfigurationException {

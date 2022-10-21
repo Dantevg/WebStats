@@ -113,3 +113,7 @@ objectives:
 # This is a fix for error "java.lang.IllegalStateException: zip file closed."
 # You can leave this off if you don't experience this error.
 save-placeholders-on-plugin-disable: false
+
+# You can have the placeholders be automatically saved to persistent storage
+# every couple minutes. (uncomment to use, interval in minutes)
+#save-placeholders-interval: 5
