@@ -14,7 +14,6 @@ public class PlaceholderConfig {
 	public final boolean storeInFile;
 	public final @Nullable String storeInDatabase;
 	public final boolean saveOnPluginDisable;
-	public final int saveInterval;
 	
 	private PlaceholderConfig() throws InvalidConfigurationException {
 		ConfigurationSection section = WebStats.config.getConfigurationSection("placeholders");
@@ -26,7 +25,6 @@ public class PlaceholderConfig {
 		storeInFile = WebStats.config.getBoolean("store-placeholders-in-file");
 		storeInDatabase = WebStats.config.getString("store-placeholders-database");
 		saveOnPluginDisable = WebStats.config.getBoolean("save-placeholders-on-plugin-disable");
-		saveInterval = WebStats.config.getInt("save-placeholders-interval");
 	}
 	
 	public static PlaceholderConfig getInstance(boolean forceNew) throws InvalidConfigurationException {
