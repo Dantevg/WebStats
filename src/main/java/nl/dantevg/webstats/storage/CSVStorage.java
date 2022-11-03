@@ -48,6 +48,25 @@ public class CSVStorage implements StorageMethod {
 		return store(scores, new ArrayList<>(scores.columnKeySet()));
 	}
 	
+	/**
+	 * Store stats, replacing old stored stats, but keeping the old header if
+	 * it exists.
+	 *
+	 * @param scores the scores to store
+	 * @return whether the storing was successful
+	 */
+	public boolean storeKeepColumns(@NotNull Table<String, String, String> scores) {
+		try {
+			List<String> columnsPresent = readColumns();
+			if (columnsPresent != null) return store(scores, columnsPresent);
+		} catch (IOException e) {
+			// ignore
+		}
+		
+		// readColumns threw exception or returned null
+		return store(scores);
+	}
+	
 	@Override
 	public boolean store(@NotNull Table<String, String, String> scores, @NotNull List<String> columns) {
 		if (!ensureFileExists()) return false;

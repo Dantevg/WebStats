@@ -22,6 +22,8 @@ public class WebStatsConfig {
 	public final boolean useDiscordWebhook;
 	
 	public final boolean storePlayerIPs;
+	public final boolean exportCumulative;
+	public final int exportInterval;
 	
 	public final boolean serveWebpage;
 	public final @Nullable String webpageTitle;
@@ -41,6 +43,8 @@ public class WebStatsConfig {
 		useDiscordWebhook = WebStats.config.contains("discord-webhook");
 		
 		storePlayerIPs = WebStats.config.getBoolean("store-player-ips");
+		exportCumulative = WebStats.config.getBoolean("export-cumulative");
+		exportInterval = WebStats.config.getInt("export-interval");
 		
 		serveWebpage = WebStats.config.getBoolean("serve-webpage");
 		webpageTitle = WebStats.config.getString("webpage-title");

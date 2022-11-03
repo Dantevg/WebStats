@@ -4,6 +4,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import nl.dantevg.webstats.storage.CSVStorage;
 import nl.dantevg.webstats.storage.StorageMethod;
+import org.bukkit.Bukkit;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -12,7 +13,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
 
-public class StatExporter {
+public class StatExporter implements Runnable {
 	private static final String FILENAME = "stats.csv";
 	
 	private final CSVStorage storage;
@@ -27,10 +28,24 @@ public class StatExporter {
 		mapper.put("date", entry -> LocalDate.now().toString());
 		
 		storage = new CSVStorage(FILENAME, mapper, "Player");
+		
+		if (WebStatsConfig.getInstance().exportInterval > 0) {
+			long delayTicks = 0;
+			long periodTicks = (long) WebStatsConfig.getInstance().exportInterval * 20 * 60; // assume 20 tps
+			Bukkit.getScheduler().runTaskTimer(WebStats.getPlugin(WebStats.class),
+					this, delayTicks, periodTicks);
+		}
+	}
+	
+	@Override
+	public void run() {
+		export();
 	}
 	
 	public boolean export() {
-		boolean success = storage.append(filterChanged(Stats.getStats()));
+		boolean success = (WebStatsConfig.getInstance().exportCumulative)
+				? storage.append(filterChanged(Stats.getStats()))
+				: storage.storeKeepColumns(Stats.getStats().scores);
 		if (success) WebStats.logger.log(Level.INFO, "Export finished");
 		else WebStats.logger.log(Level.INFO, "Could not export stats");
 		return success;

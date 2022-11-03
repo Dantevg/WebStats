@@ -31,6 +31,14 @@ server-columns: []
 # used for matching your IP to your player name
 store-player-ips: true
 
+# Whether to keep old statistics in stats.csv when executing '/webstats export'.
+# Disabling this will override older saved statistics in stats.csv when exporting.
+export-cumulative: true
+
+# The interval in which to export all stats to stats.csv, in minutes.
+# Set to 0 to disable (default).
+export-interval: 0
+
 # Whether to also serve the web page from within the plugin. (not only the stats)
 # Disable this when you want to use your own external web server, enable this
 # when you do not have one.
