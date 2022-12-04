@@ -34,6 +34,8 @@ public class WebStatsConfig {
 	public final @NotNull List<String> serverColumns;
 	public final @NotNull List<TableConfig> tables;
 	
+	public final String bedrockPrefix;
+	
 	private WebStatsConfig() {
 		port = WebStats.config.getInt("port");
 		
@@ -51,6 +53,8 @@ public class WebStatsConfig {
 		
 		columns = WebStats.config.getStringList("columns");
 		serverColumns = WebStats.config.getStringList("server-columns");
+		
+		bedrockPrefix = WebStats.config.getString("bedrock-prefix");
 		
 		if (!WebStats.config.contains("tables")) {
 			tables = Collections.emptyList();

@@ -121,3 +121,8 @@ objectives:
 # This is a fix for error "java.lang.IllegalStateException: zip file closed."
 # You can leave this off if you don't experience this error.
 save-placeholders-on-plugin-disable: false
+
+# When running a server with Geyser / Floodgate, Bedrock players get a prefix
+# before their name. Set this to the prefix set in the Floodgate config, so the
+# web frontend knows that those are bedrock players. (uncomment to use)
+#bedrock-prefix: '.'

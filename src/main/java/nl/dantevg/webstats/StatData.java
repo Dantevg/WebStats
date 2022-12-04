@@ -19,6 +19,7 @@ public class StatData {
 	@SerializedName("scoreboard")
 	public Stats stats;
 	public Set<String> playernames;
+	public String bedrockPrefix = WebStatsConfig.getInstance().bedrockPrefix;
 	
 	public StatData(Map<String, Object> online, Stats stats) {
 		this.online = online;
