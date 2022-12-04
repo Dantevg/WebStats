@@ -94,7 +94,7 @@ export default class Display {
 		}
 
 		// Append player name
-		let name = Display.appendTextElement(tr, "td", entry == "#server" ? "Server" : entry)
+		let name = Display.appendTextElement(tr, "td", this.transformEntryName(entry))
 		name.setAttribute("objective", "Player")
 		name.setAttribute("value", entry)
 
@@ -207,6 +207,13 @@ export default class Display {
 		this.sortColumn = objective
 		if (this.pagination) this.pagination.changePage(1)
 		this.show()
+	}
+	
+	// Transform an entry name into the name to be displayed
+	transformEntryName = (entry: string) => {
+		if (entry == "#server") return "Server"
+		else if (this.data.isBedrockPlayer(entry)) return Data.transformBedrockPlayername(entry)
+		else return entry
 	}
 
 	// Replace single quotes by '&quot;' (html-escape)

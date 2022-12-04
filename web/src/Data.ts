@@ -13,8 +13,9 @@ export default class Data {
 	players: Online
 	columns_: { [column: string]: number }
 	playernames: string[]
+	bedrockPrefix?: string
 
-	constructor(data: { scoreboard: Scoreboard, online: Online, playernames: string[] }) {
+	constructor(data: { scoreboard: Scoreboard, online: Online, playernames: string[], bedrockPrefix?: string }) {
 		this.setStats(data)
 	}
 
@@ -52,7 +53,8 @@ export default class Data {
 	}
 	setOnlineStatus(online: Online) { this.players = online }
 	setPlayernames(playernames: string[]) { this.playernames = playernames }
-	setStats(data: { scoreboard: Scoreboard, online: Online, playernames: string[] }) {
+	setStats(data: { scoreboard: Scoreboard, online: Online, playernames: string[], bedrockPrefix?: string }) {
+		this.bedrockPrefix = data.bedrockPrefix
 		this.setScoreboard(data.scoreboard)
 		this.setOnlineStatus(data.online)
 		this.setPlayernames(data.playernames)
@@ -61,12 +63,12 @@ export default class Data {
 	filter() {
 		// Remove non-player / empty entries and sort
 		this.scoreboard.entries = this.scoreboard.entries
-			.filter(Data.isPlayerOrServer)
+			.filter(this.isPlayerOrServer.bind(this))
 			.filter(this.isNonemptyEntry.bind(this))
 			.sort(Intl.Collator().compare)
 
 		// Remove empty columns
-		this.scoreboard.scores = Data.filter(this.scoreboard.scores, Data.isNonemptyObjective)
+		this.scoreboard.scores = Data.filter(this.scoreboard.scores, this.isNonemptyObjective.bind(this))
 	}
 
 	sort(by: string, descending: boolean) {
@@ -96,12 +98,20 @@ export default class Data {
 
 	// Valid player names only contain between 3 and 16 characters [A-Za-z0-9_],
 	// entries with only digits are ignored as well (common for datapacks)
-	static isPlayerOrServer = (entry: string) =>
+	isPlayerOrServer = (entry: string) =>
 		entry == "#server" || (entry.match(/^\w{3,16}$/) && !entry.match(/^\d*$/))
+		|| this.isBedrockPlayer(entry)
+	
+	// Whether this entry is a Bedrock player through Geyser/Floodgate
+	isBedrockPlayer = (entry: string) => (this.bedrockPrefix && entry.startsWith(this.bedrockPrefix))
 
 	// Whether any entry has a value for this objective
-	static isNonemptyObjective = (objective: { [entry: string]: string | number }) =>
-		Object.keys(objective).filter(Data.isPlayerOrServer).length > 0
+	isNonemptyObjective = (objective: { [entry: string]: string | number }) =>
+		Object.keys(objective).filter(this.isPlayerOrServer.bind(this)).length > 0
+	
+	// Transform a Bedrock player's name mangled by Geyser/Floodgate back to a real name
+	static transformBedrockPlayername = (entry: string) =>
+		entry.substring(1).replaceAll("_", " ")
 
 	// Array-like filter function for objects
 	// https://stackoverflow.com/a/37616104
