@@ -107,6 +107,9 @@ public class WebStats extends JavaPlugin {
 			webserver = null;
 		}
 		
+		scoreboardSource = null;
+		statExporter = null;
+		
 		// Let sources close connections
 		if (databaseSource != null) {
 			databaseSource.disable();
