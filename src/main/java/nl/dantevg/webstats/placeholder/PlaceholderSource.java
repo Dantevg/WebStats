@@ -29,6 +29,7 @@ public class PlaceholderSource {
 		
 		if (config.storeInFile || config.storeInDatabase != null) {
 			storage = new PlaceholderStorage(this);
+			storage.prune(new HashSet<>(config.placeholders.values()));
 		}
 	}
 	
@@ -77,15 +78,15 @@ public class PlaceholderSource {
 		
 		config.placeholders.forEach((placeholder, placeholderName) -> {
 			placeholder = transformPlaceholderWithDots(placeholder);
-			if (WebStatsConfig.getInstance().serverColumns.contains((String) placeholderName)) {
+			if (WebStatsConfig.getInstance().serverColumns.contains(placeholderName)) {
 				
 				String score = getPlaceholderForServer(placeholder);
-				if (score != null) values.put("#server", (String) placeholderName, score);
+				if (score != null) values.put("#server", placeholderName, score);
 			} else {
 				for (OfflinePlayer player : players) {
-					String score = getPlaceholderForPlayer(player, placeholder, (String) placeholderName);
+					String score = getPlaceholderForPlayer(player, placeholder, placeholderName);
 					// Only add the score if it is not empty
-					if (score != null) values.put(player.getName(), (String) placeholderName, score);
+					if (score != null) values.put(player.getName(), placeholderName, score);
 				}
 			}
 		});
@@ -101,7 +102,7 @@ public class PlaceholderSource {
 		
 		config.placeholders.forEach((placeholder, placeholderName) -> {
 			String score = PlaceholderAPI.setPlaceholders(player, placeholder);
-			if (isPlaceholderSet(placeholder, score)) scores.put((String) placeholderName, score);
+			if (isPlaceholderSet(placeholder, score)) scores.put(placeholderName, score);
 		});
 		
 		return scores;

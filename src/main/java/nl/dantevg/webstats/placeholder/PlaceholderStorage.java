@@ -1,6 +1,7 @@
 package nl.dantevg.webstats.placeholder;
 
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import nl.dantevg.webstats.WebStats;
 import nl.dantevg.webstats.database.DatabaseConfig;
@@ -14,10 +15,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 
 public class PlaceholderStorage {
@@ -139,6 +137,12 @@ public class PlaceholderStorage {
 		storage.store(dataString);
 		
 		WebStats.logger.log(Level.INFO, "Saved placeholders");
+	}
+	
+	public void prune(Set<String> placeholders) {
+		if (Sets.difference(data.columnKeySet(), placeholders).isEmpty()) return;
+		WebStats.logger.log(Level.INFO, "Removing old placeholders " + Sets.difference(data.columnKeySet(), placeholders));
+		data.columnKeySet().retainAll(placeholders);
 	}
 	
 	public @Nullable String getScore(UUID uuid, String placeholder) {
