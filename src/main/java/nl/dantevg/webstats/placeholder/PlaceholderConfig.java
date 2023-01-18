@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PlaceholderConfig {
+	private static final String DOT_REPLACEMENT = "[dot]";
 	private static PlaceholderConfig instance;
 	
 	public final Map<String, String> placeholders;
@@ -37,12 +38,12 @@ public class PlaceholderConfig {
 		return getInstance(false);
 	}
 	
-	// Remove non-string values from map, and replace any occurrence of ':' with '.',
+	// Remove non-string values from map, and replace any occurrence of '[dot]' with '.',
 	// because Spigot's YAML parser cannot handle keys with dots (for permissions).
 	private static Map<String, String> sanitizePlaceholderMap(Map<String, Object> input) {
 		Map<String, String> output = new HashMap<>();
 		input.forEach((key, value) -> {
-			if (value instanceof String) output.put(key.replace(":", "."), (String) value);
+			if (value instanceof String) output.put(key.replace(DOT_REPLACEMENT, "."), (String) value);
 		});
 		return output;
 	}

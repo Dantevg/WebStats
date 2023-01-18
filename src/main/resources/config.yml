@@ -67,6 +67,7 @@ objectives:
 #        - [uuid, column]
 
 # Configuration for the PlaceholderAPI connectivity (uncomment to use)
+# If you want to use a `.`, you need to replace it by `[dot]`
 #placeholders:
 #  '%placeholder_name%': displayed name
 
