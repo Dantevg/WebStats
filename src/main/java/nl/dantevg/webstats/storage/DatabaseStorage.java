@@ -41,8 +41,10 @@ public class DatabaseStorage implements StorageMethod {
 	
 	@Override
 	public boolean store(@NotNull Table<String, String, String> scores, @NotNull List<String> columns) {
-		try (Connection connection = conn.getConnection();
-		     PreparedStatement stmt = connection.prepareStatement("REPLACE INTO " + tableName + " VALUES (?, ?, ?);")) {
+		Connection connection = conn.getConnection();
+		if (connection == null) return false;
+		
+		try (PreparedStatement stmt = connection.prepareStatement("REPLACE INTO " + tableName + " VALUES (?, ?, ?);")) {
 			removeOldColumns(connection, columns);
 			for (Table.Cell<String, String, String> entry : scores.cellSet()) {
 				stmt.setString(1, entry.getRowKey());
