@@ -110,6 +110,9 @@ public class DatabaseStorage implements StorageMethod {
 	}
 	
 	private boolean removeOldColumns(@NotNull Connection connection, @NotNull List<String> columns) {
+		// Don't try to remove 0 columns
+		if (columns.isEmpty()) return true;
+		
 		String[] columnsPrepared = new String[columns.size()];
 		Arrays.fill(columnsPrepared, "?");
 		
