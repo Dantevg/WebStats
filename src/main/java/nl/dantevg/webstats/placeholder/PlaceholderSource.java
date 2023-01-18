@@ -77,9 +77,7 @@ public class PlaceholderSource {
 		Set<OfflinePlayer> players = getEntriesAsPlayers();
 		
 		config.placeholders.forEach((placeholder, placeholderName) -> {
-			placeholder = transformPlaceholderWithDots(placeholder);
 			if (WebStatsConfig.getInstance().serverColumns.contains(placeholderName)) {
-				
 				String score = getPlaceholderForServer(placeholder);
 				if (score != null) values.put("#server", placeholderName, score);
 			} else {
@@ -124,12 +122,6 @@ public class PlaceholderSource {
 		return value != null
 				&& !value.equals("")
 				&& !value.equalsIgnoreCase(placeholder);
-	}
-	
-	// Replace any occurrence of ':' with '.', because Spigot's YAML parser
-	// cannot handle keys with dots (which is sometimes necessary).
-	public static String transformPlaceholderWithDots(String placeholder) {
-		return placeholder.replace(":", ".");
 	}
 	
 	public @NotNull String debug() {

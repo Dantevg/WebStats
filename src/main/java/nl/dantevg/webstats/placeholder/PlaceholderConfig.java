@@ -22,7 +22,7 @@ public class PlaceholderConfig {
 			throw new InvalidConfigurationException("Invalid configuration: placeholders should be a key-value map");
 		}
 		
-		placeholders = sanitizeStringMap(section.getValues(false));
+		placeholders = sanitizePlaceholderMap(section.getValues(false));
 		storeInFile = WebStats.config.getBoolean("store-placeholders-in-file");
 		storeInDatabase = WebStats.config.getString("store-placeholders-database");
 		saveOnPluginDisable = WebStats.config.getBoolean("save-placeholders-on-plugin-disable");
@@ -37,10 +37,12 @@ public class PlaceholderConfig {
 		return getInstance(false);
 	}
 	
-	private static Map<String, String> sanitizeStringMap(Map<String, Object> input) {
+	// Remove non-string values from map, and replace any occurrence of ':' with '.',
+	// because Spigot's YAML parser cannot handle keys with dots (for permissions).
+	private static Map<String, String> sanitizePlaceholderMap(Map<String, Object> input) {
 		Map<String, String> output = new HashMap<>();
 		input.forEach((key, value) -> {
-			if (value instanceof String) output.put(key, (String) value);
+			if (value instanceof String) output.put(key.replace(":", "."), (String) value);
 		});
 		return output;
 	}
