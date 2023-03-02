@@ -1,7 +1,10 @@
 import Connection from "./Connection"
 import Data from "./Data"
 import Display from "./Display"
+import FormattingCodes from "./FormattingCodes"
 import Pagination from "./Pagination"
+
+export { Connection, Data, Display, FormattingCodes, Pagination }
 
 declare global {
 	interface Window { webstats: WebStats }
