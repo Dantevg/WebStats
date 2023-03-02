@@ -12,11 +12,13 @@ export default class Connection {
 	}
 
 	static json(host: string) {
+		// Detect if the user has manually entered a protocol (could be https)
+		const protocol = host.startsWith("http") ? "" : "http://"
 		return new Connection({
-			all:  `http://${host}/stats.json`,
-			scores:  `http://${host}/scoreboard.json`,
-			online:  `http://${host}/online.json`,
-			tables:  `http://${host}/tables.json`,
+			all:    `${protocol}${host}/stats.json`,
+			scores: `${protocol}${host}/scoreboard.json`,
+			online: `${protocol}${host}/online.json`,
+			tables: `${protocol}${host}/tables.json`,
 		})
 	}
 
