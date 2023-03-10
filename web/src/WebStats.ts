@@ -58,11 +58,12 @@ export default class WebStats {
 
 		// Get data and init
 		const statsPromise = this.connection.getStats()
-			.catch(this.catchError(WebStats.CONNECTION_ERROR_MSG, config))
 		const tableConfigsPromise = this.connection.getTables()
-			.catch(this.catchError(WebStats.CONNECTION_ERROR_MSG, config))
 		Promise.all([statsPromise, tableConfigsPromise])
-			.then(([stats, tableConfigs]) => this.init(stats, tableConfigs, config))
+			.then(
+				([stats, tableConfigs]) => this.init(stats, tableConfigs, config),
+				this.catchError(WebStats.CONNECTION_ERROR_MSG, config)
+			)
 			.catch(this.catchError(undefined, config))
 
 		// Get saved toggles from cookies
