@@ -19,8 +19,22 @@ export type TableConfig = {
 	sortDirection?: Direction
 }
 
+export type WebStatsConfig = {
+	// Either one of these
+	host?: string
+	connection?: Connection
+
+	// Either one of these
+	tableParent?: HTMLTableElement
+	tables?: { [key: string]: { table: HTMLTableElement, pagination?: HTMLElement } }
+
+	updateInterval?: number
+	showSkins?: boolean
+	displayCount?: number
+}
+
 export default class WebStats {
-	static CONNECTION_ERROR_MSG = "No connection to server. Either the server is offline, or the 'host' setting in index.html is incorrect."
+	static CONNECTION_ERROR_MSG = "No connection to server. Maybe the server is offline, or the 'host' setting in index.html is incorrect."
 
 	displays: Display[]
 	connection: Connection
@@ -31,7 +45,7 @@ export default class WebStats {
 	loadingElem?: HTMLElement
 	errorElem?: HTMLElement
 
-	constructor(config) {
+	constructor(config: WebStatsConfig) {
 		this.displays = []
 		this.connection = config.connection ?? Connection.json(config.host)
 		this.updateInterval = config.updateInterval ?? 10000
@@ -81,7 +95,7 @@ export default class WebStats {
 		window.webstats = this
 	}
 
-	init(data, tableConfigs: TableConfig[] | undefined, config) {
+	init(data, tableConfigs: TableConfig[] | undefined, config: WebStatsConfig) {
 		if (config.tables) {
 			for (const tableName in config.tables) {
 				const tableConfig = tableConfigs
@@ -139,7 +153,7 @@ export default class WebStats {
 		clearInterval(this.interval)
 	}
 
-	addTableManual(config, tableConfig: TableConfig) {
+	addTableManual(config: WebStatsConfig, tableConfig: TableConfig) {
 		let pagination: Pagination
 		if (config.displayCount > 0 && config.tables[tableConfig.name ?? ""].pagination) {
 			const paginationParent = config.tables[tableConfig.name ?? ""].pagination
@@ -151,7 +165,7 @@ export default class WebStats {
 		))
 	}
 
-	addTableAutomatic(config, tableConfig: TableConfig) {
+	addTableAutomatic(config: WebStatsConfig, tableConfig: TableConfig) {
 		const headerElem = (config.tableParent as HTMLElement)
 			.appendChild(document.createElement("div"))
 		headerElem.classList.add("webstats-tableheading")
@@ -176,12 +190,12 @@ export default class WebStats {
 		))
 	}
 
-	setLoadingStatus(loading) {
+	setLoadingStatus(loading: boolean) {
 		if (!this.loadingElem) return
 		this.loadingElem.style.display = loading ? "inline" : "none"
 	}
 
-	setErrorMessage(msg: string, config?) {
+	setErrorMessage(msg: string, config?: WebStatsConfig) {
 		if (this.errorElem) this.errorElem.innerText = msg
 		else {
 			const spanElem = document.createElement("span")
@@ -197,7 +211,7 @@ export default class WebStats {
 		}
 	}
 
-	catchError(msg?: string, config?) {
+	catchError(msg?: string, config?: WebStatsConfig) {
 		const self = this
 		return e => {
 			console.error(e)
