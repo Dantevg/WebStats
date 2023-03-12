@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -138,6 +140,10 @@ public class WebStats extends JavaPlugin {
 		setEnabled(true);
 		logger.log(Level.INFO, "Reload complete");
 	}
+	
+	public static <T> Future<T> callSyncMethod(Callable<T> task) {
+		return Bukkit.getScheduler().callSyncMethod(WebStats.getPlugin(WebStats.class), task);
+	} 
 	
 	private @NotNull String getVersion() {
 		return "WebStats " + getDescription().getVersion();

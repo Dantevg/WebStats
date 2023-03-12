@@ -32,7 +32,7 @@ public class StatExporter implements Runnable {
 		if (WebStatsConfig.getInstance().exportInterval > 0) {
 			long delayTicks = 0;
 			long periodTicks = (long) WebStatsConfig.getInstance().exportInterval * 20 * 60; // assume 20 tps
-			Bukkit.getScheduler().runTaskTimer(WebStats.getPlugin(WebStats.class),
+			Bukkit.getScheduler().runTaskTimerAsynchronously(WebStats.getPlugin(WebStats.class),
 					this, delayTicks, periodTicks);
 		}
 	}

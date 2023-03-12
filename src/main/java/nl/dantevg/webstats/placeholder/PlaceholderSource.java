@@ -15,6 +15,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -91,6 +93,37 @@ public class PlaceholderSource {
 		return values;
 	}
 	
+	private @NotNull Table<String, String, String> getScoresForPlayersAndServer(Set<OfflinePlayer> players) {
+		Table<String, String, String> values = HashBasedTable.create();
+		config.placeholders.forEach((placeholder, placeholderName) -> {
+			if (WebStatsConfig.getInstance().serverColumns.contains(placeholderName)) {
+				String score = getPlaceholderForServer(placeholder);
+				if (score != null) values.put("#server", placeholderName, score);
+			} else {
+				for (OfflinePlayer player : players) {
+					String score = getPlaceholderForPlayer(player, placeholder, placeholderName);
+					// Only add the score if it is not empty
+					if (score != null) values.put(player.getName(), placeholderName, score);
+				}
+			}
+		});
+		return values;
+	}
+	
+	private @NotNull Table<String, String, String> getOfflineScoresForPlayers(Set<OfflinePlayer> players) {
+		Table<String, String, String> values = HashBasedTable.create();
+		config.placeholders.forEach((placeholder, placeholderName) -> {
+			if (!WebStatsConfig.getInstance().serverColumns.contains(placeholderName)) {
+				for (OfflinePlayer player : players) {
+					String score = storage.getScore(player.getUniqueId(), placeholderName);
+					// Only add the score if it is not empty
+					if (score != null) values.put(player.getName(), placeholderName, score);
+				}
+			}
+		});
+		return values;
+	}
+	
 	// Get scores for single player from PlaceholderAPI
 	// This method does NOT try to find stored scores from PlaceholderStorage
 	@NotNull Map<String, String> getScoresForPlayer(@NotNull OfflinePlayer player) {
@@ -106,8 +139,34 @@ public class PlaceholderSource {
 		return scores;
 	}
 	
-	public @NotNull EntriesScores getStats() {
-		return new EntriesScores(getEntries(), getScores());
+	/**
+	 * This method will be called asynchronously
+	 */
+	public @NotNull Future<EntriesScores> getStats() {
+		CompletableFuture<Set<OfflinePlayer>> offlinePlayersFuture = new CompletableFuture<>();
+		CompletableFuture<EntriesScores> onlineEntriesScoresFuture = new CompletableFuture<>();
+		
+		CompletableFuture<Table<String, String, String>> offlineScoresFuture =
+				offlinePlayersFuture.thenApply(this::getOfflineScoresForPlayers);
+		
+		Bukkit.getScheduler().runTask(WebStats.getPlugin(WebStats.class), () -> {
+			Set<OfflinePlayer> players = getEntriesAsPlayers();
+			Set<String> playernames = players.stream()
+					.map(OfflinePlayer::getName)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toSet());
+			Set<OfflinePlayer> onlinePlayers = players.stream()
+					.filter(OfflinePlayer::isOnline)
+					.collect(Collectors.toSet());
+			players.removeAll(onlinePlayers);
+			offlinePlayersFuture.complete(players);
+			onlineEntriesScoresFuture.complete(new EntriesScores(playernames, getScoresForPlayersAndServer(onlinePlayers)));
+		});
+		
+		return onlineEntriesScoresFuture.thenCombine(offlineScoresFuture, ((entriesScores, offlineScores) -> {
+			entriesScores.scores.putAll(offlineScores);
+			return entriesScores;
+		}));
 	}
 	
 	public void disable() {

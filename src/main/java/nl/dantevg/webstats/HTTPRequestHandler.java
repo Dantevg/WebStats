@@ -63,22 +63,7 @@ public class HTTPRequestHandler implements HttpHandler {
 		switch (path) {
 			case "/stats.json":
 				InetAddress ip = exchange.getRemoteAddress().getAddress();
-				try {
-					// Stats need to be gathered on the main thread,
-					// see https://github.com/Dantevg/WebStats/issues/52
-					StatData stats = Bukkit.getScheduler().callSyncMethod(
-							WebStats.getPlugin(WebStats.class),
-							() -> Stats.getAll(ip)).get();
-					httpConnection.sendJson(new Gson().toJson(stats));
-				} catch (InterruptedException ignored) {
-					// do nothing
-				} catch (ExecutionException e) {
-					if (e.getCause() instanceof IOException) {
-						throw (IOException) e.getCause();
-					} else {
-						throw new RuntimeException(e);
-					}
-				}
+				httpConnection.sendJson(new Gson().toJson(Stats.getAll(ip)));
 				break;
 			case "/online.json":
 				httpConnection.sendJson(new Gson().toJson(Stats.getOnline()));

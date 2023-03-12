@@ -45,7 +45,7 @@ public class DiscordWebhook implements Runnable {
 		if (config.updateInterval > 0) {
 			long delayTicks = 0;
 			long periodTicks = (long) config.updateInterval * 20 * 60; // assume 20 tps
-			Bukkit.getScheduler().runTaskTimer(plugin, this,
+			Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this,
 					delayTicks, periodTicks);
 		}
 	}
@@ -53,48 +53,45 @@ public class DiscordWebhook implements Runnable {
 	@Override
 	public void run() {
 		WebStats.logger.log(Level.CONFIG, "Sending Discord webhook update");
-		final StatData.Stats stats = Stats.getStats();
+		StatData.Stats stats = Stats.getStats();
+		List<String> entries = new ArrayList<>(stats.entries);
 		
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-			List<String> entries = new ArrayList<>(stats.entries);
-			
-			message.removeEmbeds();
-			
-			// Fill message
-			if (config.embeds.isEmpty()) {
-				// Add one default embed
-				List<String> columns = (stats.columns != null)
-						? stats.columns
-						: stats.scores.columnKeySet().stream().sorted().collect(Collectors.toList());
-				sortEntries(entries, null, WebStatsConfig.SortDirection.DESCENDING);
-				message.addEmbed(makeEmbed(stats, columns, entries));
+		message.removeEmbeds();
+		
+		// Fill message
+		if (config.embeds.isEmpty()) {
+			// Add one default embed
+			List<String> columns = (stats.columns != null)
+					? stats.columns
+					: stats.scores.columnKeySet().stream().sorted().collect(Collectors.toList());
+			sortEntries(entries, null, WebStatsConfig.SortDirection.DESCENDING);
+			message.addEmbed(makeEmbed(stats, columns, entries));
+		} else {
+			// Add embeds according to config
+			for (DiscordConfig.EmbedConfig embedConfig : config.embeds) {
+				Map<String, String> columnToSortBy = stats.scores.column(embedConfig.sortColumn);
+				sortEntries(entries, columnToSortBy, embedConfig.sortDirection);
+				DiscordEmbed embed = makeEmbed(stats, embedConfig.columns, entries);
+				if (embedConfig.title != null) embed.title = embedConfig.title;
+				message.addEmbed(embed);
+			}
+		}
+		
+		DiscordEmbed lastEmbed = message.embeds.get(message.embeds.size() - 1);
+		lastEmbed.timestamp = Instant.now().toString();
+		String serverStatus = Bukkit.getServer().getOnlinePlayers().size() + " online";
+		lastEmbed.footer = new DiscordEmbed.EmbedFooter(serverStatus);
+		
+		// Send message
+		try {
+			if (message.id != null) {
+				editMessage(message);
 			} else {
-				// Add embeds according to config
-				for (DiscordConfig.EmbedConfig embedConfig : config.embeds) {
-					Map<String, String> columnToSortBy = stats.scores.column(embedConfig.sortColumn);
-					sortEntries(entries, columnToSortBy, embedConfig.sortDirection);
-					DiscordEmbed embed = makeEmbed(stats, embedConfig.columns, entries);
-					if (embedConfig.title != null) embed.title = embedConfig.title;
-					message.addEmbed(embed);
-				}
+				sendMessage(message);
 			}
-			
-			DiscordEmbed lastEmbed = message.embeds.get(message.embeds.size() - 1);
-			lastEmbed.timestamp = Instant.now().toString();
-			String serverStatus = Bukkit.getServer().getOnlinePlayers().size() + " online";
-			lastEmbed.footer = new DiscordEmbed.EmbedFooter(serverStatus);
-			
-			// Send message
-			try {
-				if (message.id != null) {
-					editMessage(message);
-				} else {
-					sendMessage(message);
-				}
-			} catch (IOException e) {
-				WebStats.logger.log(Level.WARNING, "Could not send webhook message", e);
-			}
-		});
+		} catch (IOException e) {
+			WebStats.logger.log(Level.WARNING, "Could not send webhook message", e);
+		}
 	}
 	
 	public void disable() {

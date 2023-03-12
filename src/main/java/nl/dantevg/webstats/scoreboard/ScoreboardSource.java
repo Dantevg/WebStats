@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 
 public class ScoreboardSource {
@@ -50,8 +51,13 @@ public class ScoreboardSource {
 		return values;
 	}
 	
-	public @NotNull EntriesScores getStats() {
-		return new EntriesScores(getEntries(), getScores());
+	/**
+	 * This method will be called asynchronously
+	 */
+	public @NotNull Future<EntriesScores> getStats() {
+		return Bukkit.getScheduler().callSyncMethod(
+				WebStats.getPlugin(WebStats.class),
+				() -> new EntriesScores(getEntries(), getScores()));
 	}
 	
 }
