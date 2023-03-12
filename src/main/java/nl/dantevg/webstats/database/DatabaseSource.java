@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.logging.Level;
 
 public class DatabaseSource {
@@ -34,7 +36,10 @@ public class DatabaseSource {
 		}
 	}
 	
-	public @NotNull EntriesScores getStats() {
+	/**
+	 * This method will be called asynchronously
+	 */
+	public @NotNull Future<EntriesScores> getStats() {
 		// Get and convert each database/table combination
 		List<Map<String, String>> entries = new ArrayList<>();
 		for (DatabaseConverter conversion : conversions) {
@@ -57,7 +62,7 @@ public class DatabaseSource {
 			scores.forEach((statName, score) -> data.scores.put(playerName, statName, score));
 		});
 		
-		return data;
+		return new FutureTask<>(() -> data);
 	}
 	
 	public void disable() {

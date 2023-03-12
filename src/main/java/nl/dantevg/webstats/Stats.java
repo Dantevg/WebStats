@@ -7,6 +7,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.net.InetAddress;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class Stats {
 	public static @NotNull Map<String, Object> getOnline() {
@@ -17,12 +19,30 @@ public class Stats {
 		return players;
 	}
 	
+	/**
+	 * This method should be called asynchronously as to avoid straining
+	 * the main server thread.
+	 * <p>
+	 * Some stats need to be gathered on the main thread, each source's getStats
+	 * method should be designed to handle that.
+	 * See https://github.com/Dantevg/WebStats/issues/52
+	 */
 	public static @NotNull StatData.Stats getStats() {
 		EntriesScores entriesScores = new EntriesScores();
 		
-		if (WebStats.scoreboardSource != null) entriesScores.add(WebStats.scoreboardSource.getStats());
-		if (WebStats.databaseSource != null) entriesScores.add(WebStats.databaseSource.getStats());
-		if (WebStats.placeholderSource != null) entriesScores.add(WebStats.placeholderSource.getStats());
+		List<Future<EntriesScores>> futures = new ArrayList<>();
+		
+		if (WebStats.scoreboardSource != null) futures.add(WebStats.scoreboardSource.getStats());
+		if (WebStats.databaseSource != null) futures.add(WebStats.databaseSource.getStats());
+		if (WebStats.placeholderSource != null) futures.add(WebStats.placeholderSource.getStats());
+		
+		for (Future<EntriesScores> future : futures) {
+			try {
+				entriesScores.add(future.get());
+			} catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException(e);
+			}
+		}
 		
 		if (!WebStatsConfig.getInstance().serverColumns.isEmpty()) entriesScores.entries.add("#server");
 		
