@@ -1,5 +1,6 @@
 package nl.dantevg.webstats;
 
+import com.google.common.io.ByteStreams;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -19,6 +20,7 @@ import java.util.logging.Level;
 public class HTTPRequestHandler implements HttpHandler {
 	// Map of resource names to their MIME-types
 	private final Map<String, String> resources = new HashMap<>();
+	private HTTPLogger httpLogger;
 	
 	public HTTPRequestHandler() {
 		if (WebStatsConfig.getInstance().serveWebpage) {
@@ -29,24 +31,42 @@ public class HTTPRequestHandler implements HttpHandler {
 		}
 		
 		attemptMigrateResources();
+		
+		try {
+			httpLogger = new HTTPLogger(new File(WebStats.getPlugin(WebStats.class).getDataFolder(), "httplog.txt"));
+		} catch (IOException e) {
+			WebStats.logger.log(Level.WARNING, "Could not start HTTP logger");
+		}
 	}
 	
 	public void handle(@NotNull HttpExchange exchange) {
 		try {
 			handleInternal(exchange);
 		} catch (Exception e) {
-			WebStats.logger.log(Level.SEVERE, e.getMessage(), e);
+			httpLogger.exception(exchange, e);
+			if (e.getMessage().equals("Broken pipe") || e.getMessage().equals("response headers not sent yet")) {
+				// Half-ignore known exceptions
+				WebStats.logger.log(Level.WARNING, "known exception: " + e.getMessage());
+			} else {
+				WebStats.logger.log(Level.WARNING, e.getMessage(), e);
+			}
 		} finally {
 			exchange.close();
 		}
 	}
 	
 	private void handleInternal(@NotNull HttpExchange exchange) throws IOException {
+		httpLogger.connectionStart(exchange);
 		HTTPConnection httpConnection = new HTTPConnection(exchange);
+		
+		// consume and discard request body, and close it
+		ByteStreams.exhaust(exchange.getRequestBody());
+		exchange.getRequestBody().close();
 		
 		// Only handle GET-requests
 		if (!exchange.getRequestMethod().equals("GET")) {
 			httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_BAD_METHOD);
+			httpLogger.respond(exchange, HttpURLConnection.HTTP_BAD_METHOD);
 			return;
 		}
 		
@@ -54,6 +74,7 @@ public class HTTPRequestHandler implements HttpHandler {
 		String path = exchange.getRequestURI().getPath();
 		if (path == null) {
 			httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_BAD_REQUEST);
+			httpLogger.respond(exchange, HttpURLConnection.HTTP_BAD_REQUEST);
 			return;
 		}
 		
@@ -70,9 +91,16 @@ public class HTTPRequestHandler implements HttpHandler {
 							WebStats.getPlugin(WebStats.class),
 							() -> Stats.getAll(ip)).get();
 					httpConnection.sendJson(new Gson().toJson(stats));
+					httpLogger.respond(exchange);
 				} catch (InterruptedException ignored) {
+					httpLogger.exception(exchange, ignored);
+					httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
+					httpLogger.respond(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR);
 					// do nothing
 				} catch (ExecutionException e) {
+					httpLogger.exception(exchange, e);
+					httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_INTERNAL_ERROR);
+					httpLogger.respond(exchange, HttpURLConnection.HTTP_INTERNAL_ERROR);
 					if (e.getCause() instanceof IOException) {
 						throw (IOException) e.getCause();
 					} else {
@@ -82,16 +110,20 @@ public class HTTPRequestHandler implements HttpHandler {
 				break;
 			case "/online.json":
 				httpConnection.sendJson(new Gson().toJson(Stats.getOnline()));
+				httpLogger.respond(exchange);
 				break;
 			case "/tables.json":
 				httpConnection.sendJson(new Gson().toJson(WebStatsConfig.getInstance().tables));
+				httpLogger.respond(exchange);
 				break;
 			default:
 				if (resources.containsKey(path)) {
 					httpConnection.sendFile(resources.get(path), "web" + path);
+					httpLogger.respond(exchange);
 				} else {
 					WebStats.logger.log(Level.CONFIG, "Got request for " + path + ", not found");
 					httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_NOT_FOUND);
+					httpLogger.respond(exchange, HttpURLConnection.HTTP_NOT_FOUND);
 				}
 				break;
 		}
