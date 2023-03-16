@@ -47,9 +47,8 @@ public class PlayerIPStorage {
 	}
 	
 	private void removeName(String name) {
-		for (Map.Entry<String, Set<String>> entry : ipToNames.entrySet()) {
-			entry.getValue().remove(name);
-		}
+		ipToNames.forEach((ip, names) -> names.remove(name));
+		ipToNames.entrySet().removeIf(entry -> entry.getValue().isEmpty());
 	}
 	
 	private void load() {
