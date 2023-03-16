@@ -51,6 +51,7 @@ export default class WebStats {
 		this.updateInterval = config.updateInterval ?? 10000
 
 		// Status HTML elements
+		const optionHideOffline = document.querySelector("input.webstats-option#hide-offline") as HTMLInputElement
 		const statusElem = document.querySelector(".webstats-status")
 		this.loadingElem = statusElem?.querySelector(".webstats-loading-indicator")
 		this.errorElem = statusElem?.querySelector(".webstats-error-message")
@@ -61,7 +62,7 @@ export default class WebStats {
 		const tableConfigsPromise = this.connection.getTables()
 		Promise.all([statsPromise, tableConfigsPromise])
 			.then(
-				([stats, tableConfigs]) => this.init(stats, tableConfigs, config),
+				([stats, tableConfigs]) => this.init(stats, tableConfigs, config, optionHideOffline.checked),
 				this.catchError(WebStats.CONNECTION_ERROR_MSG, config)
 			)
 			.catch(this.catchError(undefined, config))
@@ -84,19 +85,14 @@ export default class WebStats {
 			})
 		)
 
-		const optionHideOffline = document.querySelector("input.webstats-option#hide-offline") as HTMLInputElement
-		if (optionHideOffline) {
-			// Re-show if displayCount is set
-			optionHideOffline.addEventListener("change", (e) => {
-				this.displays.forEach(display => display.changeHideOffline(optionHideOffline.checked))
-			})
+		optionHideOffline?.addEventListener("change", (e) => {
 			this.displays.forEach(display => display.changeHideOffline(optionHideOffline.checked))
-		}
+		})
 
 		window.webstats = this
 	}
 
-	init(data, tableConfigs: TableConfig[] | undefined, config: WebStatsConfig) {
+	init(data, tableConfigs: TableConfig[] | undefined, config: WebStatsConfig, hideOffline: boolean) {
 		if (config.tables) {
 			for (const tableName in config.tables) {
 				const tableConfig = tableConfigs
@@ -117,6 +113,7 @@ export default class WebStats {
 		this.data = new Data(data)
 		this.displays.forEach(display => {
 			display.init(this.data)
+			display.hideOffline = hideOffline
 			display.show()
 		})
 

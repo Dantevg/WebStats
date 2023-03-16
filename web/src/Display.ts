@@ -55,7 +55,7 @@ export default class Display {
 		}
 
 		// Fill entries
-		this.updateStatsAndShow()
+		this.updateStats()
 	}
 
 	getEntries() {
@@ -179,7 +179,7 @@ export default class Display {
 
 	changeHideOffline(hideOffline: boolean) {
 		this.hideOffline = hideOffline
-		if (this.pagination) {
+		if (this.pagination && this.pagination.maxPage > 1) {
 			this.pagination.changePage(1)
 			this.show()
 		}
