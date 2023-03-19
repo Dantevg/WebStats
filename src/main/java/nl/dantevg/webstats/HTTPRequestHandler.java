@@ -35,7 +35,11 @@ public class HTTPRequestHandler implements HttpHandler {
 		try {
 			handleInternal(exchange);
 		} catch (Exception e) {
-			WebStats.logger.log(Level.SEVERE, e.getMessage(), e);
+			String message = String.format("Caught an exception while handling a request from %s (%s %s)",
+					exchange.getRemoteAddress().getAddress(),
+					exchange.getRequestMethod(),
+					exchange.getRequestURI());
+			WebStats.logger.log(Level.WARNING, message, e);
 		} finally {
 			exchange.close();
 		}
