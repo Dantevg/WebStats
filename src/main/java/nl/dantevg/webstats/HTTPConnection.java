@@ -57,7 +57,6 @@ public class HTTPConnection {
 	public void sendEmptyStatus(int status) throws IOException {
 		setHeaders("text/plain");
 		exchange.sendResponseHeaders(status, -1);
-		exchange.getResponseBody().close();
 	}
 	
 	public void sendFile(@NotNull String contentType, @NotNull String path) throws IOException {
