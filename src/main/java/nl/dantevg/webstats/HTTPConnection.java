@@ -23,20 +23,23 @@ public class HTTPConnection {
 		headers.add("Access-Control-Allow-Origin", "*");
 		headers.add("Content-Type", contentType + "; charset=UTF-8");
 		
-		// Add cookies for javascript where to find the server
 		// No "expires" attribute, so session cookies
-		String host = exchange.getRequestHeaders().getFirst("Host");
-		headers.add("Set-Cookie", "host=" + host + "; SameSite=Lax");
 		if (WebStatsConfig.getInstance().webpageTitle != null) {
 			headers.add("Set-Cookie", "title=" + WebStatsConfig.getInstance().webpageTitle
 					+ "; SameSite=Lax");
 		}
 		
-		// For pre-1.8 backwards-compatibility
-		headers.add("Set-Cookie", "ip=" + host.split(":")[0]
-				+ "; SameSite=Lax");
-		headers.add("Set-Cookie", "port=" + exchange.getLocalAddress().getPort()
-				+ "; SameSite=Lax");
+		// Add cookies for javascript where to find the server
+		String host = exchange.getRequestHeaders().getFirst("Host");
+		if (host != null) {
+			headers.add("Set-Cookie", "host=" + host + "; SameSite=Lax");
+			
+			// For pre-1.8 backwards-compatibility
+			headers.add("Set-Cookie", "ip=" + host.split(":")[0]
+					+ "; SameSite=Lax");
+			headers.add("Set-Cookie", "port=" + exchange.getLocalAddress().getPort()
+					+ "; SameSite=Lax");
+		}
 	}
 	
 	public void send(int status, @NotNull String contentType, @NotNull String response) throws IOException {
