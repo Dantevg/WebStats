@@ -33,34 +33,33 @@ public class PlaceholderSource {
 		}
 	}
 	
-	@NotNull Set<OfflinePlayer> getEntriesAsPlayers() {
+	@NotNull Set<CachedOfflinePlayer> getEntriesAsPlayers() {
 		// Also get players from EssentialsX's userMap, for offline servers
 		Set<OfflinePlayer> entries = (!Bukkit.getOnlineMode() && WebStats.hasEssentials)
 				? EssentialsHelper.getOfflinePlayers() : null;
 		if (entries == null) entries = new HashSet<>();
 		entries.addAll(Arrays.asList(Bukkit.getOfflinePlayers()));
-		return entries;
+		return entries.stream().map(CachedOfflinePlayer::new).collect(Collectors.toSet());
 	}
 	
 	private Set<String> getEntries() {
-		return getEntriesAsPlayers().stream() // all entries as OfflinePlayers
-				.map(OfflinePlayer::getName)  // OfflinePlayer -> String
-				.filter(Objects::nonNull)     // remove null names
+		return getEntriesAsPlayers().stream()      // all entries as OfflinePlayers
+				.map(CachedOfflinePlayer::getName) // OfflinePlayer -> String
+				.filter(Objects::nonNull)          // remove null names
 				.collect(Collectors.toSet());
 	}
 	
 	// Get up-to-date score for player, or stored one if the player is offline
-	private @Nullable String getPlaceholderForPlayer(OfflinePlayer player, String placeholder, String placeholderName) {
-		String name = player.getName();
-		if (name == null) return null;
+	private @Nullable String getPlaceholderForPlayer(CachedOfflinePlayer player, String placeholder, String placeholderName) {
+		if (player.getName() == null) return null;
 		
 		// If the player is online, get the most up-to-date value.
 		// If the player is offline, get the stored value if it is stored, because placeholder
 		// plugins may just yield 0 (which is indistinguishable from a real score of 0.)
 		String score = null;
 		if (storage != null) score = storage.getScore(player.getUniqueId(), placeholderName);
-		if (player.isOnline() || !isPlaceholderSet(placeholder, score)) {
-			score = PlaceholderAPI.setPlaceholders(player, placeholder);
+		if (player.getOfflinePlayer().isOnline() || !isPlaceholderSet(placeholder, score)) {
+			score = PlaceholderAPI.setPlaceholders(player.getOfflinePlayer(), placeholder);
 		}
 		return isPlaceholderSet(placeholder, score) ? score : null;
 	}
@@ -74,14 +73,14 @@ public class PlaceholderSource {
 	// Alternatively find stored scores from PlaceholderStorage
 	private @NotNull Table<String, String, String> getScores() {
 		Table<String, String, String> values = HashBasedTable.create();
-		Set<OfflinePlayer> players = getEntriesAsPlayers();
+		Set<CachedOfflinePlayer> players = getEntriesAsPlayers();
 		
 		config.placeholders.forEach((placeholder, placeholderName) -> {
 			if (WebStatsConfig.getInstance().serverColumns.contains(placeholderName)) {
 				String score = getPlaceholderForServer(placeholder);
 				if (score != null) values.put("#server", placeholderName, score);
 			} else {
-				for (OfflinePlayer player : players) {
+				for (CachedOfflinePlayer player : players) {
 					String score = getPlaceholderForPlayer(player, placeholder, placeholderName);
 					// Only add the score if it is not empty
 					if (score != null) values.put(player.getName(), placeholderName, score);
@@ -93,13 +92,12 @@ public class PlaceholderSource {
 	
 	// Get scores for single player from PlaceholderAPI
 	// This method does NOT try to find stored scores from PlaceholderStorage
-	@NotNull Map<String, String> getScoresForPlayer(@NotNull OfflinePlayer player) {
+	@NotNull Map<String, String> getScoresForPlayer(@NotNull CachedOfflinePlayer player) {
 		Map<String, String> scores = new HashMap<>();
-		String name = player.getName();
-		if (name == null) return scores;
+		if (player.getName() == null) return scores;
 		
 		config.placeholders.forEach((placeholder, placeholderName) -> {
-			String score = PlaceholderAPI.setPlaceholders(player, placeholder);
+			String score = PlaceholderAPI.setPlaceholders(player.getOfflinePlayer(), placeholder);
 			if (isPlaceholderSet(placeholder, score)) scores.put(placeholderName, score);
 		});
 		
