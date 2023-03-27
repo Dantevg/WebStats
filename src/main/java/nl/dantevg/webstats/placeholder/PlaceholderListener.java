@@ -24,7 +24,7 @@ public class PlaceholderListener implements Listener {
 	
 	@EventHandler
 	public void onPlayerLeave(PlayerQuitEvent event) {
-		storage.save(event.getPlayer());
+		storage.save(new PlaceholderSource.OfflinePlayerWithCachedName(event.getPlayer()));
 	}
 	
 	@EventHandler

@@ -9,6 +9,7 @@ import java.net.InetAddress;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 
 public class Stats {
 	public static @NotNull Map<String, Object> getOnline() {
