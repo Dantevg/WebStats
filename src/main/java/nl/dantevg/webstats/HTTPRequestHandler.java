@@ -11,12 +11,17 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 public class HTTPRequestHandler implements HttpHandler {
+	private static final Set<String> IGNORED_EXCEPTIONS = new HashSet<>(Arrays.asList(
+			"broken pipe",
+			"response headers not sent yet",
+			"connection reset by peer"
+	));
+	
 	// Map of resource names to their MIME-types
 	private final Map<String, String> resources = new HashMap<>();
 	
@@ -35,11 +40,13 @@ public class HTTPRequestHandler implements HttpHandler {
 		try {
 			handleInternal(exchange);
 		} catch (Exception e) {
-			String message = String.format("Caught an exception while handling a request from %s (%s %s)",
-					exchange.getRemoteAddress().getAddress(),
-					exchange.getRequestMethod(),
-					exchange.getRequestURI());
-			WebStats.logger.log(Level.WARNING, message, e);
+			if (!IGNORED_EXCEPTIONS.contains(e.getMessage().toLowerCase())) {
+				String message = String.format("Caught an exception while handling a request from %s (%s %s)",
+						exchange.getRemoteAddress().getAddress(),
+						exchange.getRequestMethod(),
+						exchange.getRequestURI());
+				WebStats.logger.log(Level.WARNING, message, e);
+			}
 		} finally {
 			exchange.close();
 		}
