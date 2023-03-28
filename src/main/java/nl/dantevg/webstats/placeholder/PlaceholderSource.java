@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 public class PlaceholderSource {
 	final PlaceholderConfig config;
+	private final Map<UUID, CachedOfflinePlayer> offlinePlayerCache = new HashMap<>();
 	
 	private PlaceholderStorage storage;
 	
@@ -31,19 +32,49 @@ public class PlaceholderSource {
 			storage = new PlaceholderStorage(this);
 			storage.prune(new HashSet<>(config.placeholders.values()));
 		}
+		
+		// Already cache all player names at the start of the server
+		Set<OfflinePlayer> players = getEntriesAsPlayers();
+		if (players.size() > 100)
+			WebStats.logger.log(Level.INFO, "Caching player names of " + players.size() + " players");
+		
+		for (OfflinePlayer player : players) {
+			offlinePlayerCache.put(player.getUniqueId(), new CachedOfflinePlayer(player));
+		}
 	}
 	
-	@NotNull Set<CachedOfflinePlayer> getEntriesAsPlayers() {
-		// Also get players from EssentialsX's userMap, for offline servers
+	private @NotNull Set<OfflinePlayer> getEntriesAsPlayers() {
 		Set<OfflinePlayer> entries = (!Bukkit.getOnlineMode() && WebStats.hasEssentials)
 				? EssentialsHelper.getOfflinePlayers() : null;
 		if (entries == null) entries = new HashSet<>();
 		entries.addAll(Arrays.asList(Bukkit.getOfflinePlayers()));
-		return entries.stream().map(CachedOfflinePlayer::new).collect(Collectors.toSet());
+		return entries;
 	}
 	
-	private Set<String> getEntries() {
+	private CachedOfflinePlayer getCachedPlayer(OfflinePlayer player) {
+		// Only cache offline players, otherwise things go south
+		if (player.isOnline()) {
+			offlinePlayerCache.remove(player.getUniqueId());
+			return new CachedOfflinePlayer(player);
+		}
+		
+		CachedOfflinePlayer cachedPlayer = offlinePlayerCache.get(player.getUniqueId());
+		if (cachedPlayer == null) {
+			cachedPlayer = new CachedOfflinePlayer(player);
+			offlinePlayerCache.put(player.getUniqueId(), cachedPlayer);
+		}
+		return cachedPlayer;
+	}
+	
+	@NotNull Set<CachedOfflinePlayer> getEntriesAsCachedPlayers() {
+		return getEntriesAsPlayers().stream()
+				.map(this::getCachedPlayer)
+				.collect(Collectors.toSet());
+	}
+	
+	private @NotNull Set<String> getEntries() {
 		return getEntriesAsPlayers().stream()      // all entries as OfflinePlayers
+				.map(this::getCachedPlayer)
 				.map(CachedOfflinePlayer::getName) // OfflinePlayer -> String
 				.filter(Objects::nonNull)          // remove null names
 				.collect(Collectors.toSet());
@@ -73,7 +104,7 @@ public class PlaceholderSource {
 	// Alternatively find stored scores from PlaceholderStorage
 	private @NotNull Table<String, String, String> getScores() {
 		Table<String, String, String> values = HashBasedTable.create();
-		Set<CachedOfflinePlayer> players = getEntriesAsPlayers();
+		Set<CachedOfflinePlayer> players = getEntriesAsCachedPlayers();
 		
 		config.placeholders.forEach((placeholder, placeholderName) -> {
 			if (WebStatsConfig.getInstance().serverColumns.contains(placeholderName)) {

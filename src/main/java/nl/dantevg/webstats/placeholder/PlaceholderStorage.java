@@ -98,7 +98,7 @@ public class PlaceholderStorage {
 	}
 	
 	private void update() {
-		for (CachedOfflinePlayer player : placeholderSource.getEntriesAsPlayers()) {
+		for (CachedOfflinePlayer player : placeholderSource.getEntriesAsCachedPlayers()) {
 			placeholderSource.getScoresForPlayer(player).forEach((String placeholder, String value) -> {
 				data.put(player.getUniqueId(), placeholder, value);
 				WebStats.logger.log(Level.CONFIG, String.format("Updated %s (%s): %s = %s",
@@ -126,7 +126,7 @@ public class PlaceholderStorage {
 	 * Store placeholder data for all players, both in-memory and in a file.
 	 */
 	public void saveAll() {
-		for (CachedOfflinePlayer player : placeholderSource.getEntriesAsPlayers()) {
+		for (CachedOfflinePlayer player : placeholderSource.getEntriesAsCachedPlayers()) {
 			save(player);
 		}
 		
