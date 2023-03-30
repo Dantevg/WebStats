@@ -1,7 +1,8 @@
 import { Component } from "@itsjavi/jsx-runtime"
 import { PlayerStatus } from "./Data"
-import Display from "./Display"
-import FormattingCodes from "./FormattingCodes"
+import { convertFormattingCodes } from "./FormattingCodes"
+
+const CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NUUlL6z0ABYBw1gGE0DBioHAZ3795lUFZWJildosQCRQaQoxnkVLgL0A2A8dFpdP8NfEICAMkiK2HeQ9JUAAAAAElFTkSuQmCC"
 
 type HeadingData = {
 	columns: string[]
@@ -20,13 +21,13 @@ const Avatar = ({ entry }: { entry: string }) => (
 	<td className={["sticky", "skin"]}>
 		<img
 			title={entry}
-			src={entry == "#server" ? Display.CONSOLE_IMAGE : `https://www.mc-heads.net/avatar/${entry}.png`} />
+			src={entry == "#server" ? CONSOLE_IMAGE : `https://www.mc-heads.net/avatar/${entry}.png`} />
 	</td>
 )
 
 const Cell = ({ column, value }: { column: string, value: string }) => {
 	const formatted = isNaN(value as any) ? value : Number(value).toLocaleString()
-	const coloured = FormattingCodes.convertFormattingCodes(formatted ?? "")
+	const coloured = convertFormattingCodes(formatted ?? "")
 	return (<td data-objective={column} data-value={value}>{coloured}</td>)
 }
 
@@ -52,13 +53,11 @@ export class Row extends Component {
 		super(props)
 	}
 
-	render() {
-		return (
-			<tr entry={this.props.entry} className={[this.status, this.props.isCurrentPlayer ? "current" : undefined]}>
-				{this.props.showSkins && <Avatar entry={this.props.entry} />}
-				<PlayerCell entry={this.props.entry} status={this.status} />
-				{...this.props.columns.map(column => <Cell column={column} value={this.values.get(column)} />)}
-			</tr>
-		)
-	}
+	render = () => (
+		<tr entry={this.props.entry} className={[this.status, this.props.isCurrentPlayer ? "current" : undefined]}>
+			{this.props.showSkins && <Avatar entry={this.props.entry} />}
+			<PlayerCell entry={this.props.entry} status={this.status} />
+			{...this.props.columns.map(column => <Cell column={column} value={this.values.get(column)} />)}
+		</tr>
+	)
 }
