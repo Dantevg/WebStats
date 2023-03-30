@@ -1,6 +1,7 @@
 import { Component } from "@itsjavi/jsx-runtime"
 import { PlayerStatus } from "./Data"
 import Display from "./Display"
+import FormattingCodes from "./FormattingCodes"
 
 type HeadingData = {
 	columns: string[]
@@ -23,10 +24,16 @@ const Avatar = ({ entry }: { entry: string }) => (
 	</td>
 )
 
-const Cell = ({ column, value }: { column: string, value: string }) => (
-	<td objective={column} value={value}>
-		{/* TODO: convert formatting codes */}
-		{isNaN(value as any) ? value : Number(value).toLocaleString()}
+const Cell = ({ column, value }: { column: string, value: string }) => {
+	const formatted = isNaN(value as any) ? value : Number(value).toLocaleString()
+	const coloured = FormattingCodes.convertFormattingCodes(formatted ?? "")
+	return (<td data-objective={column} data-value={value}>{coloured}</td>)
+}
+
+const PlayerCell = ({ entry, status }: { entry: string, status: PlayerStatus }) => (
+	<td data-objective="Player" data-value={entry}>
+		<div className={["status", status]} title={status}></div>
+		{entry == "#server" ? "Server" : entry}
 	</td>
 )
 
@@ -46,13 +53,12 @@ export class Row extends Component {
 	}
 
 	render() {
-		return <tr entry={this.props.entry} className={[this.status, this.props.isCurrentPlayer ? "current" : undefined]}>
-			{this.props.showSkins && <Avatar entry={this.props.entry} />}
-			<td objective="Player" value={this.props.entry}>
-				<div className={["status", this.status]} title={this.status}></div>
-				{this.props.entry == "#server" ? "Server" : this.props.entry}
-			</td>
-			{...this.props.columns.map(column => <Cell column={column} value={this.values.get(column)} />)}
-		</tr>
+		return (
+			<tr entry={this.props.entry} className={[this.status, this.props.isCurrentPlayer ? "current" : undefined]}>
+				{this.props.showSkins && <Avatar entry={this.props.entry} />}
+				<PlayerCell entry={this.props.entry} status={this.status} />
+				{...this.props.columns.map(column => <Cell column={column} value={this.values.get(column)} />)}
+			</tr>
+		)
 	}
 }

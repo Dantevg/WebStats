@@ -71,18 +71,17 @@ export default class FormattingCodes {
 	// Convert a single formatting code to a <span> element
 	static convertFormattingCode(part: FormattingCodePart) {
 		if (!part.format && !part.colour) return part.text
-
-		const span = document.createElement("span")
-		span.innerText = part.text
-		span.classList.add("mc-format")
-
-		if (part.format) span.classList.add("mc-" + part.format)
-		if (part.colour) {
-			if (part.colourType == "simple") span.classList.add("mc-" + part.colour)
-			if (part.colourType == "hex") span.style.color = part.colour
-		}
-
-		return span
+		if (part.text.length == 0) return part.text
+		
+		const classes = ["mc-format"]
+		if (part.format) classes.push(`mc-${part.format}`)
+		if (part.colourType == "simple") classes.push(`mc-${part.colour}`)
+		
+		return (
+			<span className={classes} style={part.colourType == "hex" && `color: ${part.colour}`}>
+				{part.text}
+			</span>
+		)
 	}
 
 	static parseFormattingCodes(value: string): FormattingCodePart[] {

@@ -136,7 +136,7 @@ export default class Display {
 			? this.pagination.getRange(scores.length)
 			: [0, scores.length]
 		for (let i = min; i < max; i++) {
-			render(this.rows.get(scores[i][1]).render(), this.table)
+			render(this.rows.get(scores[i][1]), this.table)
 		}
 	}
 
