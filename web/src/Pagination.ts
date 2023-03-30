@@ -76,11 +76,14 @@ export default class Pagination {
 	changePage(page: number) {
 		page = Math.max(1, Math.min(page, this.maxPage))
 		this.currentPage = page
+		
+		this.selectElem.value = String(this.currentPage)
+		if (this.prevButton) this.prevButton.toggleAttribute("disabled", this.currentPage <= 1)
+		if (this.nextButton) this.nextButton.toggleAttribute("disabled", this.currentPage >= this.maxPage)
 	}
 
 	changePageAndCallback(page: number) {
 		this.changePage(page)
-		console.log("callback")
 		if (this.onPageChange) this.onPageChange(this.currentPage)
 	}
 

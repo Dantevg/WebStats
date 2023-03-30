@@ -1,7 +1,8 @@
+import { render } from "@itsjavi/jsx-runtime"
 import Data from "./Data"
-import FormattingCodes from "./FormattingCodes"
 import Pagination from "./Pagination"
-import { Direction, TableConfig } from "./WebStats"
+import { Heading, Row } from "./Table"
+import { TableConfig } from "./WebStats"
 
 export default class Display {
 	table: HTMLTableElement
@@ -13,8 +14,8 @@ export default class Display {
 	hideOffline: boolean
 
 	data: Data
-	headerElem: HTMLTableRowElement
-	rows: Map<string, HTMLTableRowElement>
+	headerElem: JSX.Element
+	rows: Map<string, Row>
 
 	static CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NUUlL6z0ABYBw1gGE0DBioHAZ3795lUFZWJildosQCRQaQoxnkVLgL0A2A8dFpdP8NfEICAMkiK2HeQ9JUAAAAAElFTkSuQmCC"
 
@@ -27,10 +28,7 @@ export default class Display {
 		this.showSkins = showSkins
 		this.hideOffline = false
 
-		if (this.pagination) this.pagination.onPageChange = (page) => {
-			this.updatePagination()
-			this.show()
-		}
+		if (this.pagination) this.pagination.onPageChange = (page) => this.show()
 	}
 
 	init(data: Data) {
@@ -40,18 +38,20 @@ export default class Display {
 		if (this.pagination) this.updatePagination()
 
 		// Create header of columns
-		this.headerElem = document.createElement("tr")
-		this.table.append(this.headerElem)
-		Display.appendTh(this.headerElem, "Player", this.thClick.bind(this),
-			this.showSkins ? 2 : undefined)
-		for (const column of this.columns ?? this.data.columns) {
-			Display.appendTh(this.headerElem, column, this.thClick.bind(this))
-		}
+		this.headerElem = <Heading
+			columns={this.columns ?? this.data.columns}
+			showSkins={this.showSkins}
+			onClick={this.thClick.bind(this)} />
 
 		// Create rows of (empty) entries
 		this.rows = new Map()
 		for (const entry of this.getEntries()) {
-			this.appendEntry(entry)
+			this.rows.set(entry, new Row({
+				columns: this.columns ?? this.data.columns,
+				showSkins: this.showSkins,
+				entry,
+				isCurrentPlayer: this.data.isCurrentPlayer(entry)
+			}))
 		}
 
 		// Fill entries
@@ -81,39 +81,6 @@ export default class Display {
 		this.pagination.update(this.getEntries().length)
 	}
 
-	appendEntry(entry: string) {
-		let tr = document.createElement("tr")
-		tr.setAttribute("entry", Display.quoteEscape(entry))
-
-		// Append skin image
-		if (this.showSkins) {
-			let img = Display.appendElement(tr, "td")
-			Display.appendImg(img, "")
-			img.classList.add("sticky", "skin")
-			img.setAttribute("title", entry)
-		}
-
-		// Append player name
-		let name = Display.appendTextElement(tr, "td", entry == "#server" ? "Server" : entry)
-		name.setAttribute("objective", "Player")
-		name.setAttribute("value", entry)
-
-		// Prepend online/afk status
-		let status = Display.prependElement(name, "div")
-		status.classList.add("status")
-
-		// Highlight current player
-		if (this.data.isCurrentPlayer(entry)) tr.classList.add("current-player")
-
-		// Append empty elements for alignment
-		for (const column of this.columns ?? this.data.columns) {
-			let td = Display.appendElement(tr, "td")
-			td.classList.add("empty")
-			td.setAttribute("objective", Display.quoteEscape(column))
-		}
-		this.rows.set(entry, tr)
-	}
-
 	setSkin(entry: string, row: HTMLTableRowElement) {
 		const img = row.getElementsByTagName("img")[0]
 		if (img) {
@@ -127,16 +94,7 @@ export default class Display {
 			for (const column of this.columns ?? this.data.columns) {
 				let value = row[this.data.columns_[column]] as string
 				if (!value) continue
-				const td = this.rows.get(row[1]).querySelector(`td[objective='${column}']`) as HTMLTableCellElement
-				td.classList.remove("empty")
-				td.setAttribute("value", value)
-
-				// Convert numbers to locale
-				value = isNaN(value as any) ? value : Number(value).toLocaleString()
-
-				// Convert Minecraft formatting codes
-				td.innerHTML = ""
-				td.append(...FormattingCodes.convertFormattingCodes(value))
+				this.rows.get(row[1]).values.set(column, value)
 			}
 		}
 	}
@@ -148,22 +106,13 @@ export default class Display {
 
 	updateOnlineStatus() {
 		for (const [_, row] of this.rows) {
-			const statusElement = row.querySelector("td .status")
-			if (!statusElement) continue
-			const entry = row.getAttribute("entry")
-			row.classList.remove("online", "afk", "offline")
-			statusElement.classList.remove("online", "afk", "offline")
-
-			const status = this.data.getStatus(entry)
-			row.classList.add(status.toLowerCase())
-			statusElement.classList.add(status.toLowerCase())
-			statusElement.setAttribute("title", this.data.getStatus(entry))
+			row.status = this.data.getStatus(row.props.entry)
 		}
 	}
 
 	updateOnlineStatusAndShow() {
 		this.updateOnlineStatus()
-		if (this.pagination && this.hideOffline) this.show()
+		if (this.pagination) this.show()
 	}
 
 	updateStats() {
@@ -172,14 +121,14 @@ export default class Display {
 	}
 
 	updateStatsAndShow() {
-		this.updateScoreboard()
-		this.updateOnlineStatus()
+		this.updateStats()
 		this.show()
 	}
 
 	changeHideOffline(hideOffline: boolean) {
 		this.hideOffline = hideOffline
-		if (this.pagination && this.pagination.maxPage > 1) {
+		if (this.pagination) {
+			this.updatePagination()
 			this.pagination.changePage(1)
 			this.show()
 		}
@@ -189,14 +138,13 @@ export default class Display {
 	show() {
 		this.data.sort(this.sortColumn, this.descending)
 		this.table.innerHTML = ""
-		this.table.append(this.headerElem)
+		render(this.headerElem, this.table)
 		const scores = this.getScores()
 		const [min, max] = this.pagination
 			? this.pagination.getRange(scores.length)
 			: [0, scores.length]
 		for (let i = min; i < max; i++) {
-			if (this.showSkins) this.setSkin(scores[i][1], this.rows.get(scores[i][1]))
-			this.table.append(this.rows.get(scores[i][1]))
+			render(this.rows.get(scores[i][1]).render(), this.table)
 		}
 	}
 
@@ -205,7 +153,7 @@ export default class Display {
 		let objective = (e.target as HTMLTableCellElement).innerText
 		this.descending = (objective === this.sortColumn) ? !this.descending : true
 		this.sortColumn = objective
-		if (this.pagination) this.pagination.changePage(1)
+		this.pagination?.changePage(1)
 		this.show()
 	}
 
