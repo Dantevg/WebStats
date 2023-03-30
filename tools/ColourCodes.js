@@ -24,7 +24,7 @@ const FORMATTING_CODES = {
 	["§r"]: "reset",
 }
 
-class ColourCodes {
+export default class ColourCodes {
 	constructor(){
 		this.scores = { entries: [], scores: {} }
 		
@@ -60,4 +60,8 @@ class ColourCodes {
 		}
 		return online
 	}
+	getTables     = async () => [{
+		sortColumn: "Player",
+		sortDirection: "ascending",
+	}]
 }
