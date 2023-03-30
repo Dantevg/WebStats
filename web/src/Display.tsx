@@ -81,14 +81,6 @@ export default class Display {
 		this.pagination.update(this.getEntries().length)
 	}
 
-	setSkin(entry: string, row: HTMLTableRowElement) {
-		const img = row.getElementsByTagName("img")[0]
-		if (img) {
-			if (entry == "#server") img.src = Display.CONSOLE_IMAGE
-			else img.src = `https://www.mc-heads.net/avatar/${entry}.png`
-		}
-	}
-
 	updateScoreboard() {
 		for (const row of this.data.scores) {
 			for (const column of this.columns ?? this.data.columns) {
@@ -159,37 +151,5 @@ export default class Display {
 
 	// Replace single quotes by '&quot;' (html-escape)
 	static quoteEscape = (string: string) => string.replace(/'/g, "&quot;")
-
-	static appendElement<K extends keyof HTMLElementTagNameMap>(base: HTMLElement, type: K) {
-		let el = document.createElement(type)
-		base.append(el)
-		return el
-	}
-
-	static prependElement<K extends keyof HTMLElementTagNameMap>(base: HTMLElement, type: K) {
-		let el = document.createElement(type)
-		document.createElement
-		base.prepend(el)
-		return el
-	}
-
-	static appendTextElement<K extends keyof HTMLElementTagNameMap>(base: HTMLElement, type: K, name: string) {
-		let el = Display.appendElement(base, type)
-		el.innerText = name
-		return el
-	}
-
-	static appendTh(base: HTMLElement, name: string, onclick: (this, ev) => any, colspan?: number) {
-		let th = Display.appendTextElement(base, "th", name)
-		th.onclick = onclick
-		if (colspan != undefined) th.setAttribute("colspan", String(colspan))
-		return th
-	}
-
-	static appendImg(base: HTMLElement, src: string) {
-		let img = Display.appendElement(base, "img")
-		img.src = src
-		return img
-	}
 
 }
