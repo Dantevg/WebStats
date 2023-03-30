@@ -1,3 +1,4 @@
+export type PlayerStatus = "online" | "afk" | "offline"
 type Scoreboard = {
 	entries: string[],
 	scores: { [column: string]: { [entry: string]: string } },
@@ -25,8 +26,8 @@ export default class Data {
 	isOnline = (player: string) => this.players[player] === true
 	isAFK = (player: string) => this.players[player] === "afk"
 	isOffline = (player: string) => !!this.players[player]
-	getStatus = (player: string) => this.isOnline(player) ? "online"
-		: (this.isAFK(player) ? "AFK" : "offline")
+	getStatus = (player: string): PlayerStatus => this.isOnline(player) ? "online"
+		: (this.isAFK(player) ? "afk" : "offline")
 	isCurrentPlayer = (player: string) => this.playernames?.includes(player) ?? false
 
 	setScoreboard(scoreboard: Scoreboard) {

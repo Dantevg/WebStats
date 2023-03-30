@@ -1,3 +1,4 @@
+import nodeResolve from "@rollup/plugin-node-resolve"
 import typescript from "@rollup/plugin-typescript"
 import terser from "@rollup/plugin-terser"
 
@@ -14,11 +15,15 @@ export default {
 	by RedPolygon
 	
 	Licence: MIT
+	
+	Includes modified version of @itsjavi/jsx-runtime
+		(MIT licenced, https://github.com/itsjavi/jsx-runtime/)
 */
 `,
 	},
 	treeshake: false,
 	plugins: [
+		nodeResolve(),
 		typescript(),
 		terser({format: {comments: /^!/}})
 	],

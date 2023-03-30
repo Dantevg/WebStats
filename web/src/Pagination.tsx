@@ -1,3 +1,5 @@
+import { render } from "@itsjavi/jsx-runtime"
+
 export default class Pagination {
 	maxPage: number
 	displayCount: number
@@ -13,7 +15,7 @@ export default class Pagination {
 	constructor(displayCount: number, elem: HTMLElement) {
 		this.displayCount = displayCount
 		this.currentPage = 1
-		
+
 		this.parentElem = elem
 		this.selectElem = elem.querySelector("select.webstats-pagination[name=page]")
 		this.prevButton = elem.querySelector("button.webstats-pagination[name=prev]")
@@ -28,26 +30,18 @@ export default class Pagination {
 	}
 
 	static create(displayCount: number, elem: HTMLElement) {
-		const prevButton = elem.appendChild(document.createElement("button"))
-		prevButton.classList.add("webstats-pagination")
-		prevButton.name = "prev"
-		prevButton.innerText = "Prev"
-
-		const pageSelect = elem.appendChild(document.createElement("select"))
-		pageSelect.classList.add("webstats-pagination")
-		pageSelect.name = "page"
-
-		const nextButton = elem.appendChild(document.createElement("button"))
-		nextButton.classList.add("webstats-pagination")
-		nextButton.name = "next"
-		nextButton.innerText = "Next"
-
+		const content = <>
+			<button className="webstats-pagination" name="prev">Prev</button>
+			<select className="webstats-pagination" name="page" />
+			<button className="webstats-pagination" name="next">Next</button>
+		</>
+		render(content, elem)
 		return new Pagination(displayCount, elem)
 	}
 
 	update(nEntries: number) {
 		this.maxPage = Math.ceil(nEntries / this.displayCount)
-		
+
 		// Hide all controls when there is only one page
 		if (this.maxPage == 1) {
 			this.parentElem.classList.add("pagination-hidden")
@@ -76,11 +70,14 @@ export default class Pagination {
 	changePage(page: number) {
 		page = Math.max(1, Math.min(page, this.maxPage))
 		this.currentPage = page
+
+		this.selectElem.value = String(this.currentPage)
+		if (this.prevButton) this.prevButton.toggleAttribute("disabled", this.currentPage <= 1)
+		if (this.nextButton) this.nextButton.toggleAttribute("disabled", this.currentPage >= this.maxPage)
 	}
 
 	changePageAndCallback(page: number) {
 		this.changePage(page)
-		console.log("callback")
 		if (this.onPageChange) this.onPageChange(this.currentPage)
 	}
 
