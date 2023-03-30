@@ -1,4 +1,17 @@
 {
+	"name": "webstats-frontend",
+	"version": "1.8.5",
+	"author": "RedPolygon <mail@dantevg.nl>",
+	"license": "MIT",
+	"description": "The front-end for the WebStats Spigot plugin",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Dantevg/WebStats/"
+	},
+	"bugs": {
+		"url": "https://github.com/Dantevg/WebStats/issues"
+	},
+	"main": "WebStats-dist.js",
 	"devDependencies": {
 		"@rollup/plugin-terser": "^0.4.0",
 		"@rollup/plugin-typescript": "^8.3.4"
