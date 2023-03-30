@@ -15,6 +15,9 @@ export default {
 	by RedPolygon
 	
 	Licence: MIT
+	
+	Includes modified version of @itsjavi/jsx-runtime
+		(MIT licenced, https://github.com/itsjavi/jsx-runtime/)
 */
 `,
 	},
