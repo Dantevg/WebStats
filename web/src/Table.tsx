@@ -26,9 +26,10 @@ const Avatar = ({ entry }: { entry: string }) => (
 )
 
 const Cell = ({ column, value }: { column: string, value: string }) => {
+	if (value == undefined || value == "0") return <td data-objective={column} className="empty"></td>
 	const formatted = isNaN(value as any) ? value : Number(value).toLocaleString()
-	const coloured = convertFormattingCodes(formatted ?? "")
-	return (<td data-objective={column} data-value={value}>{coloured}</td>)
+	const coloured = convertFormattingCodes(formatted)
+	return <td data-objective={column} data-value={value}>{coloured}</td>
 }
 
 const PlayerCell = ({ entry, status }: { entry: string, status: PlayerStatus }) => (
