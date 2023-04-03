@@ -6,7 +6,7 @@
 
 	<groupId>nl.dantevg</groupId>
 	<artifactId>WebStats</artifactId>
-	<version>1.8.5-SNAPSHOT</version>
+	<version>1.8.5</version>
 
 	<properties>
 		<maven.compiler.source>8</maven.compiler.source>
