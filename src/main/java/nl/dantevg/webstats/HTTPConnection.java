@@ -29,12 +29,11 @@ public class HTTPConnection {
 					+ "; SameSite=Lax");
 		}
 		
-		// Add cookies for javascript where to find the server
+		// Add cookies for javascript where to find the server. This does not
+		// work behind a reverse proxy; for pre-1.8.6 backwards-compatibility only
 		String host = exchange.getRequestHeaders().getFirst("Host");
 		if (host != null) {
 			headers.add("Set-Cookie", "host=" + host + "; SameSite=Lax");
-			
-			// For pre-1.8 backwards-compatibility
 			headers.add("Set-Cookie", "ip=" + host.split(":")[0]
 					+ "; SameSite=Lax");
 			headers.add("Set-Cookie", "port=" + exchange.getLocalAddress().getPort()

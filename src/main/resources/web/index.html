@@ -12,10 +12,6 @@
 		
 		const getCookie = (cookie) => document.cookie.match(`${cookie}=([^;]+)`)?.[1]
 		
-		// Get host from cookie set by standalone WebStats web server
-		const host = getCookie("host")
-			?? (getCookie("ip") ?? "localhost") + ":" + (getCookie("port") ?? 8080)
-		
 		const title = getCookie("title")
 		if (title) document.title = title
 		
@@ -23,12 +19,12 @@
 		window.addEventListener("load", () => {
 			const stats = new WebStats({
 				// required:
-				host: host, // The IP and port of WebStats on the MC server
+				host: location.host,   // The IP and port of WebStats on the MC server
 				tableParent: document.getElementById("webstats-tables"),
 				// optional:
-				updateInterval: 10000, // Set to 0 to disable auto-updating (in ms, default 10000)
-				showSkins: true,       // Whether to show player heads (default true)
-				displayCount: 100,     // Max rows to show on one page (default 100, set to -1 to disable pagination)
+				updateInterval: 10_000, // Set to 0 to disable auto-updating (in ms, default 10000)
+				showSkins: true,        // Whether to show player heads (default true)
+				displayCount: 100,      // Max rows to show on one page (default 100, set to -1 to disable pagination)
 			})
 		})
 	</script>
