@@ -19,7 +19,7 @@
 		window.addEventListener("load", () => {
 			const stats = new WebStats({
 				// required:
-				host: location.host,   // The IP and port of WebStats on the MC server
+				host: location.protocol + "//" + location.host,   // The IP and port of WebStats on the MC server
 				tableParent: document.getElementById("webstats-tables"),
 				// optional:
 				updateInterval: 10_000, // Set to 0 to disable auto-updating (in ms, default 10000)
