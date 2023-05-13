@@ -55,7 +55,7 @@ export class Row extends Component {
 	}
 
 	render = () => (
-		<tr entry={this.props.entry} className={[this.status, this.props.isCurrentPlayer ? "current" : undefined]}>
+		<tr entry={this.props.entry} className={[this.status, this.props.isCurrentPlayer ? "current-player" : undefined]}>
 			{this.props.showSkins && <Avatar entry={this.props.entry} />}
 			<PlayerCell entry={this.props.entry} status={this.status} />
 			{...this.props.columns.map(column => <Cell column={column} value={this.values.get(column)} />)}
