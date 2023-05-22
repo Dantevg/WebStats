@@ -1,4 +1,4 @@
-import { render } from "@itsjavi/jsx-runtime"
+import { ijJSX, render } from "@itsjavi/jsx-runtime"
 import Data from "./Data"
 import Pagination from "./Pagination"
 import { Heading, Row } from "./Table"
@@ -127,15 +127,16 @@ export default class Display {
 	// Re-display table contents
 	show() {
 		this.data.sort(this.sortColumn, this.descending)
-		this.table.innerHTML = ""
-		render(this.headerElem, this.table)
 		const scores = this.getScores()
 		const [min, max] = this.pagination
 			? this.pagination.getRange(scores.length)
 			: [0, scores.length]
+
+		const rows: ijJSX.Node[] = [this.headerElem]
 		for (let i = min; i < max; i++) {
-			render(this.rows.get(scores[i][1]), this.table)
+			rows.push(this.rows.get(scores[i][1]))
 		}
+		render(<>{rows}</>, this.table)
 	}
 
 	// When a table header is clicked, sort by that header
