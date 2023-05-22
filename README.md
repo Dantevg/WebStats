@@ -12,25 +12,39 @@ and player **online/AFK** status. It can also be used as a **Discord webhook**.
 ## [Getting started](https://github.com/Dantevg/WebStats/wiki/Getting-Started)
 To use WebStats, you need:
 - A Spigot Minecraft server
-- (optional) A web server (note: the plugin will not work over https, so make sure the
-  webpage isn't served over https either)
+- (optional) A web server (note: the plugin will not work over https, so make
+  sure the webpage isn't served over https either)
 
-See [the wiki](https://github.com/Dantevg/WebStats/wiki/Getting-Started) for installation instructions.
+See [the wiki](https://github.com/Dantevg/WebStats/wiki/Getting-Started) for
+installation instructions.
 
 ## Plugin config file
 <!-- don't remove/rename this heading because it was linked to by config.yml until v1.6 -->
-For information about the config file, head over to the [wiki page](https://github.com/Dantevg/WebStats/wiki/Config-file).
+For information about the config file, head over to the
+[wiki page](https://github.com/Dantevg/WebStats/wiki/Config-file).
 
 ## Contributing
 If you want to help make WebStats more awesome, you can do so by reporting
 a bug, suggesting a feature or helping with documentation. Anything is welcome!
 
 If you like to write something yourself, pull requests are also open. Starting
-from version 1.8, WebStats uses maven to build, so it should be very easy to
-work on the code yourself.
+from version 1.8, WebStats uses maven and npm to build, so it should be very
+easy to work on the code yourself.
+
+Note: you need to manually generate the `dist` for one of the npm dependencies:
+```sh
+cd ./web/src
+npm i
+cd ./node_modules/@itsjavi/jsx-runtime
+npm i
+npm run build:tsc
+npm run build:micro
+npm run build:tsc
+```
 
 ### Contributors
-Thank you to these people for helping out with the plugin by suggesting features and reporting bugs!
+Thank you to these people for helping out with the plugin by suggesting features
+and reporting bugs!
 - [@Dancull47](https://github.com/Dancull47):
   MySQL feature suggestion ([#2](https://github.com/Dantevg/WebStats/issues/2))
 - [@draexo (spigotmc)](https://www.spigotmc.org/members/draexo.2905/):
