@@ -12,7 +12,9 @@ public class Stats {
 	public static @NotNull Map<String, Object> getOnline() {
 		Map<String, Object> players = new HashMap<>();
 		for (Player p : Bukkit.getOnlinePlayers()) {
-			players.put(p.getName(), (WebStats.hasEssentials && EssentialsHelper.isAFK(p)) ? "afk" : true);
+			if (!WebStats.hasEssentials || !EssentialsHelper.isVanished(p)) {
+				players.put(p.getName(), (WebStats.hasEssentials && EssentialsHelper.isAFK(p)) ? "afk" : true);
+			}
 		}
 		return players;
 	}
