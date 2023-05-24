@@ -21,7 +21,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up JDK 11
+    - name: Set up JDK 8
       uses: actions/setup-java@v3
       with:
         java-version: '8'
@@ -32,17 +32,20 @@ jobs:
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
       uses: advanced-security/maven-dependency-submission-action@571e99aab1055c2e71a1e2309b9691de18d6b7d6
-    - name: Get pushed commit hash
+    - name: Get latest commit hash (push)
       if: ${{ github.event_name == 'pull_request' }}
       run: |
-        echo "LAST_COMMIT_SHA=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
-    - name: Get latest commit hash from pull request
+        echo "LAST_COMMIT_SHA=$(git rev-parse --short ${{ github.event.pull_request.head.sha }})" >> $GITHUB_ENV
+    - name: Get latest commit hash (pull request)
       if: ${{ github.event_name == 'push' }}
       run: |
-        echo "LAST_COMMIT_SHA=${{ github.sha }}" >> $GITHUB_ENV
-    - run: mkdir out && cp target/WebStats-*.jar out/WebStats-${{ github.head_ref || github.ref_name }}-$(git rev-parse --short ${{ env.LAST_COMMIT_SHA }}).jar
+        echo "LAST_COMMIT_SHA=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_ENV
+    - name: Copy js file to out directory
+      run: mkdir out && cp web/WebStats-dist.js out
+    - name: Copy jar to out directory
+      run: cp target/WebStats-*.jar out/WebStats-${{ github.head_ref || github.ref_name }}-${{ env.LAST_COMMIT_SHA }}.jar
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: WebStats
+        name: WebStats ${{ github.head_ref || github.ref_name }} ${{ env.LAST_COMMIT_SHA }}
         path: out
