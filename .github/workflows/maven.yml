@@ -35,7 +35,7 @@ jobs:
     - name: Get human-readable tag
       run: |
         echo "TAG_NAME=$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
-    - run: mkdir staging && cp target/WebStats-*.jar staging/WebStats-${{ github.ref_name }}-${{ env.TAG_NAME }}.jar
+    - run: mkdir staging && cp target/WebStats-*.jar staging/WebStats-${{ github.head_ref || github.ref_name }}-${{ env.TAG_NAME }}.jar
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
