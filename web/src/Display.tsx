@@ -14,7 +14,6 @@ export default class Display {
 	hideOffline: boolean
 
 	data: Data
-	headerElem: JSX.Element
 	rows: Map<string, Row>
 
 	constructor({ table, pagination, showSkins = true }, { columns, sortColumn = "Player", sortDirection = "descending" }: TableConfig) {
@@ -34,12 +33,6 @@ export default class Display {
 
 		// Set pagination controls
 		if (this.pagination) this.updatePagination()
-
-		// Create header of columns
-		this.headerElem = <Heading
-			columns={this.columns ?? this.data.columns}
-			showSkins={this.showSkins}
-			onClick={this.thClick.bind(this)} />
 
 		// Create rows of (empty) entries
 		this.rows = new Map()
@@ -132,7 +125,13 @@ export default class Display {
 			? this.pagination.getRange(scores.length)
 			: [0, scores.length]
 
-		const rows: ijJSX.Node[] = [this.headerElem]
+		const rows: ijJSX.Node[] = []
+		rows.push(<Heading
+			columns={this.columns ?? this.data.columns}
+			showSkins={this.showSkins}
+			sortColumn={this.sortColumn}
+			sortDescending={this.descending}
+			onClick={this.thClick.bind(this)} />)
 		for (let i = min; i < max; i++) {
 			rows.push(this.rows.get(scores[i][1]))
 		}
@@ -141,7 +140,7 @@ export default class Display {
 
 	// When a table header is clicked, sort by that header
 	thClick(e: Event) {
-		let objective = (e.target as HTMLTableCellElement).innerText
+		let objective = (e.target as HTMLTableCellElement).getAttribute("data-objective")
 		this.descending = (objective === this.sortColumn) ? !this.descending : true
 		this.sortColumn = objective
 		this.pagination?.changePage(1)

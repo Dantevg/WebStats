@@ -7,13 +7,22 @@ const CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAY
 type HeadingData = {
 	columns: string[]
 	showSkins: boolean
+	sortColumn: string
+	sortDescending: boolean
 	onClick: (e: Event) => any
 }
 
-export const Heading = ({ columns, showSkins, onClick }: HeadingData) => (
+const columnClass = (column: string, sortColumn: string, sortDescending: boolean) =>
+	sortColumn == column && ["webstats-sort-column", sortDescending ? "descending" : "ascending"]
+
+export const Heading = ({ columns, showSkins, sortColumn, sortDescending, onClick }: HeadingData) => (
 	<tr>
-		<th colSpan={showSkins && 2} onClick={onClick}>Player</th>
-		{...columns.map(column => <th onClick={onClick}>{column}</th>)}
+		<th colSpan={showSkins && 2} onClick={onClick} data-objective="Player" className={columnClass("Player", sortColumn, sortDescending)}>
+			Player
+		</th>
+		{...columns.map(column => <th onClick={onClick} data-objective={column} className={columnClass(column, sortColumn, sortDescending)}>
+			{column}
+		</th>)}
 	</tr>
 )
 
