@@ -10,17 +10,14 @@ type HeadingData = {
 	onClick: (e: Event) => any
 }
 
-const onKeyDown = fn => (e: KeyboardEvent) => {
-	if (e.key == " ") {
-		fn(e)
-		return false
-	}
+const onKeyDown = (e: KeyboardEvent) => {
+	if (e.key == "Enter") (e.target as HTMLElement).click()
 }
 
 export const Heading = ({ columns, showSkins, onClick }: HeadingData) => (
 	<tr>
-		<th colSpan={showSkins && 2} onClick={onClick} onKeyDown={onKeyDown(onClick)} tabIndex="0">Player</th>
-		{...columns.map(column => <th onClick={onClick} onKeyDown={onKeyDown(onClick)} tabIndex="0">{column}</th>)}
+		<th colSpan={showSkins && 2} onClick={onClick} onKeyDown={onKeyDown} tabIndex="0">Player</th>
+		{...columns.map(column => <th onClick={onClick} onKeyDown={onKeyDown} tabIndex="0">{column}</th>)}
 	</tr>
 )
 
