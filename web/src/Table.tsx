@@ -15,16 +15,18 @@ type HeadingData = {
 const columnClass = (column: string, sortColumn: string, sortDescending: boolean) =>
 	sortColumn == column && ["webstats-sort-column", sortDescending ? "descending" : "ascending"]
 
+const onKeyDown = (e: KeyboardEvent) => {
+	if (e.key == "Enter") (e.target as HTMLElement).click()
+}
+
 export const Heading = ({ columns, showSkins, sortColumn, sortDescending, onClick }: HeadingData) => (
 	<tr>
-		<th colSpan={showSkins && 2} onClick={onClick} data-objective="Player" className={columnClass("Player", sortColumn, sortDescending)}>
+		<th colSpan={showSkins && 2} onClick={onClick} onKeyDown={onKeyDown} tabIndex="0" data-objective="Player" className={columnClass("Player", sortColumn, sortDescending)}>
 			Player
 		</th>
-		{...columns.map(column => <th onClick={onClick} data-objective={column} className={columnClass(column, sortColumn, sortDescending)}>
+		{...columns.map(column => <th onClick={onClick} onKeyDown={onKeyDown} tabIndex="0" data-objective={column} className={columnClass(column, sortColumn, sortDescending)}>
 			{column}
 		</th>)}
-	</tr>
-)
 
 const Avatar = ({ entry }: { entry: string }) => (
 	<td className={["sticky", "skin"]}>

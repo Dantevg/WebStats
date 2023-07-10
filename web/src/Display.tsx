@@ -139,12 +139,21 @@ export default class Display {
 	}
 
 	// When a table header is clicked, sort by that header
+	// (also called when the table header is activated through keyboard navigation)
 	thClick(e: Event) {
-		let objective = (e.target as HTMLTableCellElement).getAttribute("data-objective")
+		const objective = (e.target as HTMLTableCellElement).getAttribute("data-objective")
 		this.descending = (objective === this.sortColumn) ? !this.descending : true
 		this.sortColumn = objective
 		this.pagination?.changePage(1)
 		this.show()
+		
+		// Restore focused element (for keyboard navigation)
+		for (const th of this.table.getElementsByTagName("th")) {
+			if (th.innerText == objective) {
+				th.focus()
+				break
+			}
+		}
 	}
 
 	// Replace single quotes by '&quot;' (html-escape)
