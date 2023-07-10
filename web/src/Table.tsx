@@ -7,19 +7,26 @@ const CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAY
 type HeadingData = {
 	columns: string[]
 	showSkins: boolean
+	sortColumn: string
+	sortDescending: boolean
 	onClick: (e: Event) => any
 }
+
+const columnClass = (column: string, sortColumn: string, sortDescending: boolean) =>
+	sortColumn == column && ["webstats-sort-column", sortDescending ? "descending" : "ascending"]
 
 const onKeyDown = (e: KeyboardEvent) => {
 	if (e.key == "Enter") (e.target as HTMLElement).click()
 }
 
-export const Heading = ({ columns, showSkins, onClick }: HeadingData) => (
+export const Heading = ({ columns, showSkins, sortColumn, sortDescending, onClick }: HeadingData) => (
 	<tr>
-		<th colSpan={showSkins && 2} onClick={onClick} onKeyDown={onKeyDown} tabIndex="0">Player</th>
-		{...columns.map(column => <th onClick={onClick} onKeyDown={onKeyDown} tabIndex="0">{column}</th>)}
-	</tr>
-)
+		<th colSpan={showSkins && 2} onClick={onClick} onKeyDown={onKeyDown} tabIndex="0" data-objective="Player" className={columnClass("Player", sortColumn, sortDescending)}>
+			Player
+		</th>
+		{...columns.map(column => <th onClick={onClick} onKeyDown={onKeyDown} tabIndex="0" data-objective={column} className={columnClass(column, sortColumn, sortDescending)}>
+			{column}
+		</th>)}
 
 const Avatar = ({ entry }: { entry: string }) => (
 	<td className={["sticky", "skin"]}>
