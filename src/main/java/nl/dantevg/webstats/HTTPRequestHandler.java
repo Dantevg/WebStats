@@ -97,6 +97,13 @@ public class HTTPRequestHandler implements HttpHandler {
 			case "/tables.json":
 				httpConnection.sendJson(new Gson().toJson(WebStatsConfig.getInstance().tables));
 				break;
+			case "/stats.csv":
+				if (new File(WebStats.getPlugin(WebStats.class).getDataFolder(), "stats.csv").exists()) {
+					httpConnection.sendFile("text/csv", "stats.csv");
+				} else {
+					httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_NOT_FOUND);
+				}
+				break;
 			default:
 				if (resources.containsKey(path)) {
 					httpConnection.sendFile(resources.get(path), "web" + path);
