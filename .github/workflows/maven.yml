@@ -44,7 +44,7 @@ jobs:
       run: |
         echo "LAST_COMMIT_SHA=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_ENV
     - name: Copy jar to out directory
-      run: cp target/WebStats-*.jar out/WebStats-${{ github.head_ref || github.ref_name }}-${{ env.LAST_COMMIT_SHA }}.jar
+      run: mkdir out && cp target/WebStats-*.jar out/WebStats-${{ github.head_ref || github.ref_name }}-${{ env.LAST_COMMIT_SHA }}.jar
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:

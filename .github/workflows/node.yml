@@ -16,6 +16,9 @@ jobs:
 
     permissions:
       contents: write
+    
+    defaults:
+      run
 
     steps:
     - uses: actions/checkout@v3
@@ -24,6 +27,7 @@ jobs:
       with:
         node-version: 18.x
         cache: 'npm'
+        cache-dependency-path: 'web/package-lock.json'
     - run: npm ci
     - name: Copy js file to out directory
       run: mkdir out && cp web/WebStats-dist.js out
