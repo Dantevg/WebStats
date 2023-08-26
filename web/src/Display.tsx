@@ -74,6 +74,7 @@ export default class Display {
 
 	updateScoreboard() {
 		for (const row of this.data.scores) {
+			if (!this.rows.has(row[1])) continue
 			for (const column of this.columns ?? this.data.columns) {
 				let value = row[this.data.columns_[column]] as string
 				if (!value) continue

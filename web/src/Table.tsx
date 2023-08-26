@@ -27,6 +27,7 @@ export const Heading = ({ columns, showSkins, sortColumn, sortDescending, onClic
 		{...columns.map(column => <th onClick={onClick} onKeyDown={onKeyDown} tabIndex="0" data-objective={column} className={columnClass(column, sortColumn, sortDescending)}>
 			{column}
 		</th>)}
+	</tr>)
 
 const Avatar = ({ entry }: { entry: string }) => (
 	<td className={["sticky", "skin"]}>
