@@ -13,7 +13,7 @@
 	},
 	"main": "WebStats-dist.js",
 	"devDependencies": {
-		"@itsjavi/jsx-runtime": "github:libasoles/jsx-runtime",
+		"@itsjavi/jsx-runtime": "github:Dantevg/jsx-runtime",
 		"@rollup/plugin-node-resolve": "^15.0.1",
 		"@rollup/plugin-terser": "^0.4.0",
 		"@rollup/plugin-typescript": "^8.3.4",
