@@ -6,7 +6,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Java CI with Maven
+name: Maven build
 
 on:
   push:
@@ -40,12 +40,10 @@ jobs:
       if: ${{ github.event_name == 'push' }}
       run: |
         echo "LAST_COMMIT_SHA=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_ENV
-    - name: Copy js file to out directory
-      run: mkdir out && cp web/WebStats-dist.js out
     - name: Copy jar to out directory
       run: cp target/WebStats-*.jar out/WebStats-${{ github.head_ref || github.ref_name }}-${{ env.LAST_COMMIT_SHA }}.jar
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: WebStats
+        name: jar
         path: out
