@@ -27,7 +27,9 @@ public class HTTPRequestHandler implements HttpHandler {
 	
 	public HTTPRequestHandler() {
 		if (WebStatsConfig.getInstance().serveWebpage) {
+			resources.put("/favicon.png", "image/png");
 			resources.put("/index.html", "text/html");
+			resources.put("/logo.png", "image/png");
 			resources.put("/style.css", "text/css");
 			resources.put("/WebStats-dist.js", "application/javascript");
 			resources.put("/WebStats-dist.js.map", "application/json");
