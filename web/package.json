@@ -21,7 +21,7 @@
 		"tslib": "^2.4.0"
 	},
 	"scripts": {
-		"prepare": "npm run build && npm run copy",
+		"prepare": "npm run build",
 		"build": "rollup -c",
 		"watch": "rollup -c --watch",
 		"copy": "cp WebStats-dist.js* ../src/main/resources || copy /y WebStats-dist.js* ..\\src\\main\\resources"
