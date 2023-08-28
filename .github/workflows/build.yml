@@ -60,6 +60,7 @@ jobs:
       with:
         path: web/WebStats-dist.js
         key: js
+        fail-on-cache-miss: true
     - name: Copy js file to out directory and jar resources
       run: mkdir out && cp web/WebStats-dist.js out && cp web/WebStats-dist.js* src/main/resources
     - name: Build with Maven
@@ -76,7 +77,7 @@ jobs:
       run: |
         echo "LAST_COMMIT_SHA=$(git rev-parse --short ${{ github.sha }})" >> $GITHUB_ENV
     - name: Copy jar to out directory
-      run: mkdir out && cp target/WebStats-*.jar out/WebStats-${{ github.head_ref || github.ref_name }}-${{ env.LAST_COMMIT_SHA }}.jar
+      run: cp target/WebStats-*.jar out/WebStats-${{ github.head_ref || github.ref_name }}-${{ env.LAST_COMMIT_SHA }}.jar
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
