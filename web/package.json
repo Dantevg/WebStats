@@ -13,12 +13,18 @@
 	},
 	"main": "WebStats-dist.js",
 	"devDependencies": {
-		"@itsjavi/jsx-runtime": "github:libasoles/jsx-runtime",
+		"@itsjavi/jsx-runtime": "github:Dantevg/jsx-runtime",
 		"@rollup/plugin-node-resolve": "^15.0.1",
 		"@rollup/plugin-terser": "^0.4.0",
 		"@rollup/plugin-typescript": "^8.3.4",
 		"rollup": "^2.79.1",
 		"tslib": "^2.4.0"
+	},
+	"scripts": {
+		"prepare": "npm run build",
+		"build": "rollup -c",
+		"watch": "rollup -c --watch",
+		"copy": "cp WebStats-dist.js* ../src/main/resources || copy /y WebStats-dist.js* ..\\src\\main\\resources"
 	},
 	"type": "module"
 }
