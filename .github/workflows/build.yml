@@ -68,6 +68,7 @@ jobs:
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
     - name: Update dependency graph
       uses: advanced-security/maven-dependency-submission-action@v3
+      continue-on-error: true
     - name: Get latest commit hash (push)
       if: ${{ github.event_name == 'pull_request' }}
       run: |
