@@ -44,6 +44,11 @@ export-interval: 0
 # when you do not have one.
 serve-webpage: false
 
+# A list of additional files to serve (index.html, WebStats-dist.js etc. are
+# implicitly part of this list). For this list to have effect, `serve-webpage`
+# must be enabled in the config. Paths are relative to `plugins/WebStats/web/`.
+additional-resources: []
+
 # When serve-webpage is enabled, this is the tab title of the webpage.
 #webpage-title: "Web Stats"
 

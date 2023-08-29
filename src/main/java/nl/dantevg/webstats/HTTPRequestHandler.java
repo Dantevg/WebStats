@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -29,10 +30,12 @@ public class HTTPRequestHandler implements HttpHandler {
 		if (WebStatsConfig.getInstance().serveWebpage) {
 			resources.put("/favicon.png", "image/png");
 			resources.put("/index.html", "text/html");
-			resources.put("/logo.png", "image/png");
 			resources.put("/style.css", "text/css");
 			resources.put("/WebStats-dist.js", "application/javascript");
 			resources.put("/WebStats-dist.js.map", "application/json");
+			
+			WebStatsConfig.getInstance().additionalResources.forEach(path ->
+					resources.put("/" + path, URLConnection.guessContentTypeFromName(path)));
 		}
 		
 		attemptMigrateResources();
