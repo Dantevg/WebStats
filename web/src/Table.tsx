@@ -1,5 +1,5 @@
 import { Component } from "@itsjavi/jsx-runtime"
-import { PlayerStatus } from "./Data"
+import Data, { PlayerStatus } from "./Data"
 import { convertFormattingCodes } from "./FormattingCodes"
 
 const CONSOLE_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NUUlL6z0ABYBw1gGE0DBioHAZ3795lUFZWJildosQCRQaQoxnkVLgL0A2A8dFpdP8NfEICAMkiK2HeQ9JUAAAAAElFTkSuQmCC"
@@ -17,6 +17,13 @@ const columnClass = (column: string, sortColumn: string, sortDescending: boolean
 
 const onKeyDown = (e: KeyboardEvent) => {
 	if (e.key == "Enter") (e.target as HTMLElement).click()
+}
+
+// Transform an entry name into the name to be displayed
+const transformEntryName = (entry: string) => {
+	if (entry == "#server") return "Server"
+	else if (Data.isBedrockPlayer(entry)) return Data.transformBedrockPlayername(entry)
+	else return entry
 }
 
 export const Heading = ({ columns, showSkins, sortColumn, sortDescending, onClick }: HeadingData) => (
@@ -47,7 +54,7 @@ const Cell = ({ column, value }: { column: string, value: string }) => {
 const PlayerCell = ({ entry, status }: { entry: string, status: PlayerStatus }) => (
 	<td data-objective="Player" data-value={entry}>
 		<div className={["status", status]} title={status}></div>
-		{entry == "#server" ? "Server" : entry}
+		{transformEntryName(entry)}
 	</td>
 )
 
