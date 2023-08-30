@@ -5,10 +5,7 @@ import com.google.gson.annotations.SerializedName;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -27,6 +24,7 @@ public class WebStatsConfig {
 	
 	public final boolean serveWebpage;
 	public final @Nullable String webpageTitle;
+	public final @NotNull List<String> additionalResources;
 	
 	@Deprecated
 	public final @Nullable List<String> columns;
@@ -48,6 +46,7 @@ public class WebStatsConfig {
 		
 		serveWebpage = WebStats.config.getBoolean("serve-webpage");
 		webpageTitle = WebStats.config.getString("webpage-title");
+		additionalResources = WebStats.config.getStringList("additional-resources");
 		
 		columns = WebStats.config.getStringList("columns");
 		serverColumns = WebStats.config.getStringList("server-columns");
