@@ -35,8 +35,10 @@ jobs:
     - name: Cache js file
       uses: actions/cache@v3
       with:
-        path: web/WebStats-dist.js
-        key: js
+        path: |
+          web/WebStats-dist.js
+          web/WebStats-dist.js.map
+        key: js-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
 
   maven:
 
@@ -58,8 +60,10 @@ jobs:
     - name: Get cached js file
       uses: actions/cache/restore@v3
       with:
-        path: web/WebStats-dist.js
-        key: js
+        path: |
+          web/WebStats-dist.js
+          web/WebStats-dist.js.map
+        key: js-${{ github.run_id }}-${{ github.run_number }}-${{ github.run_attempt }}
         fail-on-cache-miss: true
     - name: Copy js file to out directory and jar resources
       run: mkdir out && cp web/WebStats-dist.js out && cp web/WebStats-dist.js* src/main/resources/web
