@@ -24,7 +24,7 @@
 		"prepare": "npm run build",
 		"build": "rollup -c",
 		"watch": "rollup -c --watch",
-		"copy": "cp WebStats-dist.js* ../src/main/resources || copy /y WebStats-dist.js* ..\\src\\main\\resources"
+		"copy": "cp WebStats-dist.js* ../src/main/resources/web || copy /y WebStats-dist.js* ..\\src\\main\\resources\\web"
 	},
 	"type": "module"
 }
