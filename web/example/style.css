@@ -41,7 +41,8 @@ html.hide-offline tr.offline {
 	display: none;
 }
 
-tr.current-player {
+tr.current-player td:not(.empty) {
+	background: var(--bg2);
 	font-weight: bold;
 }
 
