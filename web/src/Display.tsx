@@ -73,12 +73,27 @@ export default class Display {
 	}
 
 	updateScoreboard() {
-		for (const row of this.data.scores) {
-			if (!this.rows.has(row[1])) continue
-			for (const column of this.columns ?? this.data.columns) {
+		for (const column of this.columns ?? this.data.columns) {
+			let max = 0
+			let isNumberColumn = true
+			
+			for (const row of this.data.scores) {
+				if (!this.rows.has(row[1])) continue
 				let value = row[this.data.columns_[column]] as string
 				if (!value) continue
 				this.rows.get(row[1]).values.set(column, value)
+				
+				if (isNumberColumn && !isNaN(Number(value))) {
+					max = Math.max(max, Number(value))
+				} else {
+					isNumberColumn = false
+				}
+			}
+			
+			if (isNumberColumn) {
+				for (const row of this.data.scores) {
+					this.rows.get(row[1]).relative.set(column, Number(row[this.data.columns_[column]]) / max * 100)
+				}
 			}
 		}
 	}

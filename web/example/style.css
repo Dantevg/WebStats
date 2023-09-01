@@ -60,6 +60,18 @@ td:not(.empty)[data-objective=Player] {
 	padding-left: 40px;
 }
 
+td:not(.empty)::after {
+	content: "";
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	display: block;
+	width: var(--relative);
+	height: 100%;
+	background: var(--bg2);
+	z-index: -1;
+}
+
 td.skin {
 	padding: 0px !important;
 	background: transparent;

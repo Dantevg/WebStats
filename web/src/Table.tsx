@@ -44,11 +44,11 @@ const Avatar = ({ entry }: { entry: string }) => (
 	</td>
 )
 
-const Cell = ({ column, value }: { column: string, value: string }) => {
+const Cell = ({ column, value, relative }: { column: string, value: string, relative?: number }) => {
 	if (value == undefined || value == "0") return <td data-objective={column} className="empty"></td>
 	const formatted = isNaN(value as any) ? value : Number(value).toLocaleString()
 	const coloured = convertFormattingCodes(formatted)
-	return <td data-objective={column} data-value={value}>{coloured}</td>
+	return <td data-objective={column} data-value={value} style={relative && `--relative: ${relative}%;`}>{coloured}</td>
 }
 
 const PlayerCell = ({ entry, status }: { entry: string, status: PlayerStatus }) => (
@@ -67,6 +67,7 @@ type RowData = {
 
 export class Row extends Component {
 	values: Map<string, string> = new Map()
+	relative: Map<string, number> = new Map()
 	status: PlayerStatus = "offline"
 
 	constructor(public props: RowData) {
@@ -77,7 +78,7 @@ export class Row extends Component {
 		<tr entry={this.props.entry} className={[this.status, this.props.isCurrentPlayer ? "current-player" : undefined]}>
 			{this.props.showSkins && <Avatar entry={this.props.entry} />}
 			<PlayerCell entry={this.props.entry} status={this.status} />
-			{...this.props.columns.map(column => <Cell column={column} value={this.values.get(column)} />)}
+			{...this.props.columns.map(column => <Cell column={column} value={this.values.get(column)} relative={this.relative.get(column)} />)}
 		</tr>
 	)
 }
