@@ -27,24 +27,13 @@ For information about the config file, head over to the
 If you want to help make WebStats more awesome, you can do so by reporting
 a bug, suggesting a feature or helping with documentation. Anything is welcome!
 
-If you like to write something yourself, pull requests are also open. Starting
-from version 1.8, WebStats uses maven and npm to build, so it should be very
-easy to work on the code yourself.
-
-Note: you need to manually generate the `dist` for one of the npm dependencies:
-```sh
-cd ./web/src
-npm i
-cd ./node_modules/@itsjavi/jsx-runtime
-npm i
-npm run build:tsc
-npm run build:micro
-npm run build:tsc
-```
+If you like to write something yourself, pull requests are also very much
+appreciated. Starting from version 1.8, WebStats uses maven and npm to build, so
+it should be very easy to work on the code yourself (barring sparse comments).
 
 ### Contributors
-Thank you to these people for helping out with the plugin by suggesting features
-and reporting bugs!
+Thank you to these people for helping out with the plugin by suggesting features,
+reporting bugs and submitting PRs!
 - [@Dancull47](https://github.com/Dancull47):
   MySQL feature suggestion ([#2](https://github.com/Dantevg/WebStats/issues/2))
 - [@draexo (spigotmc)](https://www.spigotmc.org/members/draexo.2905/):
@@ -59,6 +48,12 @@ and reporting bugs!
   bug reports ([#14](https://github.com/Dantevg/WebStats/issues/14), [#57](https://github.com/Dantevg/WebStats/issues/57))
 - [@Nick Messer](https://github.com/NickMesser):
   bug report ([#50](https://github.com/Dantevg/WebStats/issues/50))
+- [@Olen](https://github.com/Olen):
+  additional served files feature suggestion and PR ([#73](https://github.com/Dantevg/WebStats/issues/73)),
+  help with bedrock and HTTPS features ([#54](https://github.com/Dantevg/WebStats/issues/54), [#23](https://github.com/Dantevg/WebStats/issues/23)),
+  bug report ([#71](https://github.com/Dantevg/WebStats/issues/71))
+- [@Onako2](https://github.com/Onako2):
+  bug report ([#72](https://github.com/Dantevg/WebStats/issues/72))
 - [@Unkn0wn3636 (spigotmc)](https://www.spigotmc.org/members/unkn0wn3636.1457887/):
   multiple tables suggestion ([#26](https://github.com/Dantevg/WebStats/issues/26)),
   separate server entry suggestion ([#27](https://github.com/Dantevg/WebStats/issues/27)),
