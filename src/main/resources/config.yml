@@ -27,6 +27,16 @@ tables:
 # separate 'Server' row.
 server-columns: []
 
+# Specify the unit in which data from a column is *stored*. WebStats will use
+# this information to automatically adjust the *displayed* units.
+# Units you can use here:
+# - time (duration, not wall clock time): milliseconds/ms, ticks, seconds/s, minutes/min, hours/h, days/d
+# - distance: blocks/metres/meters/m, kilometres/kilometers/km
+# - date: formatted date, timestamp
+# - item count: items, items16 (for 16-stackables)
+column-units:
+#  Column Name: source unit
+
 # Whether to store IP to player name mapping in 'ip-to-names.yml',
 # used for matching your IP to your player name
 store-player-ips: true

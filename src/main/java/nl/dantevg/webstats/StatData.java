@@ -19,6 +19,7 @@ public class StatData {
 	@SerializedName("scoreboard")
 	public Stats stats;
 	public Set<String> playernames;
+	public Map<String, Object> units = WebStatsConfig.getInstance().columnUnits;
 	
 	public StatData(Map<String, Object> online, Stats stats) {
 		this.online = online;
