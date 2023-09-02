@@ -37,6 +37,14 @@ server-columns: []
 column-units:
 #  Column Name: source unit
 
+# HTTPS configuration. Uncomment to enable HTTPS.
+# See https://github.com/Dantevg/WebStats/wiki/HTTPS for how to set up.
+#https:
+#  # The path to the keystore file, relative to the plugin config folder.
+#  keystore-file: webstats.p12
+#  # The password of the keystore file.
+#  keystore-password: ""
+
 # Whether to store IP to player name mapping in 'ip-to-names.yml',
 # used for matching your IP to your player name
 store-player-ips: true

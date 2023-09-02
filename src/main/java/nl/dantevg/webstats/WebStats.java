@@ -1,18 +1,23 @@
 package nl.dantevg.webstats;
 
-import com.sun.net.httpserver.HttpServer;
 import nl.dantevg.webstats.database.DatabaseSource;
 import nl.dantevg.webstats.discordwebhook.DiscordWebhook;
 import nl.dantevg.webstats.placeholder.PlaceholderSource;
 import nl.dantevg.webstats.scoreboard.ScoreboardSource;
+import nl.dantevg.webstats.webserver.HTTPSWebServer;
+import nl.dantevg.webstats.webserver.HTTPWebServer;
+import nl.dantevg.webstats.webserver.WebServer;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -24,6 +29,7 @@ public class WebStats extends JavaPlugin {
 	protected static PlaceholderSource placeholderSource;
 	
 	protected static DiscordWebhook discordWebhook;
+	protected static WebServer webserver;
 	
 	protected static PlayerIPStorage playerIPStorage;
 	protected static StatExporter statExporter;
@@ -31,8 +37,6 @@ public class WebStats extends JavaPlugin {
 	public static Logger logger;
 	public static FileConfiguration config;
 	public static boolean hasEssentials;
-	
-	private HttpServer webserver;
 	
 	// Gets run when the plugin is enabled on server startup
 	@Override
@@ -84,14 +88,17 @@ public class WebStats extends JavaPlugin {
 		}
 		
 		try {
-			// Start web server
-			webserver = HttpServer.create(new InetSocketAddress(configData.port), 0);
-			webserver.createContext("/", new HTTPRequestHandler());
+			if (configData.useHTTPS) {
+				webserver = new HTTPSWebServer();
+			} else {
+				webserver = new HTTPWebServer();
+			}
 			webserver.start();
-			logger.log(Level.INFO, "Web server started on port " + configData.port);
-		} catch (IOException e) {
-			logger.log(Level.SEVERE, "Failed to start web server with port "
-					+ configData.port + ": " + e.getMessage(), e);
+		} catch (InvalidConfigurationException e) {
+			logger.log(Level.SEVERE, "Invalid webserver configuration", e);
+		} catch (Exception e) {
+			logger.log(Level.SEVERE, "Failed to start web server (port "
+					+ config.getInt("port") + "): " + e.getMessage(), e);
 		}
 	}
 	
@@ -154,6 +161,25 @@ public class WebStats extends JavaPlugin {
 	protected @NotNull String debug() {
 		return getVersion() + "\n"
 				+ getSources();
+	}
+	
+	/**
+	 * Get the input stream of a file in the plugin data folder, or in the jar
+	 * if that does not exist.
+	 *
+	 * @param path the path to the file, relative to the plugin folder or the
+	 *             jar root.
+	 * @return the input stream of the file.
+	 */
+	public static @Nullable InputStream getResourceInputStream(@NotNull String path) {
+		WebStats plugin = WebStats.getPlugin(WebStats.class);
+		try {
+			// Find resource in plugin data folder
+			return new FileInputStream(new File(plugin.getDataFolder(), path));
+		} catch (FileNotFoundException e) {
+			// Find resource in jar
+			return plugin.getResource(path);
+		}
 	}
 	
 }

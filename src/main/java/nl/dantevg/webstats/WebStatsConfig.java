@@ -18,6 +18,7 @@ public class WebStatsConfig {
 	public final boolean useDatabaseSource;
 	public final boolean usePlaceholderSource;
 	public final boolean useDiscordWebhook;
+	public final boolean useHTTPS;
 	
 	public final boolean storePlayerIPs;
 	public final boolean exportCumulative;
@@ -41,6 +42,7 @@ public class WebStatsConfig {
 		useDatabaseSource = WebStats.config.contains("database.config");
 		usePlaceholderSource = WebStats.config.contains("placeholders");
 		useDiscordWebhook = WebStats.config.contains("discord-webhook");
+		useHTTPS = WebStats.config.contains("https");
 		
 		storePlayerIPs = WebStats.config.getBoolean("store-player-ips");
 		exportCumulative = WebStats.config.getBoolean("export-cumulative");
