@@ -15,7 +15,7 @@ import java.security.cert.CertificateException;
 import java.util.logging.Level;
 
 public class HTTPSWebServer extends WebServer<HttpsServer> {
-	private static final String KEYSTORE_TYPE = "JKS";
+	private static final String KEYSTORE_TYPE = "PKCS12";
 	private static final String MANAGER_TYPE = "PKIX";
 	
 	public HTTPSWebServer()

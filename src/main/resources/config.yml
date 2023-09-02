@@ -23,7 +23,7 @@ server-columns: []
 # See https://github.com/Dantevg/WebStats/wiki/HTTPS for how to set up.
 #https:
 #  # The path to the keystore file, relative to the plugin config folder.
-#  keystore-file: webstats.jks
+#  keystore-file: webstats.p12
 #  # The password of the keystore file.
 #  keystore-password: ""
 
