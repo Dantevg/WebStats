@@ -39,6 +39,7 @@ export default class Display {
 		for (const entry of this.getEntries()) {
 			this.rows.set(entry, new Row({
 				columns: this.columns ?? this.data.columns,
+				units: this.data.units,
 				showSkins: this.showSkins,
 				entry,
 				isCurrentPlayer: this.data.isCurrentPlayer(entry)
@@ -73,12 +74,27 @@ export default class Display {
 	}
 
 	updateScoreboard() {
-		for (const row of this.data.scores) {
-			if (!this.rows.has(row[1])) continue
-			for (const column of this.columns ?? this.data.columns) {
+		for (const column of this.columns ?? this.data.columns) {
+			let max = 0
+			let isNumberColumn = true
+
+			for (const row of this.data.scores) {
+				if (!this.rows.has(row[1])) continue
 				let value = row[this.data.columns_[column]] as string
 				if (!value) continue
 				this.rows.get(row[1]).values.set(column, value)
+
+				if (isNumberColumn && !isNaN(Number(value))) {
+					max = Math.max(max, Number(value))
+				} else {
+					isNumberColumn = false
+				}
+			}
+
+			if (isNumberColumn) {
+				for (const row of this.data.scores) {
+					this.rows.get(row[1]).relative.set(column, Number(row[this.data.columns_[column]]) / max * 100)
+				}
 			}
 		}
 	}
@@ -147,7 +163,7 @@ export default class Display {
 		this.sortColumn = objective
 		this.pagination?.changePage(1)
 		this.show()
-		
+
 		// Restore focused element (for keyboard navigation)
 		for (const th of this.table.getElementsByTagName("th")) {
 			if (th.innerText == objective) {

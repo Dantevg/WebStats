@@ -2,6 +2,7 @@ package nl.dantevg.webstats;
 
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
+import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,6 +33,7 @@ public class WebStatsConfig {
 	
 	public final @NotNull List<String> serverColumns;
 	public final @NotNull List<TableConfig> tables;
+	public final @NotNull Map<String, Object> columnUnits;
 	
 	private WebStatsConfig() {
 		port = WebStats.config.getInt("port");
@@ -52,6 +54,11 @@ public class WebStatsConfig {
 		
 		columns = WebStats.config.getStringList("columns");
 		serverColumns = WebStats.config.getStringList("server-columns");
+		if (WebStats.config.isConfigurationSection("column-units")) {
+			columnUnits = WebStats.config.getConfigurationSection("column-units").getValues(true);
+		} else {
+			columnUnits = new HashMap<>();
+		}
 		
 		if (!WebStats.config.contains("tables")) {
 			tables = Collections.emptyList();

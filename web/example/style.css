@@ -41,7 +41,8 @@ html.hide-offline tr.offline {
 	display: none;
 }
 
-tr.current-player {
+tr.current-player td:not(.empty) {
+	background: var(--bg2);
 	font-weight: bold;
 }
 
@@ -58,6 +59,18 @@ td:not(.empty) {
 td:not(.empty)[data-objective=Player] {
 	text-align: left;
 	padding-left: 40px;
+}
+
+td:not(.empty)::after {
+	content: "";
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	display: block;
+	width: var(--relative);
+	height: 100%;
+	background: var(--bg2);
+	z-index: -1;
 }
 
 td.skin {
