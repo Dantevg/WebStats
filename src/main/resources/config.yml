@@ -30,9 +30,9 @@ server-columns: []
 # Specify the unit in which data from a column is *stored*. WebStats will use
 # this information to automatically adjust the *displayed* units.
 # Units you can use here:
-# - time (duration, not wall clock time): ticks, milliseconds, seconds, minutes, hours, days
-# - distance: metres/meters/blocks, kilometres/kilometers
-# - date: formatted-date, timestamp
+# - time (duration, not wall clock time): milliseconds/ms, ticks, seconds/s, minutes/min, hours/h, days/d
+# - distance: blocks/metres/meters/m, kilometres/kilometers/km
+# - date: formatted date, timestamp
 # - item count: items, items16 (for 16-stackables)
 column-units:
 #  Column Name: source unit
