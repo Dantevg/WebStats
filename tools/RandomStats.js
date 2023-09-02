@@ -1,4 +1,4 @@
-class RandomStats {
+export default class RandomStats {
 	static N_ENTRIES = 10
 	static N_STATS   = 5
 	
@@ -41,4 +41,8 @@ class RandomStats {
 		}
 		return online
 	}
+	getTables     = async () => [{
+		sortColumn: "Player",
+		sortDirection: "ascending",
+	}]
 }

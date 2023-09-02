@@ -3,43 +3,70 @@ package nl.dantevg.webstats.webserver;
 import com.google.gson.Gson;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import nl.dantevg.webstats.StatData;
 import nl.dantevg.webstats.Stats;
 import nl.dantevg.webstats.WebStats;
+import nl.dantevg.webstats.WebStatsConfig;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.URLConnection;
 import java.nio.file.Files;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 public class HTTPRequestHandler implements HttpHandler {
+	private static final Set<String> IGNORED_EXCEPTIONS = new HashSet<>(Arrays.asList(
+			"broken pipe",
+			"response headers not sent yet",
+			"connection reset by peer"
+	));
+	
 	// Map of resource names to their MIME-types
 	private final Map<String, String> resources = new HashMap<>();
 	
 	public HTTPRequestHandler() {
-		boolean serveWebpage = WebStats.config.getBoolean("serve-webpage");
-		
-		if (serveWebpage) {
+		if (WebStatsConfig.getInstance().serveWebpage) {
+			resources.put("/favicon.png", "image/png");
 			resources.put("/index.html", "text/html");
 			resources.put("/style.css", "text/css");
 			resources.put("/WebStats-dist.js", "application/javascript");
+			resources.put("/WebStats-dist.js.map", "application/json");
+			
+			WebStatsConfig.getInstance().additionalResources.forEach(path ->
+					resources.put("/" + path, URLConnection.guessContentTypeFromName(path)));
 		}
 		
 		attemptMigrateResources();
 	}
 	
-	@Override
-	public void handle(@NotNull HttpExchange exchange) throws IOException {
+	public void handle(@NotNull HttpExchange exchange) {
+		try {
+			handleInternal(exchange);
+		} catch (Exception e) {
+			if (!IGNORED_EXCEPTIONS.contains(e.getMessage().toLowerCase())) {
+				String message = String.format("Caught an exception while handling a request from %s (%s %s)",
+						exchange.getRemoteAddress().getAddress(),
+						exchange.getRequestMethod(),
+						exchange.getRequestURI());
+				WebStats.logger.log(Level.WARNING, message, e);
+			}
+		} finally {
+			exchange.close();
+		}
+	}
+	
+	private void handleInternal(@NotNull HttpExchange exchange) throws IOException {
 		HTTPConnection httpConnection = new HTTPConnection(exchange);
 		
 		// Only handle GET-requests
 		if (!exchange.getRequestMethod().equals("GET")) {
 			httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_BAD_METHOD);
-			exchange.close();
 			return;
 		}
 		
@@ -47,7 +74,6 @@ public class HTTPRequestHandler implements HttpHandler {
 		String path = exchange.getRequestURI().getPath();
 		if (path == null) {
 			httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_BAD_REQUEST);
-			exchange.close();
 			return;
 		}
 		
@@ -57,13 +83,36 @@ public class HTTPRequestHandler implements HttpHandler {
 		switch (path) {
 			case "/stats.json":
 				InetAddress ip = exchange.getRemoteAddress().getAddress();
-				httpConnection.sendJson(new Gson().toJson(Stats.getAll(ip)));
+				try {
+					// Stats need to be gathered on the main thread,
+					// see https://github.com/Dantevg/WebStats/issues/52
+					StatData stats = Bukkit.getScheduler().callSyncMethod(
+							WebStats.getPlugin(WebStats.class),
+							() -> Stats.getAll(ip)).get();
+					httpConnection.sendJson(new Gson().toJson(stats));
+				} catch (InterruptedException ignored) {
+					// do nothing
+				} catch (ExecutionException e) {
+					if (e.getCause() instanceof IOException) {
+						throw (IOException) e.getCause();
+					} else {
+						throw new RuntimeException(e);
+					}
+				}
 				break;
 			case "/online.json":
 				httpConnection.sendJson(new Gson().toJson(Stats.getOnline()));
 				break;
 			case "/tables.json":
-				httpConnection.sendJson(new Gson().toJson(Stats.getTables()));
+				httpConnection.sendJson(new Gson().toJson(WebStatsConfig.getInstance().tables));
+				break;
+			case "/stats.csv":
+				if (new File(WebStats.getPlugin(WebStats.class).getDataFolder(), "stats.csv").exists()) {
+					httpConnection.sendFile("text/csv", "stats.csv");
+				} else {
+					httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_NOT_FOUND);
+				}
+				break;
 			default:
 				if (resources.containsKey(path)) {
 					httpConnection.sendFile(resources.get(path), "web" + path);
@@ -73,8 +122,6 @@ public class HTTPRequestHandler implements HttpHandler {
 				}
 				break;
 		}
-		
-		exchange.close();
 	}
 	
 	private void attemptMigrateResources() {

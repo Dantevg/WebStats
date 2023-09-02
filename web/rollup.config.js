@@ -1,4 +1,6 @@
+import nodeResolve from "@rollup/plugin-node-resolve"
 import typescript from "@rollup/plugin-typescript"
+import terser from "@rollup/plugin-terser"
 
 export default {
 	input: "src/WebStats.ts",
@@ -6,16 +8,23 @@ export default {
 		file: "WebStats-dist.js",
 		sourcemap: true,
 		banner: `\
-/*
-	WebStats version 1.7
+/*!
+	WebStats version 1.8
 	https://github.com/Dantevg/WebStats
 	
 	by RedPolygon
 	
 	Licence: MIT
+	
+	Includes modified version of @itsjavi/jsx-runtime
+		(MIT licenced, https://github.com/itsjavi/jsx-runtime/)
 */
 `,
 	},
 	treeshake: false,
-	plugins: [typescript()],
+	plugins: [
+		nodeResolve(),
+		typescript(),
+		terser({format: {comments: /^!/}})
+	],
 }

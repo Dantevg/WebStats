@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
 import nl.dantevg.webstats.WebStats;
+import nl.dantevg.webstats.WebStatsConfig;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 
@@ -12,36 +13,29 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.*;
 import java.security.cert.CertificateException;
+import java.util.List;
 import java.util.logging.Level;
 
 public class HTTPSWebServer extends WebServer<HttpsServer> {
 	private static final String KEYSTORE_TYPE = "PKCS12";
 	private static final String MANAGER_TYPE = "PKIX";
 	
+	private final HTTPSConfig config;
+	
 	public HTTPSWebServer()
 			throws IOException, NoSuchAlgorithmException, KeyStoreException,
 			CertificateException, UnrecoverableKeyException, KeyManagementException, InvalidConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling web server");
 		
-		ConfigurationSection section = WebStats.config.getConfigurationSection("https");
-		if (section == null) {
-			throw new InvalidConfigurationException("Invalid configuration: https should be a yaml object");
-		}
-		
-		port = WebStats.config.getInt("port");
-		String keystoreFile = section.getString("keystore");
-		String keystorePassword = section.getString("keystore-password");
-		if (keystoreFile == null || keystorePassword == null) {
-			throw new InvalidConfigurationException("Invalid configuration: keystore and keystore-password are required for HTTPS. If you do not want HTTPS, comment it out.");
-		}
-		
+		config = HTTPSConfig.getInstance(true);
+		port = WebStatsConfig.getInstance().port;
 		server = HttpsServer.create(new InetSocketAddress(port), 0);
 		
 		// https://stackoverflow.com/a/2323188
 		
 		SSLContext sslContext = SSLContext.getInstance("TLS");
-		KeyStore keyStore = HTTPSWebServer.getKeyStore(keystoreFile, keystorePassword);
-		sslContext.init(HTTPSWebServer.getKeyManagers(keyStore, keystorePassword),
+		KeyStore keyStore = HTTPSWebServer.getKeyStore(config.keystoreFile, config.keystorePassword);
+		sslContext.init(HTTPSWebServer.getKeyManagers(keyStore, config.keystorePassword),
 				HTTPSWebServer.getTrustManagers(keyStore), null);
 		server.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
 			public void configure(HttpsParameters params) {
@@ -70,6 +64,36 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 		TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(MANAGER_TYPE);
 		trustManagerFactory.init(keyStore);
 		return trustManagerFactory.getTrustManagers();
+	}
+	
+}
+
+class HTTPSConfig {
+	private static HTTPSConfig instance;
+	
+	public final String keystoreFile;
+	public final String keystorePassword;
+	
+	private HTTPSConfig() throws InvalidConfigurationException {
+		ConfigurationSection section = WebStats.config.getConfigurationSection("https");
+		if (section == null) {
+			throw new InvalidConfigurationException("Invalid configuration: https should be a yaml object");
+		}
+		
+		keystoreFile = section.getString("keystore-file");
+		keystorePassword = section.getString("keystore-password");
+		if (keystoreFile == null || keystorePassword == null) {
+			throw new InvalidConfigurationException("Invalid configuration: keystore and keystore-password are required for HTTPS. If you do not want HTTPS, comment it out.");
+		}
+	}
+	
+	public static HTTPSConfig getInstance(boolean forceNew) throws InvalidConfigurationException {
+		if (instance == null || forceNew) instance = new HTTPSConfig();
+		return instance;
+	}
+	
+	public static HTTPSConfig getInstance() throws InvalidConfigurationException {
+		return getInstance(false);
 	}
 	
 }

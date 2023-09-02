@@ -1,8 +1,30 @@
 {
-	"devDependencies": {
-		"@rollup/plugin-typescript": "^8.3.4"
+	"name": "webstats-frontend",
+	"version": "1.8.5",
+	"author": "RedPolygon <mail@dantevg.nl>",
+	"license": "MIT",
+	"description": "The front-end for the WebStats Spigot plugin",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Dantevg/WebStats/"
 	},
-	"dependencies": {
+	"bugs": {
+		"url": "https://github.com/Dantevg/WebStats/issues"
+	},
+	"main": "WebStats-dist.js",
+	"devDependencies": {
+		"@itsjavi/jsx-runtime": "github:Dantevg/jsx-runtime",
+		"@rollup/plugin-node-resolve": "^15.0.1",
+		"@rollup/plugin-terser": "^0.4.0",
+		"@rollup/plugin-typescript": "^8.3.4",
+		"rollup": "^2.79.1",
 		"tslib": "^2.4.0"
-	}
+	},
+	"scripts": {
+		"prepare": "npm run build",
+		"build": "rollup -c",
+		"watch": "rollup -c --watch",
+		"copy": "cp WebStats-dist.js* ../src/main/resources/web || copy /y WebStats-dist.js* ..\\src\\main\\resources\\web"
+	},
+	"type": "module"
 }

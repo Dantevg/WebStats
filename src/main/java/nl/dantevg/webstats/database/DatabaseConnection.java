@@ -50,13 +50,17 @@ public class DatabaseConnection {
 		}
 	}
 	
-	public @Nullable Connection getConnection() throws SQLException {
+	public @Nullable Connection getConnection() {
 		if (!isConnected()) connect();
 		return conn;
 	}
 	
-	public boolean isConnected() throws SQLException {
-		return conn != null && !conn.isClosed() && conn.isValid(1);
+	public boolean isConnected() {
+		try {
+			return conn != null && !conn.isClosed() && conn.isValid(1);
+		} catch (SQLException e) {
+			return false;
+		}
 	}
 	
 	private void closeConnection() throws SQLException {

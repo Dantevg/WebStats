@@ -27,9 +27,9 @@
 				// 	}
 				// },
 				// optional:
-				updateInterval: 10000, // Set to 0 to disable auto-updating (in ms, default 10000)
-				showSkins: true,       // Whether to show player heads (default true)
-				displayCount: 100,     // Max rows to show on one page (default 100, set to -1 to disable pagination)
+				updateInterval: 10_000, // Set to 0 to disable auto-updating (in ms, default 10000)
+				showSkins: true,        // Whether to show player heads (default true)
+				displayCount: 100,      // Max rows to show on one page (default 100, set to -1 to disable pagination)
 			})
 		})
 	</script>
@@ -45,6 +45,11 @@
 			<!-- toggle hiding offline players (optional) -->
 			<input type="checkbox" name="hide-offline" id="hide-offline" class="webstats-option">
 			<label for="hide-offline">Hide offline players</label>
+		</span>
+		<span class="webstats-status">
+			<!-- show loading status and any error messages (optional) -->
+			<span class="webstats-loading-indicator">Loading...</span>
+			<span class="webstats-error-message"></span>
 		</span>
 		
 		<!-- pagination controls, for when you manually add the HTML tables (optional) -->

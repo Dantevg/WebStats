@@ -6,6 +6,7 @@
 	--status-offline: #FFF2;
 	--status-online: #4F4;
 	--status-afk: #F84;
+	--error: #F44;
 }
 
 a {
@@ -26,6 +27,10 @@ a {
 }
 .webstats-pagination.pagination-hidden {
 	display: none;
+}
+
+.webstats-error-message {
+	color: var(--error);
 }
 
 table {
@@ -50,7 +55,7 @@ td:not(.empty) {
 	transition: height 0.2s, padding 0.2s;
 }
 
-td:not(.empty)[objective=Player] {
+td:not(.empty)[data-objective=Player] {
 	text-align: left;
 	padding-left: 40px;
 }
@@ -78,7 +83,7 @@ html.compact td:not(.empty){
 	padding: 0px 10px;
 }
 
-html.compact td:not(.empty)[objective=Player]{
+html.compact td:not(.empty)[data-objective=Player]{
 	padding-left: 30px;
 }
 

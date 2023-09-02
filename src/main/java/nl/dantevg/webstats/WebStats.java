@@ -32,6 +32,7 @@ public class WebStats extends JavaPlugin {
 	protected static WebServer webserver;
 	
 	protected static PlayerIPStorage playerIPStorage;
+	protected static StatExporter statExporter;
 	
 	public static Logger logger;
 	public static FileConfiguration config;
@@ -43,12 +44,14 @@ public class WebStats extends JavaPlugin {
 		logger = getLogger();
 		config = getConfig();
 		
+		// Config
+		saveDefaultConfig();
+		WebStatsConfig configData = WebStatsConfig.getInstance(true);
+		
 		hasEssentials = Bukkit.getPluginManager().getPlugin("Essentials") != null;
 		
 		playerIPStorage = new PlayerIPStorage(this);
-		
-		// Config
-		saveDefaultConfig();
+		statExporter = new StatExporter();
 		
 		// Register debug command
 		CommandWebstats command = new CommandWebstats(this);
@@ -56,15 +59,15 @@ public class WebStats extends JavaPlugin {
 		getCommand("webstats").setTabCompleter(command);
 		
 		// Enable sources
-		if (config.contains("objectives")) scoreboardSource = new ScoreboardSource();
-		if (config.contains("database.config")) {
+		if (configData.useScoreboardSource) scoreboardSource = new ScoreboardSource();
+		if (configData.useDatabaseSource) {
 			try {
 				databaseSource = new DatabaseSource();
 			} catch (InvalidConfigurationException e) {
 				logger.log(Level.SEVERE, "Invalid database configuration", e);
 			}
 		}
-		if (config.contains("placeholders")) {
+		if (configData.usePlaceholderSource) {
 			if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
 				try {
 					placeholderSource = new PlaceholderSource();
@@ -76,7 +79,7 @@ public class WebStats extends JavaPlugin {
 			}
 		}
 		
-		if (config.contains("discord-webhook")) {
+		if (configData.useDiscordWebhook) {
 			try {
 				discordWebhook = new DiscordWebhook(this);
 			} catch (InvalidConfigurationException e) {
@@ -85,7 +88,7 @@ public class WebStats extends JavaPlugin {
 		}
 		
 		try {
-			if (config.contains("https")) {
+			if (configData.useHTTPS) {
 				webserver = new HTTPSWebServer();
 			} else {
 				webserver = new HTTPWebServer();
@@ -111,11 +114,26 @@ public class WebStats extends JavaPlugin {
 			webserver = null;
 		}
 		
+		scoreboardSource = null;
+		statExporter = null;
+		
 		// Let sources close connections
-		if (databaseSource != null) databaseSource.disable();
-		if (placeholderSource != null) placeholderSource.disable();
-		playerIPStorage.disable();
-		if (discordWebhook != null) discordWebhook.disable();
+		if (databaseSource != null) {
+			databaseSource.disable();
+			databaseSource = null;
+		}
+		if (placeholderSource != null) {
+			placeholderSource.disable();
+			placeholderSource = null;
+		}
+		if (playerIPStorage != null) {
+			playerIPStorage.disable();
+			playerIPStorage = null;
+		}
+		if (discordWebhook != null) {
+			discordWebhook.disable();
+			discordWebhook = null;
+		}
 	}
 	
 	void reload() {

@@ -4,6 +4,7 @@ import com.google.common.io.ByteStreams;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import nl.dantevg.webstats.WebStats;
+import nl.dantevg.webstats.WebStatsConfig;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -25,16 +26,22 @@ public class HTTPConnection {
 		headers.add("Access-Control-Allow-Origin", "*");
 		headers.add("Content-Type", contentType + "; charset=UTF-8");
 		
-		// Add cookies for javascript where to find the server
 		// No "expires" attribute, so session cookies
-		String host = exchange.getRequestHeaders().getFirst("Host");
-		headers.add("Set-Cookie", "host=" + host + "; SameSite=Lax");
+		if (WebStatsConfig.getInstance().webpageTitle != null) {
+			headers.add("Set-Cookie", "title=" + WebStatsConfig.getInstance().webpageTitle
+					+ "; SameSite=Lax");
+		}
 		
-		// For pre-1.8 backwards-compatibility
-		headers.add("Set-Cookie", "ip=" + host.split(":")[0]
-				+ "; SameSite=Lax");
-		headers.add("Set-Cookie", "port=" + exchange.getLocalAddress().getPort()
-				+ "; SameSite=Lax");
+		// Add cookies for javascript where to find the server. This does not
+		// work behind a reverse proxy; for pre-1.8.6 backwards-compatibility only
+		String host = exchange.getRequestHeaders().getFirst("Host");
+		if (host != null) {
+			headers.add("Set-Cookie", "host=" + host + "; SameSite=Lax");
+			headers.add("Set-Cookie", "ip=" + host.split(":")[0]
+					+ "; SameSite=Lax");
+			headers.add("Set-Cookie", "port=" + exchange.getLocalAddress().getPort()
+					+ "; SameSite=Lax");
+		}
 	}
 	
 	public void send(int status, @NotNull String contentType, @NotNull String response) throws IOException {
@@ -55,7 +62,6 @@ public class HTTPConnection {
 	public void sendEmptyStatus(int status) throws IOException {
 		setHeaders("text/plain");
 		exchange.sendResponseHeaders(status, -1);
-		exchange.getResponseBody().close();
 	}
 	
 	public void sendFile(@NotNull String contentType, @NotNull String path) throws IOException {

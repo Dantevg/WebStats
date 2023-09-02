@@ -14,33 +14,23 @@ import java.util.logging.Level;
 public class DatabaseSource {
 	private static final String MAIN_KEY = "player";
 	
+	private final DatabaseConfig config;
 	private final Map<String, DatabaseConnection> connections = new HashMap<>();
 	private final List<DatabaseConverter> conversions = new ArrayList<>();
 	
 	public DatabaseSource() throws InvalidConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling database source");
+		config = DatabaseConfig.getInstance(true);
 		
-		String hostname = WebStats.config.getString("database.hostname");
-		String username = WebStats.config.getString("database.username");
-		String password = WebStats.config.getString("database.password");
-		
-		if (hostname == null || username == null || password == null) {
-			throw new InvalidConfigurationException("Invalid configuration: missing hostname, username or password");
-		}
-		
-		List<Map<?, ?>> configItems = WebStats.config.getMapList("database.config");
-		for (Map<?, ?> configItem : configItems) {
-			String dbname = (String) configItem.get("database");
+		for (DatabaseConfig.TableConfig configItem : config.config) {
 			DatabaseConnection conn;
-			if (connections.containsKey(dbname)) {
-				conn = connections.get(dbname);
+			if (connections.containsKey(configItem.database)) {
+				conn = connections.get(configItem.database);
 			} else {
-				conn = new DatabaseConnection(hostname, username, password, dbname);
-				if (conn.connect()) connections.put(dbname, conn);
+				conn = new DatabaseConnection(config.hostname, config.username, config.password, configItem.database);
+				if (conn.connect()) connections.put(configItem.database, conn);
 			}
-			conversions.add(new DatabaseConverter(
-					conn, (String) configItem.get("table"),
-					(List<List<String>>) configItem.get("convert")));
+			conversions.add(new DatabaseConverter(conn, configItem.table, configItem.convert));
 		}
 	}
 	
@@ -64,7 +54,7 @@ public class DatabaseSource {
 		EntriesScores data = new EntriesScores();
 		players.forEach((playerName, scores) -> {
 			data.entries.add(playerName);
-			scores.forEach((statName, score) -> data.scores.put(statName, playerName, score));
+			scores.forEach((statName, score) -> data.scores.put(playerName, statName, score));
 		});
 		
 		return data;

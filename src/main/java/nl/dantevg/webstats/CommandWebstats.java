@@ -29,6 +29,13 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 			webstats.reload();
 			if (!(sender instanceof ConsoleCommandSender)) sender.sendMessage("Reload complete");
 			return true;
+		} else if (args.length == 1 && args[0].equalsIgnoreCase("export")) {
+			if (WebStats.statExporter.export()) {
+				if (!(sender instanceof ConsoleCommandSender)) sender.sendMessage("Export finished");
+			} else {
+				if (!(sender instanceof ConsoleCommandSender)) sender.sendMessage("Could not export stats, check console");
+			}
+			return true;
 		} else if (args.length == 2 && args[0].equalsIgnoreCase("migrate-placeholders-to")) {
 			if (!args[1].equalsIgnoreCase("csv") && !args[1].equalsIgnoreCase("database")) {
 				return false;
@@ -54,8 +61,9 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 		if (args.length == 1) {
 			completions.add("debug");
 			completions.add("reload");
+			completions.add("export");
 			completions.add("migrate-placeholders-to");
-		} else if (args.length == 2) {
+		} else if (args.length == 2 && args[0].equalsIgnoreCase("migrate-placeholders-to")) {
 			completions.add("database");
 			completions.add("csv");
 		}

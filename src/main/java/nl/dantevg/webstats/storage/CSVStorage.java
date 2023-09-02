@@ -48,10 +48,33 @@ public class CSVStorage implements StorageMethod {
 		return store(scores, new ArrayList<>(scores.columnKeySet()));
 	}
 	
+	/**
+	 * Store stats, replacing old stored stats, but keeping the old header if
+	 * it exists.
+	 *
+	 * @param scores the scores to store
+	 * @return whether the storing was successful
+	 */
+	public boolean storeKeepColumns(@NotNull Table<String, String, String> scores) {
+		try {
+			List<String> columnsPresent = readColumns();
+			if (columnsPresent != null) return store(scores, columnsPresent);
+		} catch (IOException e) {
+			// ignore
+		}
+		
+		// readColumns threw exception or returned null
+		return store(scores);
+	}
+	
 	@Override
 	public boolean store(@NotNull Table<String, String, String> scores, @NotNull List<String> columns) {
 		if (!ensureFileExists()) return false;
 		try (FileWriter writer = new FileWriter(file, false)) {
+			if (!columns.contains(rowKey)) {
+				columns = new ArrayList<>(columns);
+				columns.add(0, rowKey);
+			}
 			CSVPrinter printer = csvPrinterFromColumns(columns, writer);
 			writeScores(printer, scores, columns);
 			printer.close();
@@ -90,6 +113,10 @@ public class CSVStorage implements StorageMethod {
 				printer.close();
 			} else {
 				// No header present in CSV file, write header first.
+				if (!columns.contains(rowKey)) {
+					columns = new ArrayList<>(columns);
+					columns.add(0, rowKey);
+				}
 				CSVPrinter printer = csvPrinterFromColumns(columns, writer);
 				writeScores(printer, scores, columns);
 				printer.close();
@@ -127,6 +154,20 @@ public class CSVStorage implements StorageMethod {
 	}
 	
 	/**
+	 * Attempt to read the columns from the CSV file header.
+	 *
+	 * @return the list of columns if the CSV header was present, or null otherwise
+	 * @throws IOException if the file is not found
+	 */
+	public @Nullable List<String> readColumns() throws IOException {
+		try (FileReader reader = new FileReader(file)) {
+			CSVFormat csvFormat = CSVFormat.DEFAULT.builder().setHeader().setSkipHeaderRecord(true).build();
+			List<String> columns = csvFormat.parse(reader).getHeaderNames();
+			return columns.size() > 0 ? columns : null;
+		}
+	}
+	
+	/**
 	 * Write the scores to the file.
 	 *
 	 * @param printer the printer to write to
@@ -140,11 +181,12 @@ public class CSVStorage implements StorageMethod {
 			throws IOException {
 		for (String entry : scores.rowKeySet()) {
 			List<String> scoreList = new ArrayList<>();
-			scoreList.add(entry); // Player's name or UUID
 			boolean hasScores = false;
 			for (String column : columns) {
-				if (mapper.containsKey(column)) {
-					String mapped = mapper.get(column).apply(entry);
+				if (column.equalsIgnoreCase(rowKey)) {
+					scoreList.add(entry); // Player's name or UUID
+				} else if (mapper.containsKey(column.toLowerCase())) {
+					String mapped = mapper.get(column.toLowerCase()).apply(entry);
 					if (mapped != null) {
 						scoreList.add(mapped);
 						hasScores = true;
@@ -161,17 +203,6 @@ public class CSVStorage implements StorageMethod {
 			}
 			if (hasScores) printer.printRecord(scoreList);
 		}
-	}
-	
-	/**
-	 * Attempt to read the columns from the CSV file header.
-	 *
-	 * @return the list of columns if the CSV header was present, or null otherwise
-	 * @throws IOException if the file is not found
-	 */
-	private @Nullable List<String> readColumns() throws IOException {
-		List<String> columns = CSVFormat.DEFAULT.parse(new FileReader(file)).getHeaderNames();
-		return columns.size() > 0 ? columns : null;
 	}
 	
 	private boolean ensureFileExists() {
@@ -192,8 +223,6 @@ public class CSVStorage implements StorageMethod {
 	}
 	
 	private CSVPrinter csvPrinterFromColumns(List<String> columns, FileWriter writer) throws IOException {
-		columns = new ArrayList<>(columns);
-		columns.add(0, rowKey);
 		return CSVFormat.DEFAULT.builder()
 				.setHeader(columns.toArray(new String[0]))
 				.build()

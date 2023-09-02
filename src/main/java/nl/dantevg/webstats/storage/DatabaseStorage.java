@@ -7,10 +7,12 @@ import nl.dantevg.webstats.database.DatabaseConnection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -34,13 +36,16 @@ public class DatabaseStorage implements StorageMethod {
 	
 	@Override
 	public boolean store(@NotNull Table<String, String, String> scores) {
-		return store(scores, new ArrayList<>(scores.rowKeySet()));
+		return store(scores, new ArrayList<>(scores.columnKeySet()));
 	}
 	
 	@Override
 	public boolean store(@NotNull Table<String, String, String> scores, @NotNull List<String> columns) {
-		try (PreparedStatement stmt = conn.getConnection()
-				.prepareStatement("REPLACE INTO " + tableName + " VALUES (?, ?, ?);")) {
+		Connection connection = conn.getConnection();
+		if (connection == null) return false;
+		
+		try (PreparedStatement stmt = connection.prepareStatement("REPLACE INTO " + tableName + " VALUES (?, ?, ?);")) {
+			removeOldColumns(connection, columns);
 			for (Table.Cell<String, String, String> entry : scores.cellSet()) {
 				stmt.setString(1, entry.getRowKey());
 				stmt.setString(2, entry.getColumnKey());
@@ -103,6 +108,24 @@ public class DatabaseStorage implements StorageMethod {
 					+ tableName + " in database " + conn.getDBName());
 		} catch (SQLException e) {
 			WebStats.logger.log(Level.SEVERE, "Could not initialise database " + conn.getDBName(), e);
+		}
+	}
+	
+	private boolean removeOldColumns(@NotNull Connection connection, @NotNull List<String> columns) {
+		// Don't try to remove 0 columns
+		if (columns.isEmpty()) return true;
+		
+		String[] columnsPrepared = new String[columns.size()];
+		Arrays.fill(columnsPrepared, "?");
+		
+		try (PreparedStatement stmt = connection.prepareStatement("DELETE FROM " + tableName
+				+ " WHERE " + columnKey + " NOT IN (" + String.join(", ", columnsPrepared) + ")")) {
+			for (int i = 0; i < columns.size(); i++) stmt.setString(i + 1, columns.get(i));
+			stmt.executeUpdate();
+			return true;
+		} catch (SQLException e) {
+			WebStats.logger.log(Level.SEVERE, "Could not remove old entries from database " + conn.getDBName(), e);
+			return false;
 		}
 	}
 	

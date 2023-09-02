@@ -7,13 +7,14 @@ import org.jetbrains.annotations.Nullable;
 
 import java.net.InetAddress;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class Stats {
 	public static @NotNull Map<String, Object> getOnline() {
 		Map<String, Object> players = new HashMap<>();
 		for (Player p : Bukkit.getOnlinePlayers()) {
-			players.put(p.getName(), (WebStats.hasEssentials && EssentialsHelper.isAFK(p)) ? "afk" : true);
+			if (!WebStats.hasEssentials || !EssentialsHelper.isVanished(p)) {
+				players.put(p.getName(), (WebStats.hasEssentials && EssentialsHelper.isAFK(p)) ? "afk" : true);
+			}
 		}
 		return players;
 	}
@@ -25,7 +26,7 @@ public class Stats {
 		if (WebStats.databaseSource != null) entriesScores.add(WebStats.databaseSource.getStats());
 		if (WebStats.placeholderSource != null) entriesScores.add(WebStats.placeholderSource.getStats());
 		
-		if (WebStats.config.contains("server-columns")) entriesScores.entries.add("#server");
+		if (!WebStatsConfig.getInstance().serverColumns.isEmpty()) entriesScores.entries.add("#server");
 		
 		// For backwards-compatibility with older web front-ends
 		List<String> defaultColumns = getDefaultColumns();
@@ -34,17 +35,6 @@ public class Stats {
 		} else {
 			return new StatData.Stats(entriesScores);
 		}
-	}
-	
-	public static @NotNull List<TableConfig> getTables() {
-		if (!WebStats.config.contains("tables")) return Collections.emptyList();
-		
-		if (WebStats.config.getMapList("tables").isEmpty())
-			return Arrays.asList(new TableConfig(null, null, null, null));
-		
-		return WebStats.config.getMapList("tables").stream()
-				.map(Stats::getTableConfigFromMap)
-				.collect(Collectors.toList());
 	}
 	
 	public static @NotNull StatData getAll() {
@@ -57,29 +47,21 @@ public class Stats {
 	}
 	
 	private static @Nullable List<String> getDefaultColumns() {
+		WebStatsConfig webStatsConfig = WebStatsConfig.getInstance();
 		// Need to check for `columns` before `tables`, because `tables` will
 		// always be present in the default (in-jar) config.
-		if (WebStats.config.contains("columns")) {
+		if (webStatsConfig.columns != null) {
 			// Old config
-			return WebStats.config.getStringList("columns");
-		} else if (WebStats.config.contains("tables")) {
+			return webStatsConfig.columns;
+		} else if (WebStats.config.contains("tables", true)) {
 			// New config
-			List<Map<?, ?>> tableConfigs = WebStats.config.getMapList("tables");
-			if (tableConfigs.isEmpty()) {
+			if (webStatsConfig.tables.isEmpty()) {
 				return Collections.emptyList();
 			} else {
-				return getTableConfigFromMap(tableConfigs.get(0)).columns;
+				return webStatsConfig.tables.get(0).columns;
 			}
 		}
 		return null;
-	}
-	
-	private static @NotNull TableConfig getTableConfigFromMap(@NotNull Map<?, ?> tableConfig) {
-		String name = (String) tableConfig.get("name");
-		List<String> columns = (List<String>) tableConfig.get("columns");
-		String sortBy = (String) tableConfig.get("sort-by");
-		Boolean sortDescending = (Boolean) tableConfig.get("sort-descending");
-		return new TableConfig(name, columns, sortBy, sortDescending);
 	}
 	
 }

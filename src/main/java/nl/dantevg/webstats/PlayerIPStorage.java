@@ -16,18 +16,16 @@ public class PlayerIPStorage {
 	private static final String FILENAME = "ip-to-names.yml";
 	
 	private final @NotNull File file;
-	private final boolean persistent;
 	private final Map<String, Set<String>> ipToNames = new HashMap<>();
 	
 	public PlayerIPStorage(@NotNull WebStats plugin) {
-		persistent = WebStats.config.getBoolean("store-player-ips");
 		file = new File(plugin.getDataFolder(), FILENAME);
 		
 		// Register events
 		Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(this), plugin);
 		
 		// Read persistently stored data
-		if (persistent) load();
+		if (WebStatsConfig.getInstance().storePlayerIPs) load();
 	}
 	
 	public @NotNull Set<String> getNames(@NotNull InetAddress ip) {
@@ -40,8 +38,17 @@ public class PlayerIPStorage {
 	}
 	
 	public void addName(String ip, String name) {
+		// Remove old IP (they change)
+		removeName(name);
+		
+		// Add new IP (could be the same one)
 		ipToNames.putIfAbsent(ip, new HashSet<>());
 		ipToNames.get(ip).add(name);
+	}
+	
+	private void removeName(String name) {
+		ipToNames.forEach((ip, names) -> names.remove(name));
+		ipToNames.entrySet().removeIf(entry -> entry.getValue().isEmpty());
 	}
 	
 	private void load() {
@@ -79,11 +86,11 @@ public class PlayerIPStorage {
 	}
 	
 	public void disable() {
-		if (persistent) save();
+		if (WebStatsConfig.getInstance().storePlayerIPs) save();
 	}
 	
 	public @NotNull String debug() {
-		String persistentStatus = (persistent ? "on" : "off");
+		String persistentStatus = (WebStatsConfig.getInstance().storePlayerIPs ? "on" : "off");
 		List<String> loadedIPs = new ArrayList<>();
 		ipToNames.forEach((ip, names) -> loadedIPs.add(ip + ": " + names.toString()));
 		return "Loaded ip to playername mapping: (persistent: " + persistentStatus + ")\n"

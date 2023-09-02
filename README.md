@@ -12,32 +12,39 @@ and player **online/AFK** status. It can also be used as a **Discord webhook**.
 ## [Getting started](https://github.com/Dantevg/WebStats/wiki/Getting-Started)
 To use WebStats, you need:
 - A Spigot Minecraft server
-- A web server (note: the plugin will not work over https, so make sure the
-  webpage isn't served over https either)
+- (optional) A web server (note: the plugin will not work over https, so make
+  sure the webpage isn't served over https either)
 
-See [the wiki](https://github.com/Dantevg/WebStats/wiki/Getting-Started) for installation instructions.
+See [the wiki](https://github.com/Dantevg/WebStats/wiki/Getting-Started) for
+installation instructions.
 
 ## Plugin config file
 <!-- don't remove/rename this heading because it was linked to by config.yml until v1.6 -->
-For information about the config file, head over to the [wiki page](https://github.com/Dantevg/WebStats/wiki/Config-file).
+For information about the config file, head over to the
+[wiki page](https://github.com/Dantevg/WebStats/wiki/Config-file).
 
 ## Contributing
 If you want to help make WebStats more awesome, you can do so by reporting
 a bug, suggesting a feature or helping with documentation. Anything is welcome!
 
-If you like to write something yourself, pull requests are also open. You'll
-need to setup the project in a specific way, because I did things in a
-maybe-not-so-good way: (for IntelliJ idea)
-1. Clone this repo and open in IntelliJ
-3. *Project Structure -> Project*: Set project SDK to 1.8
-4. *Project Structure -> Libraries*: Download spigot-api (shaded), EssentialsX
-   and PlaceholderAPI and add each of them as a Java library
-5. *Project Structure -> Libraries*: Add org.jetbrains:annotations from maven
-6. *Project Structure -> Artifacts*: Add an empty JAR artifact and add
-   "WebStats compile output" to the jar
+If you like to write something yourself, pull requests are also open. Starting
+from version 1.8, WebStats uses maven and npm to build, so it should be very
+easy to work on the code yourself.
+
+Note: you need to manually generate the `dist` for one of the npm dependencies:
+```sh
+cd ./web/src
+npm i
+cd ./node_modules/@itsjavi/jsx-runtime
+npm i
+npm run build:tsc
+npm run build:micro
+npm run build:tsc
+```
 
 ### Contributors
-Thank you to these people for helping out with the plugin by suggesting features and reporting bugs!
+Thank you to these people for helping out with the plugin by suggesting features
+and reporting bugs!
 - [@Dancull47](https://github.com/Dancull47):
   MySQL feature suggestion ([#2](https://github.com/Dantevg/WebStats/issues/2))
 - [@draexo (spigotmc)](https://www.spigotmc.org/members/draexo.2905/):
@@ -49,11 +56,14 @@ Thank you to these people for helping out with the plugin by suggesting features
 - [@Mr_Coco](https://github.com/coco0325):
   top-100 and performance improvements suggestion ([#12](https://github.com/Dantevg/WebStats/issues/12)),
   HTTPS reverse proxy idea ([#12](https://github.com/Dantevg/WebStats/issues/12)),
-  bug report ([#14](https://github.com/Dantevg/WebStats/issues/14))
+  bug reports ([#14](https://github.com/Dantevg/WebStats/issues/14), [#57](https://github.com/Dantevg/WebStats/issues/57))
+- [@Nick Messer](https://github.com/NickMesser):
+  bug report ([#50](https://github.com/Dantevg/WebStats/issues/50))
 - [@Unkn0wn3636 (spigotmc)](https://www.spigotmc.org/members/unkn0wn3636.1457887/):
   multiple tables suggestion ([#26](https://github.com/Dantevg/WebStats/issues/26)),
   separate server entry suggestion ([#27](https://github.com/Dantevg/WebStats/issues/27)),
   bug report ([#30](https://github.com/Dantevg/WebStats/issues/30))
+- @radeon (via Discord): performance troubleshooting, network execptions bug reports
 - [@valenvaio](https://github.com/valenvaio):
   bug report ([#16](https://github.com/Dantevg/WebStats/issues/16))
 - [@zeus1921](https://github.com/zeus1921):

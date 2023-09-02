@@ -1,3 +1,4 @@
+export type PlayerStatus = "online" | "afk" | "offline"
 type Scoreboard = {
 	entries: string[],
 	scores: { [column: string]: { [entry: string]: string } },
@@ -7,6 +8,8 @@ type Online = { [player: string]: boolean | "afk" }
 type Entry = [number, string, ...(string)[]]
 
 export default class Data {
+	static BEDROCK_PREFIX = "."
+	
 	scoreboard: Scoreboard
 	columns: string[]
 	scores: Entry[]
@@ -25,8 +28,8 @@ export default class Data {
 	isOnline = (player: string) => this.players[player] === true
 	isAFK = (player: string) => this.players[player] === "afk"
 	isOffline = (player: string) => !!this.players[player]
-	getStatus = (player: string) => this.isOnline(player) ? "online"
-		: (this.isAFK(player) ? "AFK" : "offline")
+	getStatus = (player: string): PlayerStatus => this.isOnline(player) ? "online"
+		: (this.isAFK(player) ? "afk" : "offline")
 	isCurrentPlayer = (player: string) => this.playernames?.includes(player) ?? false
 
 	setScoreboard(scoreboard: Scoreboard) {
@@ -98,10 +101,18 @@ export default class Data {
 	// entries with only digits are ignored as well (common for datapacks)
 	static isPlayerOrServer = (entry: string) =>
 		entry == "#server" || (entry.match(/^\w{3,16}$/) && !entry.match(/^\d*$/))
+		|| Data.isBedrockPlayer(entry)
+	
+	// Whether this entry is a Bedrock player through Geyser/Floodgate
+	static isBedrockPlayer = (entry: string) => entry.startsWith(Data.BEDROCK_PREFIX)
 
 	// Whether any entry has a value for this objective
 	static isNonemptyObjective = (objective: { [entry: string]: string | number }) =>
 		Object.keys(objective).filter(Data.isPlayerOrServer).length > 0
+	
+	// Transform a Bedrock player's name mangled by Geyser/Floodgate back to a real name
+	static transformBedrockPlayername = (entry: string) =>
+		entry.substring(1).replaceAll("_", " ")
 
 	// Array-like filter function for objects
 	// https://stackoverflow.com/a/37616104

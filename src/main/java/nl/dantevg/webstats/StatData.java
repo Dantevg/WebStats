@@ -41,7 +41,7 @@ public class StatData {
 		@Deprecated()
 		public List<String> columns; // For backwards compatibility with older web front-ends
 		@JsonAdapter(TableAdapter.class)
-		public Table<String, String, String> scores;
+		public Table<String, String, String> scores; // Row = player, column = column / objective
 		
 		public Stats(@NotNull EntriesScores entriesScores, List<String> columns) {
 			this.entries = entriesScores.entries;
@@ -59,7 +59,7 @@ public class StatData {
 		private static class TableAdapter implements JsonSerializer<Table<?, ?, ?>> {
 			@Override
 			public JsonElement serialize(Table<?, ?, ?> table, Type type, JsonSerializationContext context) {
-				return context.serialize(table.rowMap());
+				return context.serialize(table.columnMap());
 			}
 		}
 		
