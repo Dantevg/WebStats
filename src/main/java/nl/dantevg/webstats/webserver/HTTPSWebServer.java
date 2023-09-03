@@ -83,7 +83,7 @@ class HTTPSConfig {
 		keystoreFile = section.getString("keystore-file");
 		keystorePassword = section.getString("keystore-password");
 		if (keystoreFile == null || keystorePassword == null) {
-			throw new InvalidConfigurationException("Invalid configuration: keystore and keystore-password are required for HTTPS. If you do not want HTTPS, comment it out.");
+			throw new InvalidConfigurationException("Invalid configuration: keystore-file and keystore-password are required for HTTPS. If you do not want HTTPS, comment it out.");
 		}
 	}
 	
