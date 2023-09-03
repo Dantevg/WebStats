@@ -93,6 +93,7 @@ export default class Display {
 
 			if (isNumberColumn) {
 				for (const row of this.data.scores) {
+					if (!this.rows.has(row[1])) continue
 					this.rows.get(row[1]).relative.set(column, Number(row[this.data.columns_[column]]) / max * 100)
 				}
 			}
