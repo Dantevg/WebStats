@@ -9,7 +9,7 @@ export default {
 		sourcemap: true,
 		banner: `\
 /*!
-	WebStats version 1.8
+	WebStats version 1.9
 	https://github.com/Dantevg/WebStats
 	
 	by RedPolygon
