@@ -24,7 +24,8 @@ public class HTTPRequestHandler implements HttpHandler {
 	private static final Set<String> IGNORED_EXCEPTIONS = new HashSet<>(Arrays.asList(
 			"broken pipe",
 			"response headers not sent yet",
-			"connection reset by peer"
+			"connection reset by peer",
+			"an established connection was aborted by the software in your host machine"
 	));
 	
 	// Map of resource names to their MIME-types
