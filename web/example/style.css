@@ -52,6 +52,7 @@ td:not(.empty) {
 	padding: 0px 30px;
 	background: var(--bg1);
 	text-align: right;
+	white-space: nowrap;
 	-webkit-transition: height 0.2s, padding 0.2s;
 	transition: height 0.2s, padding 0.2s;
 }

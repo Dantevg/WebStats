@@ -43,10 +43,8 @@ function convertTimeUnit(source: number, unit: string): string {
 	const m = date.getUTCMinutes()
 	const s = date.getUTCSeconds() + date.getUTCMilliseconds() / 1000
 
-	if (d > 0) {
-		return `${d} days ${h}:${String(m).padStart(2, "0")}:${String(Math.floor(s)).padStart(2, "0")}`
-	} else if (h > 0) {
-		return `${h}:${String(m).padStart(2, "0")}:${String(Math.floor(s)).padStart(2, "0")}`
+	if (h > 0 || d > 0) {
+		return `${h + d*24}:${String(m).padStart(2, "0")} h`
 	} else if (m > 0) {
 		return `${m}:${String(Math.floor(s)).padStart(2, "0")}`
 	} else {
@@ -85,7 +83,7 @@ function convertItemUnit(source: number, unit: string): string {
 	const stacks = Math.floor(inItems / stackSize)
 	const items = inItems % stackSize
 	if (stacks > 0) {
-		return `${stacks} st ${items}`
+		return (items > 0) ? `${stacks} st ${items}` : `${stacks} st`
 	} else {
 		return String(items)
 	}
