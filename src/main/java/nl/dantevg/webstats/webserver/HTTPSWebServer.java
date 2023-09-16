@@ -13,7 +13,12 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.*;
 import java.security.cert.CertificateException;
-import java.util.List;
+import java.security.cert.X509Certificate;
+import java.text.DateFormat;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.Period;
+import java.util.Date;
 import java.util.logging.Level;
 
 public class HTTPSWebServer extends WebServer<HttpsServer> {
@@ -35,6 +40,7 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 		
 		SSLContext sslContext = SSLContext.getInstance("TLS");
 		KeyStore keyStore = HTTPSWebServer.getKeyStore(config.keystoreFile, config.keystorePassword);
+		checkCertificateExpiration(keyStore);
 		sslContext.init(HTTPSWebServer.getKeyManagers(keyStore, config.keystorePassword),
 				HTTPSWebServer.getTrustManagers(keyStore), null);
 		server.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
@@ -43,6 +49,28 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 				params.setSSLParameters(ctx.getDefaultSSLParameters());
 			}
 		});
+	}
+	
+	private void checkCertificateExpiration(KeyStore keyStore) throws KeyStoreException {
+		Date expiration = ((X509Certificate) keyStore.getCertificate("webstats")).getNotAfter();
+		Date now = Date.from(Instant.now());
+		Date oneWeekFromNow = Date.from(Instant.now().plus(Period.ofDays(7)));
+		DateFormat formatter = DateFormat.getDateInstance();
+		
+		if (expiration.before(now)) {
+			WebStats.logger.log(Level.SEVERE, String.format(
+					"The TLS certificate has expired on %s! See https://github.com/Dantevg/WebStats/wiki/HTTPS#in-plugin-https for more info.",
+					formatter.format(expiration)));
+		} else if (expiration.before(oneWeekFromNow)) {
+			WebStats.logger.log(Level.WARNING, String.format(
+					"The TLS certificate expires on %s (in %d days)! Make sure to renew it before that time, see https://github.com/Dantevg/WebStats/wiki/HTTPS#in-plugin-https for more info.",
+					formatter.format(expiration),
+					Duration.between(Instant.now(), expiration.toInstant()).toDays()));
+		} else {
+			WebStats.logger.log(Level.INFO, String.format(
+					"The TLS certificate should be valid until %s.",
+					formatter.format(expiration)));
+		}
 	}
 	
 	private static KeyStore getKeyStore(String keystoreFile, String keystorePassword)
