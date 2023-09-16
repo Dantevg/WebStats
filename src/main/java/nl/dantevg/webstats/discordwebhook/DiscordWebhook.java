@@ -26,18 +26,21 @@ import java.util.stream.Collectors;
 
 public class DiscordWebhook implements Runnable {
 	private static final String MESSAGE_ID_FILENAME = "discord-message-id.txt";
-	private static final String WEBSTATS_ICON_URL = "https://raw.githubusercontent.com/Dantevg/WebStats/discord-webhook/img/icon-largemargins-96.png";
+	private static final String WEBSTATS_ICON_URL = "https://raw.githubusercontent.com/Dantevg/WebStats/master/img/icon-largemargins-96.png";
 	
 	private final WebStats plugin;
 	private final DiscordConfig config;
 	
-	private final DiscordMessage message = new DiscordMessage("WebStats", WEBSTATS_ICON_URL);
+	private final DiscordMessage message;
 	
 	public DiscordWebhook(WebStats plugin) throws InvalidConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling Discord webhook");
 		this.plugin = plugin;
 		config = DiscordConfig.getInstance(true);
 		
+		message = config.doOverrideIconAndName
+				? new DiscordMessage("WebStats", WEBSTATS_ICON_URL)
+				: new DiscordMessage();
 		message.content = config.title;
 		
 		loadMessageID();

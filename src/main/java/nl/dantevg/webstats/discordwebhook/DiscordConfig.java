@@ -20,6 +20,7 @@ public class DiscordConfig {
 	public final int updateInterval;
 	public final int displayCount;
 	public final @Nullable String title;
+	public final boolean doOverrideIconAndName;
 	public final @NotNull List<EmbedConfig> embeds = new ArrayList<>();
 	
 	private DiscordConfig() throws InvalidConfigurationException {
@@ -36,6 +37,7 @@ public class DiscordConfig {
 		updateInterval = config.getInt("update-interval", 5);
 		displayCount = config.getInt("display-count", 10);
 		title = config.getString("title");
+		doOverrideIconAndName = config.getBoolean("override-icon-and-name", true);
 		for (Map<?, ?> embed : config.getMapList("embeds")) {
 			embeds.add(new EmbedConfig(embed));
 		}

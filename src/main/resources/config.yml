@@ -118,6 +118,10 @@ objectives:
 #  # Message title, text to be displayed before the embeds
 #  title:
 #  
+#  # Disable if you want to set your own icon and name in Discord's settings.
+#  # When enabled, WebStats will provide its own name and icon for the webhook.
+#  override-icon-and-name: true
+#  
 #  # Each item in this list is one embed
 #  embeds:
 #    - # The title of the embed. Leave empty for no title
