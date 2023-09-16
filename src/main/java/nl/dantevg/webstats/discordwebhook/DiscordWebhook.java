@@ -33,6 +33,9 @@ public class DiscordWebhook implements Runnable {
 	
 	private final DiscordMessage message;
 	
+	private boolean rateLimited = false;
+	private Instant rateLimitReset = Instant.now();
+	
 	public DiscordWebhook(WebStats plugin) throws InvalidConfigurationException {
 		WebStats.logger.log(Level.INFO, "Enabling Discord webhook");
 		this.plugin = plugin;
@@ -55,7 +58,12 @@ public class DiscordWebhook implements Runnable {
 	
 	@Override
 	public void run() {
-		WebStats.logger.log(Level.CONFIG, "Sending Discord webhook update");
+		if (rateLimited && rateLimitReset.isAfter(Instant.now())) {
+			WebStats.logger.log(Level.INFO, "Did not send Discord webhook update due to rate limit");
+			return;
+		}
+		
+		WebStats.logger.log(Level.INFO, "Sending Discord webhook update");
 		final StatData.Stats stats = Stats.getStats();
 		
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
@@ -107,6 +115,7 @@ public class DiscordWebhook implements Runnable {
 		lastEmbed.timestamp = Instant.now().toString();
 		lastEmbed.footer = new DiscordEmbed.EmbedFooter("offline");
 		try {
+			WebStats.logger.log(Level.INFO, "Sending offline message to webhook");
 			editMessage(message);
 		} catch (IOException e) {
 			WebStats.logger.log(Level.WARNING, "Could not send webhook message", e);
@@ -193,6 +202,7 @@ public class DiscordWebhook implements Runnable {
 					return;
 				}
 				int status = response.getStatusLine().getStatusCode();
+				handleRateLimit(response, status);
 				InputStreamReader input = new InputStreamReader(responseEntity.getContent());
 				handleResponse(message, input, status);
 			}
@@ -219,6 +229,26 @@ public class DiscordWebhook implements Runnable {
 				WebStats.logger.log(Level.WARNING, "Got HTTP code " + status + " response from Discord");
 				WebStats.logger.log(Level.WARNING, response);
 			}
+		}
+	}
+	
+	private void handleRateLimit(@NotNull CloseableHttpResponse response, int status) {
+		String limitStr = response.getFirstHeader("X-RateLimit-Limit").getValue();
+		String remainingStr = response.getFirstHeader("X-RateLimit-Remaining").getValue();
+		String resetStr = response.getFirstHeader("X-RateLimit-Reset").getValue();
+		String resetAfterStr = response.getFirstHeader("X-RateLimit-Reset-After").getValue();
+		String bucket = response.getFirstHeader("X-RateLimit-Bucket").getValue();
+		
+		if (limitStr != null && remainingStr != null && resetStr != null && resetAfterStr != null && bucket != null) {
+			int remaining = Integer.parseInt(remainingStr);
+			rateLimitReset = Instant.ofEpochSecond(Integer.parseInt(resetStr));
+			rateLimited = status == 429 || remaining == 0;
+			
+			if (rateLimited) WebStats.logger.log(Level.WARNING,
+					String.format("Got rate limited: limit = %s, remaining = %s, reset after = %s, bucket = %s",
+							limitStr, remainingStr, resetAfterStr, bucket));
+		} else {
+			rateLimited = status == 429;
 		}
 	}
 	
