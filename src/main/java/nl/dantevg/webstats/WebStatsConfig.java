@@ -38,11 +38,11 @@ public class WebStatsConfig {
 	private WebStatsConfig() {
 		port = WebStats.config.getInt("port");
 		
-		useScoreboardSource = WebStats.config.contains("objectives");
-		useDatabaseSource = WebStats.config.contains("database.config");
-		usePlaceholderSource = WebStats.config.contains("placeholders");
-		useDiscordWebhook = WebStats.config.contains("discord-webhook");
-		useHTTPS = WebStats.config.contains("https");
+		useScoreboardSource = WebStats.config.contains("objectives", true);
+		useDatabaseSource = WebStats.config.contains("database.config", true);
+		usePlaceholderSource = WebStats.config.contains("placeholders", true);
+		useDiscordWebhook = WebStats.config.contains("discord-webhook", true);
+		useHTTPS = WebStats.config.contains("https", true);
 		
 		storePlayerIPs = WebStats.config.getBoolean("store-player-ips");
 		exportCumulative = WebStats.config.getBoolean("export-cumulative");
