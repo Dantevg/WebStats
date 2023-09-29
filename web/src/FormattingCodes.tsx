@@ -104,6 +104,7 @@ function parseFormattingCode(code: string, text: string, prev: FormattingCodePar
 		}
 	}
 	if (FORMATTING_CODES[code]) {
+		if (FORMATTING_CODES[code] == "reset") return { text }
 		return {
 			text,
 			format: FORMATTING_CODES[code],
