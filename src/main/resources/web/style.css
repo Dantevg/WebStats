@@ -41,7 +41,8 @@ html.hide-offline tr.offline {
 	display: none;
 }
 
-tr.current-player {
+tr.current-player td:not(.empty) {
+	background: var(--bg2);
 	font-weight: bold;
 }
 
@@ -51,6 +52,7 @@ td:not(.empty) {
 	padding: 0px 30px;
 	background: var(--bg1);
 	text-align: right;
+	white-space: nowrap;
 	-webkit-transition: height 0.2s, padding 0.2s;
 	transition: height 0.2s, padding 0.2s;
 }
@@ -58,6 +60,18 @@ td:not(.empty) {
 td:not(.empty)[data-objective=Player] {
 	text-align: left;
 	padding-left: 40px;
+}
+
+td:not(.empty)::after {
+	content: "";
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	display: block;
+	width: var(--relative);
+	height: 100%;
+	background: var(--bg2);
+	z-index: -1;
 }
 
 td.skin {
@@ -107,6 +121,30 @@ th {
 
 html.compact th{
 	padding: 5px 10px;
+}
+
+th.webstats-sort-column {
+	position: relative;
+}
+
+th.webstats-sort-column::after {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	transition: top 0.2s, right 0.2s;
+}
+
+th.webstats-sort-column.ascending::after {
+	content: "↑";
+}
+
+th.webstats-sort-column.descending::after {
+	content: "↓";
+}
+
+html.compact th.webstats-sort-column::after {
+	top: 5px;
+	right: 5px;
 }
 
 .status {
