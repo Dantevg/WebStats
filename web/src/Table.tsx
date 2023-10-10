@@ -58,10 +58,10 @@ const Cell = ({ column, value, relative, unit }: { column: string, value: string
 	</td>
 }
 
-const PlayerCell = ({ entry, status }: { entry: string, status: PlayerStatus }) => (
-	<td data-objective="Player" data-value={entry}>
+const PlayerCell = ({ entry, status, name }: { entry: string, status: PlayerStatus, name?: string }) => (
+	<td data-objective="Player" data-value={entry} title={entry}>
 		<div className={["status", status]} title={status}></div>
-		{transformEntryName(entry)}
+		<>{name ? convertFormattingCodes(name) : transformEntryName(entry)}</>
 	</td>
 )
 
@@ -85,7 +85,7 @@ export class Row extends Component {
 	render = () => (
 		<tr entry={this.props.entry} className={[this.status, this.props.isCurrentPlayer ? "current-player" : undefined]}>
 			{this.props.showSkins && <Avatar entry={this.props.entry} />}
-			<PlayerCell entry={this.props.entry} status={this.status} />
+			<PlayerCell entry={this.props.entry} status={this.status} name={this.values.get("Player")} />
 			{...this.props.columns.map(column => <Cell column={column} value={this.values.get(column)} relative={this.relative.get(column)} unit={this.props.units[column]} />)}
 		</tr>
 	)

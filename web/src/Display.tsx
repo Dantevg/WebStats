@@ -74,7 +74,7 @@ export default class Display {
 	}
 
 	updateScoreboard() {
-		for (const column of this.columns ?? this.data.columns) {
+		for (const column of ["Player"].concat(this.columns ?? this.data.columns)) {
 			let max = 0
 			let isNumberColumn = true
 
