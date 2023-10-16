@@ -49,7 +49,7 @@ tr.current-player td:not(.empty) {
 td:not(.empty) {
 	position: relative;
 	height: 50px;
-	padding: 0px 30px;
+	padding: 0px 20px;
 	background: var(--bg1);
 	text-align: right;
 	white-space: nowrap;
@@ -60,6 +60,10 @@ td:not(.empty) {
 td:not(.empty)[data-objective=Player] {
 	text-align: left;
 	padding-left: 40px;
+}
+
+td:not(.empty)[data-objective=Player][title="#server"] {
+	padding-left: 20px;
 }
 
 td:not(.empty)::after {
@@ -111,6 +115,10 @@ html.compact td:not(.empty){
 
 html.compact td:not(.empty)[data-objective=Player]{
 	padding-left: 32px;
+}
+
+html.compact td:not(.empty)[data-objective=Player][title="#server"] {
+	padding-left: 10px;
 }
 
 html.compact td.skin img {
@@ -173,6 +181,10 @@ html.compact th.webstats-sort-column::after {
 
 html.compact .status {
 	left: 11px;
+}
+
+td[title="#server"] .status {
+	display: none;
 }
 
 .status.online {
