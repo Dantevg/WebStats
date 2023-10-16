@@ -6,7 +6,7 @@
 
 	<groupId>nl.dantevg</groupId>
 	<artifactId>WebStats</artifactId>
-	<version>1.9.1</version>
+	<version>1.9.1-SNAPSHOT</version>
 
 	<properties>
 		<maven.compiler.source>8</maven.compiler.source>
@@ -30,6 +30,10 @@
 		<repository>
 			<id>placeholderapi-repo</id>
 			<url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+		</repository>
+		<repository>
+			<id>skinsrestorer-repo</id>
+			<url>https://repo.codemc.org/repository/maven-public/</url>
 		</repository>
 	</repositories>
 
@@ -94,6 +98,12 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-csv</artifactId>
 			<version>1.9.0</version>
+		</dependency>
+		<dependency>
+			<groupId>net.skinsrestorer</groupId>
+			<artifactId>skinsrestorer-api</artifactId>
+			<version>14.2.12</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 
