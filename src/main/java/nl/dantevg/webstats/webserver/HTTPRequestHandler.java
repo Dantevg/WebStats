@@ -38,6 +38,7 @@ public class HTTPRequestHandler implements HttpHandler {
 			resources.put("/style.css", "text/css");
 			resources.put("/WebStats-dist.js", "application/javascript");
 			resources.put("/WebStats-dist.js.map", "application/json");
+			resources.put("/server-icon.png", "image/png");
 			
 			WebStatsConfig.getInstance().additionalResources.forEach(path ->
 					resources.put("/" + path, URLConnection.guessContentTypeFromName(path)));
@@ -116,7 +117,11 @@ public class HTTPRequestHandler implements HttpHandler {
 				break;
 			default:
 				if (resources.containsKey(path)) {
-					httpConnection.sendFile(resources.get(path), "web" + path);
+					if (path.equals("/server-icon.png")) {
+						httpConnection.sendServerIcon();
+					} else {
+						httpConnection.sendFile(resources.get(path), "web" + path);
+					}
 				} else {
 					WebStats.logger.log(Level.CONFIG, "Got request for " + path + ", not found");
 					httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_NOT_FOUND);

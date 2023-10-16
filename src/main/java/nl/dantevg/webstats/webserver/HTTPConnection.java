@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.logging.Level;
 
 public class HTTPConnection {
@@ -81,6 +83,19 @@ public class HTTPConnection {
 		ByteStreams.copy(input, output);
 		input.close();
 		output.close();
+	}
+	
+	public void sendServerIcon() throws IOException {
+		try (InputStream input = Files.newInputStream(Paths.get("server-icon.png"))) {
+			// Send headers and data
+			setHeaders("image/png");
+			exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, input.available());
+			OutputStream output = exchange.getResponseBody();
+			ByteStreams.copy(input, output);
+			output.close();
+		} catch (IOException e) {
+			sendEmptyStatus(HttpURLConnection.HTTP_NOT_FOUND);
+		}
 	}
 	
 }
