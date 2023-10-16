@@ -27,6 +27,16 @@ const transformEntryName = (entry: string) => {
 	else return entry
 }
 
+const getSkin = (entry: string, skin?: string) => {
+	if (skin != undefined && skin.startsWith("http")) {
+		return skin
+	} else if (skin != undefined) {
+		return `https://www.mc-heads.net/avatar/${skin}/64.png`
+	} else if (entry != "#server") {
+		return `https://www.mc-heads.net/avatar/${entry}/64.png`
+	}
+}
+
 export const Heading = ({ columns, showSkins, sortColumn, sortDescending, onClick }: HeadingData) => (
 	<tr>
 		<th colSpan={showSkins && 2} onClick={onClick} onKeyDown={onKeyDown} tabIndex="0" data-objective="Player" className={columnClass("Player", sortColumn, sortDescending)}>
@@ -38,10 +48,8 @@ export const Heading = ({ columns, showSkins, sortColumn, sortDescending, onClic
 	</tr>)
 
 const Avatar = ({ entry, skin }: { entry: string, skin?: string }) => (
-	<td className={["sticky", "skin"]}>
-		<img
-			title={entry}
-			src={skin ? `https://www.mc-heads.net/avatar/${skin}.png` : (entry == "#server" ? CONSOLE_IMAGE : `https://www.mc-heads.net/avatar/${entry}.png`)} />
+	<td className={["sticky", "skin"]} title={entry}>
+		<img title={entry} src={getSkin(entry, skin)} alt=" " />
 	</td>
 )
 
@@ -69,7 +77,7 @@ type RowData = {
 	columns: string[]
 	units: { [column: string]: string }
 	showSkins: boolean
-	skin?: string,
+	skin?: string
 	entry: string
 	isCurrentPlayer: boolean
 }

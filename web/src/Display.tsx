@@ -11,18 +11,20 @@ export default class Display {
 	sortColumn: string
 	descending: boolean
 	showSkins: boolean
+	serverIconURL: string
 	hideOffline: boolean
 
 	data: Data
 	rows: Map<string, Row>
 
-	constructor({ table, pagination, showSkins = true }, { columns, sortColumn = "Player", sortDirection = "descending" }: TableConfig) {
+	constructor({ table, pagination, showSkins = true, serverIconURL }, { columns, sortColumn = "Player", sortDirection = "descending" }: TableConfig) {
 		this.table = table
 		this.pagination = pagination
 		this.columns = columns
 		this.sortColumn = sortColumn
 		this.descending = sortDirection == "descending"
 		this.showSkins = showSkins
+		this.serverIconURL = serverIconURL
 		this.hideOffline = false
 
 		if (this.pagination) this.pagination.onPageChange = (page) => this.show()
@@ -41,7 +43,7 @@ export default class Display {
 				columns: this.columns ?? this.data.columns,
 				units: this.data.units,
 				showSkins: this.showSkins,
-				skin: this.data.skins[entry],
+				skin: (entry == "#server") ? this.serverIconURL : this.data.skins[entry],
 				entry,
 				isCurrentPlayer: this.data.isCurrentPlayer(entry)
 			}))

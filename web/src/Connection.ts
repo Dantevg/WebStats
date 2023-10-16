@@ -3,12 +3,14 @@ export default class Connection {
 	scores: string
 	online: string
 	tables: string
+	serverIcon: string
 
-	constructor({ all, scores, online, tables }) {
+	constructor({ all, scores, online, tables, serverIcon }) {
 		this.all = all
 		this.scores = scores
 		this.online = online
 		this.tables = tables
+		this.serverIcon = serverIcon
 	}
 
 	static json(host: string) {
@@ -19,6 +21,7 @@ export default class Connection {
 			scores: `${protocol}${host}/scoreboard.json`,
 			online: `${protocol}${host}/online.json`,
 			tables: `${protocol}${host}/tables.json`,
+			serverIcon: `${protocol}${host}/server-icon.png`,
 		})
 	}
 
