@@ -80,19 +80,11 @@ export default class Data {
 		// over `a.localeCompare(b, undefined, {sensitivity: "base"})`
 		// funny / weird thing: for localeCompare, supplying an empty `options`
 		// object is way slower than supplying nothing...
-		const collator = new Intl.Collator(undefined, { sensitivity: "base" })
+		const collator = new Intl.Collator(undefined, { sensitivity: "base", numeric: true })
 
-		// When a and b are both numbers, compare as numbers.
-		// Otherwise, case-insensitive compare as string
-		this.scores = this.scores.sort((a_row, b_row) => {
-			const a = a_row[this.columns_[by]]
-			const b = b_row[this.columns_[by]]
-			if (!isNaN(Number(a)) && !isNaN(Number(b))) {
-				return (descending ? -1 : 1) * ((a as number) - (b as number))
-			} else {
-				return (descending ? -1 : 1) * collator.compare(a as string, b as string)
-			}
-		})
+		// Case-insensitive compare as numbers or strings
+		this.scores = this.scores.sort((a_row, b_row) =>
+			(descending ? -1 : 1) * collator.compare(a_row[this.columns_[by]] as string, b_row[this.columns_[by]] as string))
 	}
 
 	// Ignore all entries which have no scores (armour stand book fix)
