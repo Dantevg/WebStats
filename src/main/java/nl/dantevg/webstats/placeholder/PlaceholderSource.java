@@ -118,6 +118,13 @@ public class PlaceholderSource {
 				}
 			}
 		});
+		
+		if (WebStatsConfig.getInstance().serverName != null) {
+			String rawServerName = WebStatsConfig.getInstance().serverName;
+			String serverName = getPlaceholderForServer(rawServerName);
+			values.put("#server", "Player", (serverName != null) ? serverName : rawServerName);
+		}
+		
 		return values;
 	}
 	

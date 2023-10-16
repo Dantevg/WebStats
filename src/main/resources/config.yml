@@ -27,6 +27,10 @@ tables:
 # separate 'Server' row.
 server-columns: []
 
+# When displaying the server row defined above, use this name instead of "Server".
+# You can use PlaceholderAPI placeholders here. (uncomment to use)
+#server-name: ""
+
 # Specify the unit in which data from a column is *stored*. WebStats will use
 # this information to automatically adjust the *displayed* units.
 # Units you can use here:
