@@ -7,9 +7,11 @@ import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import com.google.gson.annotations.JsonAdapter;
 import com.google.gson.annotations.SerializedName;
+import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,16 +22,27 @@ public class StatData {
 	public Stats stats;
 	public Set<String> playernames;
 	public Map<String, Object> units = WebStatsConfig.getInstance().columnUnits;
+	public Map<String, String> skins;
 	
 	public StatData(Map<String, Object> online, Stats stats) {
 		this.online = online;
 		this.stats = stats;
+		addTextureIDs();
 	}
 	
 	public StatData(Map<String, Object> online, Stats stats, Set<String> playernames) {
 		this.online = online;
 		this.stats = stats;
 		this.playernames = playernames;
+		addTextureIDs();
+	}
+	
+	private void addTextureIDs() {
+		if (Bukkit.getPluginManager().getPlugin("SkinsRestorer") == null) return;
+		skins = new HashMap<>();
+		for (String entry : stats.entries) {
+			skins.put(entry, SkinsRestorerHelper.getSkinID(entry));
+		}
 	}
 	
 	@Override

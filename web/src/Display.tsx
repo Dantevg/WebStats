@@ -41,6 +41,7 @@ export default class Display {
 				columns: this.columns ?? this.data.columns,
 				units: this.data.units,
 				showSkins: this.showSkins,
+				skin: this.data.skins[entry],
 				entry,
 				isCurrentPlayer: this.data.isCurrentPlayer(entry)
 			}))

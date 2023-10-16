@@ -37,11 +37,11 @@ export const Heading = ({ columns, showSkins, sortColumn, sortDescending, onClic
 		</th>)}
 	</tr>)
 
-const Avatar = ({ entry }: { entry: string }) => (
+const Avatar = ({ entry, skin }: { entry: string, skin?: string }) => (
 	<td className={["sticky", "skin"]}>
 		<img
 			title={entry}
-			src={entry == "#server" ? CONSOLE_IMAGE : `https://www.mc-heads.net/avatar/${entry}.png`} />
+			src={skin ? `https://www.mc-heads.net/avatar/${skin}.png` : (entry == "#server" ? CONSOLE_IMAGE : `https://www.mc-heads.net/avatar/${entry}.png`)} />
 	</td>
 )
 
@@ -69,6 +69,7 @@ type RowData = {
 	columns: string[]
 	units: { [column: string]: string }
 	showSkins: boolean
+	skin?: string,
 	entry: string
 	isCurrentPlayer: boolean
 }
@@ -84,7 +85,7 @@ export class Row extends Component {
 
 	render = () => (
 		<tr entry={this.props.entry} className={[this.status, this.props.isCurrentPlayer ? "current-player" : undefined]}>
-			{this.props.showSkins && <Avatar entry={this.props.entry} />}
+			{this.props.showSkins && <Avatar entry={this.props.entry} skin={this.props.skin} />}
 			<PlayerCell entry={this.props.entry} status={this.status} name={this.values.get("Player")} />
 			{...this.props.columns.map(column => <Cell column={column} value={this.values.get(column)} relative={this.relative.get(column)} unit={this.props.units[column]} />)}
 		</tr>
