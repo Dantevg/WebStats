@@ -37,6 +37,7 @@ public class WebStats extends JavaPlugin {
 	public static Logger logger;
 	public static FileConfiguration config;
 	public static boolean hasEssentials;
+	public static SkinsRestorerHelper skinsRestorerHelper;
 	
 	// Gets run when the plugin is enabled on server startup
 	@Override
@@ -87,6 +88,10 @@ public class WebStats extends JavaPlugin {
 			}
 		}
 		
+		if (Bukkit.getPluginManager().getPlugin("SkinsRestorer") != null) {
+			skinsRestorerHelper = new SkinsRestorerHelper(this);
+		}
+		
 		try {
 			if (configData.useHTTPS) {
 				webserver = new HTTPSWebServer();
@@ -116,6 +121,7 @@ public class WebStats extends JavaPlugin {
 		
 		scoreboardSource = null;
 		statExporter = null;
+		skinsRestorerHelper = null;
 		
 		// Let sources close connections
 		if (databaseSource != null) {

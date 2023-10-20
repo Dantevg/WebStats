@@ -24,25 +24,11 @@ public class StatData {
 	public Map<String, Object> units = WebStatsConfig.getInstance().columnUnits;
 	public Map<String, String> skins;
 	
-	public StatData(Map<String, Object> online, Stats stats) {
-		this.online = online;
-		this.stats = stats;
-		addTextureIDs();
-	}
-	
-	public StatData(Map<String, Object> online, Stats stats, Set<String> playernames) {
+	public StatData(Map<String, Object> online, Stats stats, Set<String> playernames, Map<String, String> skins) {
 		this.online = online;
 		this.stats = stats;
 		this.playernames = playernames;
-		addTextureIDs();
-	}
-	
-	private void addTextureIDs() {
-		if (Bukkit.getPluginManager().getPlugin("SkinsRestorer") == null) return;
-		skins = new HashMap<>();
-		for (String entry : stats.entries) {
-			skins.put(entry, SkinsRestorerHelper.getSkinID(entry));
-		}
+		this.skins = skins;
 	}
 	
 	@Override

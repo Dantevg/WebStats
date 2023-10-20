@@ -5,8 +5,10 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 public class Stats {
 	public static @NotNull Map<String, Object> getOnline() {
@@ -37,13 +39,21 @@ public class Stats {
 		}
 	}
 	
-	public static @NotNull StatData getAll() {
-		return new StatData(getOnline(), getStats());
-	}
-	
-	public static @NotNull StatData getAll(@NotNull InetAddress ip) {
-		Set<String> playernames = WebStats.playerIPStorage.getNames(ip);
-		return new StatData(getOnline(), getStats(), playernames);
+	public static @NotNull StatData getAll(@NotNull InetAddress ip) throws InterruptedException {
+		try {
+			// Stats need to be gathered on the main thread,
+			// see https://github.com/Dantevg/WebStats/issues/52
+			StatData.Stats stats = Bukkit.getScheduler().callSyncMethod(
+					WebStats.getPlugin(WebStats.class),
+					Stats::getStats).get();
+			Set<String> playernames = WebStats.playerIPStorage.getNames(ip);
+			Map<String, String> skins = (WebStats.skinsRestorerHelper != null)
+					? WebStats.skinsRestorerHelper.getSkinIDsForPlayers(stats.entries)
+					: null;
+			return new StatData(getOnline(), stats, playernames, skins);
+		} catch (ExecutionException e) {
+			throw new RuntimeException(e);
+		}
 	}
 	
 	private static @Nullable List<String> getDefaultColumns() {
