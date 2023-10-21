@@ -13,6 +13,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class SkinsRestorerHelper implements Listener {
+	private SkinsRestorerAPI skinsRestorer = SkinsRestorerAPI.getApi();
+	
+	// Map from skin names (not player names) to skin IDs
 	private Map<String, String> skins = new HashMap<>();
 	
 	public SkinsRestorerHelper(WebStats plugin) {
@@ -21,34 +24,44 @@ public class SkinsRestorerHelper implements Listener {
 	
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
-		String name = event.getPlayer().getName();
-		if (!skins.containsKey(name)) {
+		String skinName = skinsRestorer.getSkinName(event.getPlayer().getName());
+		if (skinName == null) return;
+		if (!skins.containsKey(skinName)) {
 			Bukkit.getScheduler().runTaskAsynchronously(
 					WebStats.getPlugin(WebStats.class),
-					() -> skins.put(name, getSkinIDUncached(name)));
+					() -> cacheSkin(skinName));
 		}
 	}
 	
-	public @Nullable String getSkinID(String name) {
-		if (skins.containsKey(name)) {
-			return skins.get(name);
+	public @Nullable String getSkinID(String playername) {
+		String skinName = skinsRestorer.getSkinName(playername);
+		if (skinName == null) return null;
+		if (skins.containsKey(skinName)) {
+			return skins.get(skinName);
 		} else {
-			return getSkinIDUncached(name);
+			String skinID = getSkinIDUncached(skinName);
+			if (skinID != null) skins.put(skinName, skinID);
+			return skinID;
 		}
 	}
 	
 	public Map<String, String> getSkinIDsForPlayers(Set<String> names) {
 		Map<String, String> skins = new HashMap<>();
 		for (String entry : names) {
-			skins.put(entry, WebStats.skinsRestorerHelper.getSkinID(entry));
+			String skinID = getSkinID(entry);
+			if (skinID != null) skins.put(entry, skinID);
 		}
 		return skins;
 	}
 	
 	// Should not be called on main server thread to avoid lag!
-	private static @Nullable String getSkinIDUncached(String name) {
-		SkinsRestorerAPI skinsRestorer = SkinsRestorerAPI.getApi();
-		IProperty profile = skinsRestorer.getSkinData(name);
+	private @Nullable String getSkinIDUncached(String skinName) {
+		IProperty profile = skinsRestorer.getSkinData(skinName);
 		return (profile != null) ? skinsRestorer.getSkinTextureUrlStripped(profile) : null;
+	}
+	
+	private void cacheSkin(String skinName) {
+		String skinID = getSkinIDUncached(skinName);
+		if (skinID != null) skins.put(skinName, skinID);
 	}
 }
