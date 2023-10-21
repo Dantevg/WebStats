@@ -10,7 +10,6 @@ import nl.dantevg.webstats.storage.CSVStorage;
 import nl.dantevg.webstats.storage.DatabaseStorage;
 import nl.dantevg.webstats.storage.StorageMethod;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -177,6 +176,10 @@ public class PlaceholderStorage {
 		} else {
 			throw new UnsupportedOperationException("unknown migration destination type");
 		}
+	}
+	
+	public void deletePlayer(UUID uuid) {
+		data.rowKeySet().remove(uuid);
 	}
 	
 	protected @NotNull String debug() {

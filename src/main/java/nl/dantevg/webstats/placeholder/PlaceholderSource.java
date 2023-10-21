@@ -147,6 +147,10 @@ public class PlaceholderSource {
 		storage.migrate(to);
 	}
 	
+	public void deletePlayer(UUID playername) {
+		storage.deletePlayer(playername);
+	}
+	
 	public static boolean isPlaceholderSet(String placeholder, @Nullable String value) {
 		return value != null
 				&& !value.equals("")

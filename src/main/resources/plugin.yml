@@ -15,6 +15,7 @@ commands:
         /<command> reload
         /<command> export
         /<command> migrate-placeholders-to (database | csv)
+        /<command> delete <player>
     permission: webstats.*
 permissions:
   webstats.*:
