@@ -55,16 +55,11 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 			return true;
 		} else if (args.length == 2 && args[0].equalsIgnoreCase("delete")) {
 			if (WebStats.placeholderSource != null) {
-				// Get UUID from offline player's name
-				UUID uuid = Arrays.stream(Bukkit.getOfflinePlayers())
-						.filter(p -> args[1].equalsIgnoreCase(p.getName()))
-						.map(OfflinePlayer::getUniqueId)
-						.findFirst().orElse(null);
-				if (uuid != null) {
-					WebStats.placeholderSource.deletePlayer(uuid);
+				boolean didDelete = WebStats.placeholderSource.deletePlayer(args[1]);
+				if (didDelete) {
 					sender.sendMessage("Deleted stored placeholders for player " + args[1]);
 				} else {
-					sender.sendMessage("Could not find player with name " + args[1]);
+					sender.sendMessage("No placeholders were removed. Either the player does not exist or they do not have any stored placeholders.");
 				}
 			} else {
 				sender.sendMessage("Placeholder source is not active, cannot remove placeholder data.");

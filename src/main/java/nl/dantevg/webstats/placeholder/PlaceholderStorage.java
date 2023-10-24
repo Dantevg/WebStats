@@ -178,8 +178,9 @@ public class PlaceholderStorage {
 		}
 	}
 	
-	public void deletePlayer(UUID uuid) {
-		data.rowKeySet().remove(uuid);
+	public boolean deletePlayer(String playername) {
+		return data.rowKeySet().removeIf(uuid ->
+				playername.equalsIgnoreCase(Bukkit.getOfflinePlayer(uuid).getName()));
 	}
 	
 	protected @NotNull String debug() {
