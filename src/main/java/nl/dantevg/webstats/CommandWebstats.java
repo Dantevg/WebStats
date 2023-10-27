@@ -53,13 +53,13 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 				sender.sendMessage("Migration complete. Remember to change config.yml to reflect these changes!");
 			});
 			return true;
-		} else if (args.length == 2 && args[0].equalsIgnoreCase("delete")) {
+		} else if (args.length == 2 && args[0].equalsIgnoreCase("delete-placeholders")) {
 			if (WebStats.placeholderSource != null) {
 				boolean didDelete = WebStats.placeholderSource.deletePlayer(args[1]);
 				if (didDelete) {
 					sender.sendMessage("Deleted stored placeholders for player " + args[1]);
 				} else {
-					sender.sendMessage("No placeholders were removed. Either the player does not exist or they do not have any stored placeholders.");
+					sender.sendMessage("No placeholders were removed. Either the player does not exist or there are no placeholders stored for them.");
 				}
 			} else {
 				sender.sendMessage("Placeholder source is not active, cannot remove placeholder data.");
@@ -78,11 +78,11 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 			completions.add("reload");
 			completions.add("export");
 			completions.add("migrate-placeholders-to");
-			completions.add("delete");
+			completions.add("delete-placeholders");
 		} else if (args.length == 2 && args[0].equalsIgnoreCase("migrate-placeholders-to")) {
 			completions.add("database");
 			completions.add("csv");
-		} else if (args.length == 2 && args[0].equalsIgnoreCase("delete")) {
+		} else if (args.length == 2 && args[0].equalsIgnoreCase("delete-placeholders")) {
 			return null; // Autocomplete with player names by default
 		}
 		return completions;
