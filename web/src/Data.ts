@@ -45,7 +45,7 @@ export default class Data {
 			entry.push(this.scores.push(entry as Entry) - 1)
 			entry.push(entryName)
 			for (const columnName of this.columns) {
-				entry.push(this.scoreboard.scores[columnName]?.[entryName] ?? 0)
+				entry.push(this.scoreboard.scores[columnName]?.[entryName] ?? "")
 			}
 		}
 
