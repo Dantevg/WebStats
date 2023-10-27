@@ -27,7 +27,7 @@ export default class Data {
 	get online() { return this.players }
 	get nOnline() { return Object.keys(this.players).length }
 
-	isOnline = (player: string) => this.players[player] === true
+	isOnline = (player: string) => this.players[player] === true || player == "#server"
 	isAFK = (player: string) => this.players[player] === "afk"
 	isOffline = (player: string) => !!this.players[player]
 	getStatus = (player: string): PlayerStatus => this.isOnline(player) ? "online"
