@@ -183,6 +183,10 @@ public class PlaceholderStorage {
 				playername.equalsIgnoreCase(Bukkit.getOfflinePlayer(uuid).getName()));
 	}
 	
+	public boolean deletePlayer(UUID uuid) {
+		return data.rowKeySet().remove(uuid);
+	}
+	
 	protected @NotNull String debug() {
 		List<String> loadedScores = new ArrayList<>();
 		for (Table.Cell<UUID, String, String> cell : data.cellSet()) {

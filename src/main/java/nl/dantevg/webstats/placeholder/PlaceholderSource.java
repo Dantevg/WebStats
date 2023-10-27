@@ -147,8 +147,14 @@ public class PlaceholderSource {
 		storage.migrate(to);
 	}
 	
-	public boolean deletePlayer(String playername) {
-		return storage.deletePlayer(playername);
+	public boolean deletePlayer(String playernameOrUUID) {
+		try {
+			// Try to parse UUID
+			UUID uuid = UUID.fromString(playernameOrUUID);
+			return storage.deletePlayer(uuid);
+		} catch (IllegalArgumentException ignored) {
+			return storage.deletePlayer(playernameOrUUID);
+		}
 	}
 	
 	public static boolean isPlaceholderSet(String placeholder, @Nullable String value) {
