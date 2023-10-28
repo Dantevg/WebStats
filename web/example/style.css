@@ -49,7 +49,7 @@ tr.current-player td:not(.empty) {
 td:not(.empty) {
 	position: relative;
 	height: 50px;
-	padding: 0px 30px;
+	padding: 0px 20px;
 	background: var(--bg1);
 	text-align: right;
 	white-space: nowrap;
@@ -60,6 +60,10 @@ td:not(.empty) {
 td:not(.empty)[data-objective=Player] {
 	text-align: left;
 	padding-left: 40px;
+}
+
+td:not(.empty)[data-objective=Player][title="#server"] {
+	padding-left: 20px;
 }
 
 td:not(.empty)::after {
@@ -92,17 +96,33 @@ td.skin img {
 	transition: width 0.2s;
 }
 
+td.skin img[title="#server"] {
+	/* Disable pixelated rendering for server icon (probably better most of the time) */
+	image-rendering: auto;
+}
+
+td.skin[title="#server"] {
+	/* "Console" image */
+	background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAPElEQVQ4T2NUUlL6z0ABYBw1gGE0DBioHAZ3795lUFZWJildosQCRQaQoxnkVLgL0A2A8dFpdP8NfEICAMkiK2HeQ9JUAAAAAElFTkSuQmCC");
+	background-size: cover;
+	image-rendering: pixelated;
+}
+
 html.compact td:not(.empty){
-	height: 30px;
+	height: 32px;
 	padding: 0px 10px;
 }
 
 html.compact td:not(.empty)[data-objective=Player]{
-	padding-left: 30px;
+	padding-left: 32px;
+}
+
+html.compact td:not(.empty)[data-objective=Player][title="#server"] {
+	padding-left: 10px;
 }
 
 html.compact td.skin img {
-	width: 30px;
+	width: 32px;
 }
 
 .sticky {
@@ -149,7 +169,7 @@ html.compact th.webstats-sort-column::after {
 
 .status {
 	position: absolute;
-	top: 20px;
+	top: calc(50% - 5px);
 	left: 15px;
 	width: 10px;
 	height: 10px;
@@ -159,9 +179,12 @@ html.compact th.webstats-sort-column::after {
 	transition: top 0.2s, left 0.2s;
 }
 
-html.compact .status{
-	top: 10px;
-	left: 10px;
+html.compact .status {
+	left: 11px;
+}
+
+td[title="#server"] .status {
+	display: none;
 }
 
 .status.online {

@@ -16,6 +16,7 @@ export default class Data {
 	players: Online
 	columns_: { [column: string]: number }
 	units: { [column: string]: string }
+	skins: { [player: string]: string }
 	playernames: string[]
 
 	constructor(data: { scoreboard: Scoreboard, online: Online, playernames: string[] }) {
@@ -26,7 +27,7 @@ export default class Data {
 	get online() { return this.players }
 	get nOnline() { return Object.keys(this.players).length }
 
-	isOnline = (player: string) => this.players[player] === true
+	isOnline = (player: string) => this.players[player] === true || player == "#server"
 	isAFK = (player: string) => this.players[player] === "afk"
 	isOffline = (player: string) => !!this.players[player]
 	getStatus = (player: string): PlayerStatus => this.isOnline(player) ? "online"
@@ -57,11 +58,13 @@ export default class Data {
 	setOnlineStatus(online: Online) { this.players = online }
 	setPlayernames(playernames: string[]) { this.playernames = playernames }
 	setUnits(units: { [column: string]: string }) { this.units = units }
-	setStats(data: { scoreboard: Scoreboard, online: Online, playernames: string[], units?: { [column: string]: string } }) {
+	setSkins(skins: { [player: string]: string }) { this.skins = skins }
+	setStats(data: { scoreboard: Scoreboard, online: Online, playernames: string[], units?: { [column: string]: string }, skins?: { [player: string]: string } }) {
 		this.setScoreboard(data.scoreboard)
 		this.setOnlineStatus(data.online)
 		this.setPlayernames(data.playernames)
 		this.setUnits(data.units ?? {})
+		this.setSkins(data.skins ?? {})
 	}
 
 	filter() {

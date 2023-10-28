@@ -27,6 +27,16 @@ const transformEntryName = (entry: string) => {
 	else return entry
 }
 
+const getSkin = (entry: string, skin?: string) => {
+	if (skin != undefined && skin.startsWith("http")) {
+		return skin
+	} else if (skin != undefined) {
+		return `https://www.mc-heads.net/avatar/${skin}/64.png`
+	} else if (entry != "#server") {
+		return `https://www.mc-heads.net/avatar/${entry}/64.png`
+	}
+}
+
 export const Heading = ({ columns, showSkins, sortColumn, sortDescending, onClick }: HeadingData) => (
 	<tr>
 		<th colSpan={showSkins && 2} onClick={onClick} onKeyDown={onKeyDown} tabIndex="0" data-objective="Player" className={columnClass("Player", sortColumn, sortDescending)}>
@@ -37,11 +47,9 @@ export const Heading = ({ columns, showSkins, sortColumn, sortDescending, onClic
 		</th>)}
 	</tr>)
 
-const Avatar = ({ entry }: { entry: string }) => (
-	<td className={["sticky", "skin"]}>
-		<img
-			title={entry}
-			src={entry == "#server" ? CONSOLE_IMAGE : `https://www.mc-heads.net/avatar/${entry}.png`} />
+const Avatar = ({ entry, skin }: { entry: string, skin?: string }) => (
+	<td className={["sticky", "skin"]} title={entry}>
+		<img title={entry} src={getSkin(entry, skin)} alt=" " />
 	</td>
 )
 
@@ -58,10 +66,10 @@ const Cell = ({ column, value, relative, unit }: { column: string, value: string
 	</td>
 }
 
-const PlayerCell = ({ entry, status }: { entry: string, status: PlayerStatus }) => (
-	<td data-objective="Player" data-value={entry}>
+const PlayerCell = ({ entry, status, name }: { entry: string, status: PlayerStatus, name?: string }) => (
+	<td data-objective="Player" data-value={entry} title={entry}>
 		<div className={["status", status]} title={status}></div>
-		{transformEntryName(entry)}
+		<>{name ? convertFormattingCodes(name) : transformEntryName(entry)}</>
 	</td>
 )
 
@@ -69,6 +77,7 @@ type RowData = {
 	columns: string[]
 	units: { [column: string]: string }
 	showSkins: boolean
+	skin?: string
 	entry: string
 	isCurrentPlayer: boolean
 }
@@ -84,8 +93,8 @@ export class Row extends Component {
 
 	render = () => (
 		<tr entry={this.props.entry} className={[this.status, this.props.isCurrentPlayer ? "current-player" : undefined]}>
-			{this.props.showSkins && <Avatar entry={this.props.entry} />}
-			<PlayerCell entry={this.props.entry} status={this.status} />
+			{this.props.showSkins && <Avatar entry={this.props.entry} skin={this.props.skin} />}
+			<PlayerCell entry={this.props.entry} status={this.status} name={this.values.get("Player")} />
 			{...this.props.columns.map(column => <Cell column={column} value={this.values.get(column)} relative={this.relative.get(column)} unit={this.props.units[column]} />)}
 		</tr>
 	)

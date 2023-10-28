@@ -7,7 +7,6 @@ import nl.dantevg.webstats.StatData;
 import nl.dantevg.webstats.Stats;
 import nl.dantevg.webstats.WebStats;
 import nl.dantevg.webstats.WebStatsConfig;
-import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -17,7 +16,6 @@ import java.net.InetAddress;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 
 public class HTTPRequestHandler implements HttpHandler {
@@ -38,6 +36,7 @@ public class HTTPRequestHandler implements HttpHandler {
 			resources.put("/style.css", "text/css");
 			resources.put("/WebStats-dist.js", "application/javascript");
 			resources.put("/WebStats-dist.js.map", "application/json");
+			resources.put("/server-icon.png", "image/png");
 			
 			WebStatsConfig.getInstance().additionalResources.forEach(path ->
 					resources.put("/" + path, URLConnection.guessContentTypeFromName(path)));
@@ -85,20 +84,10 @@ public class HTTPRequestHandler implements HttpHandler {
 			case "/stats.json":
 				InetAddress ip = exchange.getRemoteAddress().getAddress();
 				try {
-					// Stats need to be gathered on the main thread,
-					// see https://github.com/Dantevg/WebStats/issues/52
-					StatData stats = Bukkit.getScheduler().callSyncMethod(
-							WebStats.getPlugin(WebStats.class),
-							() -> Stats.getAll(ip)).get();
+					StatData stats = Stats.getAll(ip);
 					httpConnection.sendJson(new Gson().toJson(stats));
 				} catch (InterruptedException ignored) {
 					// do nothing
-				} catch (ExecutionException e) {
-					if (e.getCause() instanceof IOException) {
-						throw (IOException) e.getCause();
-					} else {
-						throw new RuntimeException(e);
-					}
 				}
 				break;
 			case "/online.json":
@@ -116,7 +105,11 @@ public class HTTPRequestHandler implements HttpHandler {
 				break;
 			default:
 				if (resources.containsKey(path)) {
-					httpConnection.sendFile(resources.get(path), "web" + path);
+					if (path.equals("/server-icon.png")) {
+						httpConnection.sendServerIcon();
+					} else {
+						httpConnection.sendFile(resources.get(path), "web" + path);
+					}
 				} else {
 					WebStats.logger.log(Level.CONFIG, "Got request for " + path + ", not found");
 					httpConnection.sendEmptyStatus(HttpURLConnection.HTTP_NOT_FOUND);

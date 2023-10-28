@@ -158,7 +158,7 @@ export default class WebStats {
 			pagination = new Pagination(config.displayCount, paginationParent)
 		}
 		this.displays.push(new Display(
-			{ ...config, table: config.tables[tableConfig.name ?? ""].table, pagination: pagination },
+			{ ...config, table: config.tables[tableConfig.name ?? ""].table, pagination: pagination, serverIconURL: this.connection.serverIcon },
 			tableConfig
 		))
 	}
@@ -183,7 +183,7 @@ export default class WebStats {
 			.appendChild(document.createElement("table"))
 		if (tableConfig.name) tableElem.setAttribute("webstats-table", tableConfig.name)
 		this.displays.push(new Display(
-			{ ...config, table: tableElem, pagination: pagination },
+			{ ...config, table: tableElem, pagination: pagination, serverIconURL: this.connection.serverIcon },
 			tableConfig
 		))
 	}

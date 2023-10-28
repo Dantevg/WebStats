@@ -5,7 +5,7 @@ api-version: 1.13
 description: Display the scoreboard, PlaceholderAPI and other plugin statistics on the web
 author: RedPolygon
 website: dantevg.nl/mods-plugins/WebStats
-softdepend: [Essentials, PlaceholderAPI]
+softdepend: [Essentials, PlaceholderAPI, SkinsRestorer]
 commands:
   webstats:
     description: WebStats command
