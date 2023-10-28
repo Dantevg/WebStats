@@ -1,67 +1,83 @@
 package nl.dantevg.webstats;
 
-import net.skinsrestorer.api.SkinsRestorerAPI;
-import net.skinsrestorer.api.property.IProperty;
+import net.skinsrestorer.api.PropertyUtils;
+import net.skinsrestorer.api.SkinsRestorer;
+import net.skinsrestorer.api.SkinsRestorerProvider;
+import net.skinsrestorer.api.VersionProvider;
+import net.skinsrestorer.api.exception.DataRequestException;
+import net.skinsrestorer.api.property.SkinProperty;
+import net.skinsrestorer.api.storage.PlayerStorage;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.logging.Level;
 
 public class SkinsRestorerHelper implements Listener {
-	private SkinsRestorerAPI skinsRestorer = SkinsRestorerAPI.getApi();
+	private final SkinsRestorer skinsRestorer = SkinsRestorerProvider.get();
 	
-	// Map from skin names (not player names) to skin IDs
-	private Map<String, String> skins = new HashMap<>();
+	// Map from player UUIDs to skin IDs
+	private final Map<UUID, String> skins = new HashMap<>();
 	
 	public SkinsRestorerHelper(WebStats plugin) {
+		if (VersionProvider.isCompatibleWith("15")) {
+			WebStats.logger.log(Level.WARNING, "WebStats was made for SkinsRestorer v15, but " + VersionProvider.getVersion() + " is present.");
+		}
+		
 		Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
 	}
 	
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event) {
-		String skinName = skinsRestorer.getSkinName(event.getPlayer().getName());
-		if (skinName == null) return;
-		if (!skins.containsKey(skinName)) {
+		UUID uuid = event.getPlayer().getUniqueId();
+		String playername = event.getPlayer().getName();
+		if (!skins.containsKey(uuid)) {
 			Bukkit.getScheduler().runTaskAsynchronously(
 					WebStats.getPlugin(WebStats.class),
-					() -> cacheSkin(skinName));
+					() -> cacheSkin(uuid, playername));
 		}
 	}
 	
-	public @Nullable String getSkinID(String playername) {
-		String skinName = skinsRestorer.getSkinName(playername);
-		if (skinName == null) return null;
-		if (skins.containsKey(skinName)) {
-			return skins.get(skinName);
+	public @Nullable String getSkinID(UUID uuid, String playername) {
+		if (skins.containsKey(uuid)) {
+			return skins.get(uuid);
 		} else {
-			String skinID = getSkinIDUncached(skinName);
-			if (skinID != null) skins.put(skinName, skinID);
+			String skinID = getSkinIDUncached(uuid, playername);
+			if (skinID != null) skins.put(uuid, skinID);
 			return skinID;
 		}
 	}
 	
 	public Map<String, String> getSkinIDsForPlayers(Set<String> names) {
 		Map<String, String> skins = new HashMap<>();
+		OfflinePlayer[] players = Bukkit.getOfflinePlayers();
 		for (String entry : names) {
-			String skinID = getSkinID(entry);
+			UUID uuid = Arrays.stream(players)
+					.filter(p -> entry.equalsIgnoreCase(p.getName()))
+					.findAny().map(OfflinePlayer::getUniqueId).orElse(null);
+			String skinID = getSkinID(uuid, entry);
 			if (skinID != null) skins.put(entry, skinID);
 		}
 		return skins;
 	}
 	
 	// Should not be called on main server thread to avoid lag!
-	private @Nullable String getSkinIDUncached(String skinName) {
-		IProperty profile = skinsRestorer.getSkinData(skinName);
-		return (profile != null) ? skinsRestorer.getSkinTextureUrlStripped(profile) : null;
+	private @Nullable String getSkinIDUncached(UUID uuid, String playername) {
+		PlayerStorage playerStorage = skinsRestorer.getPlayerStorage();
+		try {
+			Optional<SkinProperty> skin = playerStorage.getSkinForPlayer(uuid, playername);
+			return skin.map(PropertyUtils::getSkinTextureUrlStripped).orElse(null);
+		} catch (DataRequestException e) {
+			return null;
+		}
 	}
 	
-	private void cacheSkin(String skinName) {
-		String skinID = getSkinIDUncached(skinName);
-		if (skinID != null) skins.put(skinName, skinID);
+	private void cacheSkin(UUID uuid, String playername) {
+		String skinID = getSkinIDUncached(uuid, playername);
+		if (skinID != null) skins.put(uuid, skinID);
 	}
 }
