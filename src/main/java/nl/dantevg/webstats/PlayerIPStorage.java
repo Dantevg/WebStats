@@ -93,8 +93,8 @@ public class PlayerIPStorage {
 		String persistentStatus = (WebStatsConfig.getInstance().storePlayerIPs ? "on" : "off");
 		List<String> loadedIPs = new ArrayList<>();
 		ipToNames.forEach((ip, names) -> loadedIPs.add(ip + ": " + names.toString()));
-		return "Loaded ip to playername mapping: (persistent: " + persistentStatus + ")\n"
-				+ String.join("\n", loadedIPs);
+		return "Loaded ip to playername mapping: (persistent: " + persistentStatus + ")\n  "
+				+ String.join("\n  ", loadedIPs);
 	}
 	
 	private static @NotNull String encodeIP(@NotNull String ip) {

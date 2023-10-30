@@ -191,13 +191,12 @@ public class PlaceholderStorage {
 		List<String> loadedScores = new ArrayList<>();
 		for (Table.Cell<UUID, String, String> cell : data.cellSet()) {
 			UUID uuid = cell.getRowKey();
-			if (uuid == null) continue;
-			String playerName = Bukkit.getOfflinePlayer(uuid).getName();
-			loadedScores.add(String.format("%s (%s): %s = %s",
+			String playerName = (uuid != null) ? Bukkit.getOfflinePlayer(uuid).getName() : null;
+			loadedScores.add(String.format("%s (%s): %s = %s§r",
 					uuid, playerName, cell.getColumnKey(), cell.getValue()));
 		}
 		
-		return "Placeholder storage loaded placeholders:\n" + String.join("\n", loadedScores);
+		return "Placeholder storage loaded placeholders:\n  " + String.join("\n  ", loadedScores);
 	}
 	
 }
