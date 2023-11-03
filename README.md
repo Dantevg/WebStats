@@ -34,6 +34,9 @@ it should be very easy to work on the code yourself (barring sparse comments).
 ### Contributors
 Thank you to these people for helping out with the plugin by suggesting features,
 reporting bugs and submitting PRs!
+- [@Chokitu (spigotmc)](https://www.spigotmc.org/members/chokitu.1888568/):
+  SkinsRestorer feature suggestion and testing ([#83](https://www.spigotmc.org/members/chokitu.1888568/)),
+  delete-placeholders command suggestion ([#85](https://github.com/Dantevg/WebStats/issues/85))
 - [@Dancull47](https://github.com/Dancull47):
   MySQL feature suggestion ([#2](https://github.com/Dantevg/WebStats/issues/2))
 - [@draexo (spigotmc)](https://www.spigotmc.org/members/draexo.2905/):
@@ -50,10 +53,13 @@ reporting bugs and submitting PRs!
   bug report ([#50](https://github.com/Dantevg/WebStats/issues/50))
 - [@Olen](https://github.com/Olen):
   additional served files feature suggestion and PR ([#73](https://github.com/Dantevg/WebStats/issues/73)),
+  Discord custom icon and name suggestion and bug report ([#80](https://github.com/Dantevg/WebStats/issues/80)),
   help with bedrock and HTTPS features ([#54](https://github.com/Dantevg/WebStats/issues/54), [#23](https://github.com/Dantevg/WebStats/issues/23)),
   bug report ([#71](https://github.com/Dantevg/WebStats/issues/71))
 - [@Onako2](https://github.com/Onako2):
   bug report ([#72](https://github.com/Dantevg/WebStats/issues/72))
+- [@SDK](https://github.com/sdosker):
+  custom player name and server row feature suggestions ([#82](https://github.com/Dantevg/WebStats/issues/82))
 - [@Unkn0wn3636 (spigotmc)](https://www.spigotmc.org/members/unkn0wn3636.1457887/):
   multiple tables suggestion ([#26](https://github.com/Dantevg/WebStats/issues/26)),
   separate server entry suggestion ([#27](https://github.com/Dantevg/WebStats/issues/27)),
