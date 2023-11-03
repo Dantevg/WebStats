@@ -3,6 +3,7 @@ package nl.dantevg.webstats;
 import net.skinsrestorer.api.PropertyUtils;
 import net.skinsrestorer.api.SkinsRestorer;
 import net.skinsrestorer.api.SkinsRestorerProvider;
+import net.skinsrestorer.api.VersionProvider;
 import net.skinsrestorer.api.exception.DataRequestException;
 import net.skinsrestorer.api.property.SkinProperty;
 import net.skinsrestorer.api.storage.PlayerStorage;
@@ -24,6 +25,13 @@ public class SkinsRestorerHelper implements Listener {
 	private final Map<UUID, String> skins = new HashMap<>();
 	
 	public SkinsRestorerHelper(WebStats plugin) {
+		if (!VersionProvider.isCompatibleWith("15")) {
+			WebStats.logger.log(Level.WARNING,
+					"This version of WebStats expects SkinsRestorer version 15, but "
+							+ VersionProvider.getVersion()
+							+ " is present. There may be issues!");
+		}
+		
 		// Cache all skins at startup to prevent lag when loading the webpage for the first time
 		Bukkit.getScheduler().runTaskAsynchronously(
 				WebStats.getPlugin(WebStats.class),

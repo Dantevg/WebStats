@@ -103,7 +103,7 @@
 		<dependency>
 			<groupId>net.skinsrestorer</groupId>
 			<artifactId>skinsrestorer-api</artifactId>
-			<version>15.0.0</version>
+			<version>15.0.3</version>
 			<scope>provided</scope>
 		</dependency>
 	</dependencies>
