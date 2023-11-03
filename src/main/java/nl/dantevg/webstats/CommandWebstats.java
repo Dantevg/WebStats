@@ -26,6 +26,7 @@ public class CommandWebstats implements CommandExecutor, TabCompleter {
 			lines.add(webstats.debug());
 			if (WebStats.placeholderSource != null) lines.add(WebStats.placeholderSource.debug());
 			lines.add(WebStats.playerIPStorage.debug());
+			if (WebStats.skinsRestorerHelper != null) lines.add(WebStats.skinsRestorerHelper.debug());
 			sender.sendMessage(String.join("\n", lines));
 			return true;
 		} else if (args.length == 1 && args[0].equalsIgnoreCase("reload")) {

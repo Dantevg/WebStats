@@ -89,7 +89,17 @@ public class WebStats extends JavaPlugin {
 		}
 		
 		if (Bukkit.getPluginManager().getPlugin("SkinsRestorer") != null) {
-			skinsRestorerHelper = new SkinsRestorerHelper(this);
+			// SkinsRestorer versions before v15 have a completely different API
+			// and will therefore fail to load.
+			try {
+				skinsRestorerHelper = new SkinsRestorerHelper(this);
+			} catch (NoClassDefFoundError e) {
+				String version = Bukkit.getPluginManager()
+						.getPlugin("SkinsRestorer")
+						.getDescription()
+						.getVersion();
+				logger.log(Level.SEVERE, "Failed to load SkinsRestorer integration! WebStats is not compatible with version " + version + ".");
+			}
 		}
 		
 		try {
