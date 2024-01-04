@@ -2,6 +2,7 @@ const timeUnits = ["ticks", "milliseconds", "ms", "seconds", "s", "minutes", "mi
 const distanceUnits = ["blocks", "millimetres", "millimeters", "mm", "centimetres", "centimeters", "cm", "metres", "meters", "m", "kilometres", "kilometers", "km"]
 const dateUnits = ["timestamp", "formatted date"]
 const itemUnits = ["items", "items16"]
+const percentageUnits = ["percent"]
 
 const offsets = {
 	milliseconds: 0.001,
@@ -30,6 +31,7 @@ const offsets = {
 	km: 1000,
 	items: 1,
 	items16: 1,
+	percent: 1,
 }
 
 function convertTimeUnit(source: number, unit: string): string {
@@ -89,6 +91,10 @@ function convertItemUnit(source: number, unit: string): string {
 	}
 }
 
+function convertPercentageUnit(source: string, unit: string): string {
+	return source + "%"
+}
+
 export function autoConvertUnits(source: string, unit: string): string {
 	if (timeUnits.includes(unit)) {
 		return convertTimeUnit(Number(source), unit)
@@ -98,5 +104,7 @@ export function autoConvertUnits(source: string, unit: string): string {
 		return convertDateUnit(source, unit)
 	} else if (itemUnits.includes(unit)) {
 		return convertItemUnit(Number(source), unit)
+	} else if (percentageUnits.includes(unit)) {
+		return convertPercentageUnit(source, unit)
 	} else return isNaN(source as any) ? source : Number(source).toLocaleString()
 }
