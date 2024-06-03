@@ -89,16 +89,20 @@ public class WebStats extends JavaPlugin {
 		}
 		
 		if (Bukkit.getPluginManager().getPlugin("SkinsRestorer") != null) {
-			// SkinsRestorer versions before v15 have a completely different API
-			// and will therefore fail to load.
 			try {
 				skinsRestorerHelper = new SkinsRestorerHelper(this);
 			} catch (NoClassDefFoundError e) {
+				// SkinsRestorer versions before v15 have a completely different API
+				// and will therefore fail to load.
 				String version = Bukkit.getPluginManager()
 						.getPlugin("SkinsRestorer")
 						.getDescription()
 						.getVersion();
 				logger.log(Level.SEVERE, "Failed to load SkinsRestorer integration! WebStats is not compatible with version " + version + ".");
+			} catch (IllegalStateException e) {
+				// SkinsRestorer in proxy mode will throw IllegalStateException
+				// when calling SkinsRestorerProvider.get()
+				logger.log(Level.INFO, "SkinsRestorer integration is not enabled because SkinsRestorer is likely in proxy mode.");
 			}
 		}
 		
