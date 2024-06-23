@@ -5,6 +5,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,6 +17,7 @@ public class PlaceholderConfig {
 	public final boolean storeInFile;
 	public final @Nullable String storeInDatabase;
 	public final boolean saveOnPluginDisable;
+	public final Map<String, String> emptyValues;
 	
 	private PlaceholderConfig() throws InvalidConfigurationException {
 		ConfigurationSection section = WebStats.config.getConfigurationSection("placeholders");
@@ -27,6 +29,13 @@ public class PlaceholderConfig {
 		storeInFile = WebStats.config.getBoolean("store-placeholders-in-file");
 		storeInDatabase = WebStats.config.getString("store-placeholders-database");
 		saveOnPluginDisable = WebStats.config.getBoolean("save-placeholders-on-plugin-disable");
+		
+		section = WebStats.config.getConfigurationSection("placeholder-empty-values");
+		if (section != null) {
+			emptyValues = sanitizePlaceholderMap(section.getValues(false));
+		} else {
+			emptyValues = Collections.emptyMap();
+		}
 	}
 	
 	public static PlaceholderConfig getInstance(boolean forceNew) throws InvalidConfigurationException {

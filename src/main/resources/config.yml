@@ -107,6 +107,12 @@ objectives:
 # Mutually exclusive with `store-placeholders-in-file`
 #store-placeholders-database: WebStats_placeholders
 
+# Placeholder values to consider "empty". By default, only empty strings and
+# the placeholder name itself are considered empty. Some placeholders return
+# other values for "empty", like "0". You can add those here. (uncomment to use)
+#placeholder-empty-values:
+#  '%placeholder_name%': empty value
+
 # Configuration for the Discord webhook function (uncomment to use)
 # Make sure to set the webhook URL
 #discord-webhook:

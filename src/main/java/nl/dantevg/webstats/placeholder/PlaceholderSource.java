@@ -80,7 +80,14 @@ public class PlaceholderSource {
 				.collect(Collectors.toSet());
 	}
 	
-	// Get up-to-date score for player, or stored one if the player is offline
+	/**
+	 * Get up-to-date score for player, or stored one if the player is offline.
+	 * 
+	 * @param player The player to get the score for
+	 * @param placeholder The placeholder to get the score for
+	 * @param placeholderName The name of the placeholder
+	 * @return The score, or null if the score is not set
+	 */
 	private @Nullable String getPlaceholderForPlayer(CachedOfflinePlayer player, String placeholder, String placeholderName) {
 		if (player.getName() == null) return null;
 		
@@ -100,8 +107,13 @@ public class PlaceholderSource {
 		return isPlaceholderSet(placeholder, score) ? score : null;
 	}
 	
-	// Get all scores for all players from PlaceholderAPI
-	// Alternatively find stored scores from PlaceholderStorage
+	/**
+	 * Get all scores for all players from PlaceholderAPI.
+	 * Alternatively find stored scores from PlaceholderStorage.
+	 * 
+	 * @return A table of player names (rows) and placeholder names (columns) to
+	 * their values
+	 */
 	private @NotNull Table<String, String, String> getScores() {
 		Table<String, String, String> values = HashBasedTable.create();
 		Set<CachedOfflinePlayer> players = getEntriesAsCachedPlayers();
@@ -128,8 +140,13 @@ public class PlaceholderSource {
 		return values;
 	}
 	
-	// Get scores for single player from PlaceholderAPI
-	// This method does NOT try to find stored scores from PlaceholderStorage
+	/**
+	 * Get scores for single player from PlaceholderAPI.
+	 * This method does NOT try to find stored scores from PlaceholderStorage.
+	 * 
+	 * @param player The player to get scores for
+	 * @return A map of placeholder names to their values
+	 */
 	@NotNull Map<String, String> getScoresForPlayer(@NotNull CachedOfflinePlayer player) {
 		Map<String, String> scores = new HashMap<>();
 		if (player.getName() == null) return scores;
@@ -164,10 +181,20 @@ public class PlaceholderSource {
 		}
 	}
 	
-	public static boolean isPlaceholderSet(String placeholder, @Nullable String value) {
+	/**
+	 * Check if a placeholder has a value that is not empty. "Empty" is defined
+	 * as null, empty string, the placeholder name itself, or the empty value
+	 * defined in the config.
+	 * 
+	 * @param placeholder The placeholder name
+	 * @param value The value to check
+	 * @return Whether the placeholder value is set
+	 */
+	public boolean isPlaceholderSet(String placeholder, @Nullable String value) {
 		return value != null
-				&& !value.equals("")
-				&& !value.equalsIgnoreCase(placeholder);
+				&& !value.isEmpty()
+				&& !value.equalsIgnoreCase(placeholder)
+				&& !config.emptyValues.getOrDefault(placeholder, "").equalsIgnoreCase(value);
 	}
 	
 	public @NotNull String debug() {
