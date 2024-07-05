@@ -11,6 +11,7 @@ import org.bukkit.configuration.InvalidConfigurationException;
 import javax.net.ssl.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.security.*;
 import java.security.cert.CertificateException;
@@ -32,7 +33,7 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 	public HTTPSWebServer()
 			throws IOException, NoSuchAlgorithmException, KeyStoreException,
 			CertificateException, UnrecoverableKeyException, KeyManagementException, InvalidConfigurationException {
-		WebStats.logger.log(Level.INFO, "Enabling web server");
+		WebStats.logger.log(Level.INFO, "Enabling HTTPS web server");
 		
 		config = HTTPSConfig.getInstance(true);
 		port = WebStatsConfig.getInstance().port;
@@ -42,7 +43,10 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 		
 		SSLContext sslContext = SSLContext.getInstance("TLS");
 		KeyStore keyStore = HTTPSWebServer.getKeyStore(config.keystoreFile, config.keystorePassword);
+		
 		boolean needsRenewal = checkCertificatesExpiration(keyStore);
+		if (needsRenewal && config.automatic) renewCertificate();
+		
 		sslContext.init(HTTPSWebServer.getKeyManagers(keyStore, config.keystorePassword),
 				HTTPSWebServer.getTrustManagers(keyStore), null);
 		server.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
@@ -51,29 +55,29 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 				params.setSSLParameters(ctx.getDefaultSSLParameters());
 			}
 		});
-		
-		if (needsRenewal && config.automatic) {
-			File pluginFolder = WebStats.getPlugin(WebStats.class).getDataFolder();
-			ACME acme = new ACME(pluginFolder,
-					config.email,
-					config.domain,
-					config.token,
-					new File(pluginFolder, config.keystoreFile),
-					config.keystorePassword);
-			Bukkit.getScheduler().runTaskAsynchronously(WebStats.getPlugin(WebStats.class), () -> {
-				WebStats.logger.log(Level.INFO, "Renewing TLS certificate");
-				try {
-					boolean success = acme.renew();
-					if (success) {
-						WebStats.logger.log(Level.INFO, "TLS certificate renewed, will be applied on next plugin restart.");
-					} else {
-						WebStats.logger.log(Level.SEVERE, "Failed to renew TLS certificate!");
-					}
-				} catch (IOException | InterruptedException e) {
-					WebStats.logger.log(Level.SEVERE, "Failed to renew TLS certificate!", e);
+	}
+	
+	private void renewCertificate() {
+		File pluginFolder = WebStats.getPlugin(WebStats.class).getDataFolder();
+		ACME acme = new ACME(new File(pluginFolder, "acme"),
+				config.email,
+				config.domain,
+				config.token,
+				new File(pluginFolder, config.keystoreFile),
+				config.keystorePassword);
+		Bukkit.getScheduler().runTaskAsynchronously(WebStats.getPlugin(WebStats.class), () -> {
+			WebStats.logger.log(Level.INFO, "Renewing TLS certificate");
+			try {
+				boolean success = acme.renew();
+				if (success) {
+					WebStats.logger.log(Level.INFO, "TLS certificate renewed, will be applied on next plugin restart.");
+				} else {
+					WebStats.logger.log(Level.SEVERE, "Failed to renew TLS certificate! Check plugins/WebStats/acme/acme.log for details.");
 				}
-			});
-		}
+			} catch (IOException | InterruptedException e) {
+				WebStats.logger.log(Level.SEVERE, "Failed to renew TLS certificate! Check plugins/WebStats/acme/acme.log for details.", e);
+			}
+		});
 	}
 	
 	/**
@@ -82,7 +86,9 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 	 * @param keyStore the keystore containing the certificates to check
 	 * @return whether any of the certificates expire within one month
 	 */
-	private boolean checkCertificatesExpiration(KeyStore keyStore) throws KeyStoreException {
+	private static boolean checkCertificatesExpiration(KeyStore keyStore) throws KeyStoreException {
+		if (keyStore.size() == 0) return true;
+		
 		boolean needsRenewal = false;
 		Enumeration<String> aliases = keyStore.aliases();
 		while (aliases.hasMoreElements()) {
@@ -100,11 +106,11 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 	 * @param certificate the certificate to check
 	 * @return whether the certificate expires within one month, and thus needs to be renewed soon
 	 */
-	private boolean checkCertificateExpiration(X509Certificate certificate) {
+	private static boolean checkCertificateExpiration(X509Certificate certificate) {
 		Date expiration = certificate.getNotAfter();
 		Date now = Date.from(Instant.now());
 		Date oneWeekFromNow = Date.from(Instant.now().plus(Period.ofWeeks(1)));
-		Date oneMonthFromNow = Date.from(Instant.now().plus(Period.ofMonths(1)));
+		Date oneMonthFromNow = Date.from(Instant.now().plus(Period.ofDays(30))); // use 30 days because months are not supported
 		DateFormat formatter = DateFormat.getDateInstance();
 		
 		if (expiration.before(now)) {
@@ -118,7 +124,7 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 					Duration.between(Instant.now(), expiration.toInstant()).toDays()));
 		} else {
 			WebStats.logger.log(Level.INFO, String.format(
-					"The TLS certificate should be valid until %s.",
+					"The TLS certificate is valid until %s.",
 					formatter.format(expiration)));
 		}
 		
@@ -128,7 +134,11 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 	private static KeyStore getKeyStore(String keystoreFile, String keystorePassword)
 			throws KeyStoreException, CertificateException, NoSuchAlgorithmException, IOException {
 		KeyStore keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
-		keyStore.load(WebStats.getResourceInputStream(keystoreFile), keystorePassword.toCharArray());
+		InputStream keystoreStream = WebStats.getResourceInputStream(keystoreFile);
+		if (keystoreStream == null) {
+			WebStats.logger.log(Level.SEVERE, String.format("Certificate file '%s' not found. The webserver will not function before this is fixed (either manually or automatically).", keystoreFile));
+		}
+		keyStore.load(keystoreStream, keystorePassword.toCharArray());
 		return keyStore;
 	}
 	

@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 public class ACME {
-	private static final String ACME_SH_URL = "https://get.acme.sh";
+	private static final String ACME_SH_URL = "https://raw.githubusercontent.com/acmesh-official/acme.sh/master/acme.sh";
 	
 	private final File homeDir;
 	private final String homePath;
@@ -23,7 +23,7 @@ public class ACME {
 	private final File keystoreFile;
 	private final String keystorePassword;
 	
-	private final File acmeDir;
+	private final File logFile;
 	
 	public ACME(File home, String email, String domain, String token, File keystoreFile, String keystorePassword) {
 		this.homeDir = home;
@@ -34,7 +34,7 @@ public class ACME {
 		this.keystoreFile = keystoreFile;
 		this.keystorePassword = keystorePassword;
 		
-		acmeDir = new File(home, "acme");
+		this.logFile = new File(home, "acme.log");
 	}
 	
 	/**
@@ -46,20 +46,28 @@ public class ACME {
 	boolean renew() throws IOException, InterruptedException {
 		boolean success;
 		
+		logFile.delete();
+		
 		File acmeShFile = new File(homeDir, "acme.sh");
 		if (!acmeShFile.isFile()) {
 			WebStats.logger.log(Level.INFO, "Downloading acme.sh");
+			if (!homeDir.isDirectory() && !homeDir.mkdir()) {
+				WebStats.logger.log(Level.SEVERE, "Failed to create acme directory");
+				return false;
+			}
 			try (InputStream in = new URL(ACME_SH_URL).openStream()) {
 				Files.copy(in, acmeShFile.toPath());
 			}
-		}
-		
-		if (acmeDir.isDirectory()) {
-			WebStats.logger.log(Level.INFO, "Updating acme.sh");
-			success = acme(getUpdateCommand());
-		} else {
+			if (!acmeShFile.setExecutable(true)) {
+				WebStats.logger.log(Level.SEVERE, "Failed to make acme.sh executable");
+				return false;
+			}
+			
 			WebStats.logger.log(Level.INFO, "Installing acme.sh");
 			success = acme(getInstallCommand());
+		} else {
+			WebStats.logger.log(Level.INFO, "Updating acme.sh");
+			success = acme(getUpdateCommand());
 		}
 		if (!success) return false;
 		
@@ -87,8 +95,11 @@ public class ACME {
 		Map<String, String> env = builder.environment();
 		env.put("DuckDNS_Token", token);
 		env.put("CERT_PFX_PATH", keystoreFile.getAbsolutePath());
-		builder.directory(acmeDir);
-		return builder.start().waitFor() == 0;
+		builder.directory(homeDir);
+		builder.redirectOutput(ProcessBuilder.Redirect.appendTo(logFile));
+		builder.redirectErrorStream(true);
+		Process process = builder.start();
+		return process.waitFor() == 0;
 	}
 	
 	private List<String> getInstallCommand() {
