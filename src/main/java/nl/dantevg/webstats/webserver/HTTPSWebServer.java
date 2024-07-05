@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.Period;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.logging.Level;
 
 public class HTTPSWebServer extends WebServer<HttpsServer> {
@@ -40,7 +41,7 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 		
 		SSLContext sslContext = SSLContext.getInstance("TLS");
 		KeyStore keyStore = HTTPSWebServer.getKeyStore(config.keystoreFile, config.keystorePassword);
-		checkCertificateExpiration(keyStore);
+		checkCertificatesExpiration(keyStore);
 		sslContext.init(HTTPSWebServer.getKeyManagers(keyStore, config.keystorePassword),
 				HTTPSWebServer.getTrustManagers(keyStore), null);
 		server.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
@@ -51,8 +52,16 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 		});
 	}
 	
-	private void checkCertificateExpiration(KeyStore keyStore) throws KeyStoreException {
-		Date expiration = ((X509Certificate) keyStore.getCertificate("webstats")).getNotAfter();
+	private void checkCertificatesExpiration(KeyStore keyStore) throws KeyStoreException {
+		Enumeration<String> aliases = keyStore.aliases();
+		while (aliases.hasMoreElements()) {
+			String alias = aliases.nextElement();
+			checkCertificateExpiration((X509Certificate) keyStore.getCertificate(alias));
+		}
+	}
+	
+	private void checkCertificateExpiration(X509Certificate certificate) {
+		Date expiration = certificate.getNotAfter();
 		Date now = Date.from(Instant.now());
 		Date oneWeekFromNow = Date.from(Instant.now().plus(Period.ofDays(7)));
 		DateFormat formatter = DateFormat.getDateInstance();
