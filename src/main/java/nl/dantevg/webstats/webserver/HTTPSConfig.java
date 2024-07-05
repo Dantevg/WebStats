@@ -13,6 +13,7 @@ public class HTTPSConfig {
 	public final String email;
 	public final String domain;
 	public final String token;
+	public final boolean reloadAfterRenewal;
 	
 	public final String keystoreFile;
 	public final String keystorePassword;
@@ -28,6 +29,7 @@ public class HTTPSConfig {
 		email = section.getString("email");
 		domain = section.getString("domain");
 		token = section.getString("token");
+		reloadAfterRenewal = section.getBoolean("reload-after-renewal");
 		automatic = (email != null && domain != null && token != null);
 		if (!automatic && (email != null || domain != null || token != null)) {
 			// Partial automatic configuration

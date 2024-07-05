@@ -156,7 +156,7 @@ public class WebStats extends JavaPlugin {
 		}
 	}
 	
-	void reload() {
+	public void reload() {
 		logger.log(Level.INFO, "Reload: disabling plugin");
 		setEnabled(false);
 		Bukkit.getScheduler().cancelTasks(this);

@@ -58,18 +58,25 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 	}
 	
 	private void renewCertificate() {
-		File pluginFolder = WebStats.getPlugin(WebStats.class).getDataFolder();
+		WebStats plugin = WebStats.getPlugin(WebStats.class);
+		File pluginFolder = plugin.getDataFolder();
 		ACME acme = new ACME(new File(pluginFolder, "acme"),
 				config.email,
 				config.domain,
 				config.token,
 				new File(pluginFolder, config.keystoreFile),
 				config.keystorePassword);
-		Bukkit.getScheduler().runTaskAsynchronously(WebStats.getPlugin(WebStats.class), () -> {
+		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 			WebStats.logger.log(Level.INFO, "Renewing TLS certificate");
 			try {
 				boolean success = acme.renew();
-				if (success) {
+				if (success && config.reloadAfterRenewal) {
+					WebStats.logger.log(Level.INFO, "TLS certificate renewed, reloading plugin");
+					Bukkit.getScheduler().callSyncMethod(plugin, () -> {
+						plugin.reload();
+						return null;
+					});
+				} else if (success) {
 					WebStats.logger.log(Level.INFO, "TLS certificate renewed, will be applied on next plugin restart.");
 				} else {
 					WebStats.logger.log(Level.SEVERE, "Failed to renew TLS certificate! Check plugins/WebStats/acme/acme.log for details.");

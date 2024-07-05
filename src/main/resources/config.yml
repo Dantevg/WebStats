@@ -51,6 +51,8 @@ column-units:
 #  domain: subdomain.duckdns.org
 #  # Your DuckDNS token.
 #  token: ""
+#  # Whether to reload the plugin after the certificate has been renewed automatically.
+#  reload-after-renewal: true
 #  
 #  # Option 2: manual certificate management using a keystore file.
 #  # The path to the keystore file, relative to the plugin config folder.
