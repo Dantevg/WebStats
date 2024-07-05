@@ -56,7 +56,7 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 			File pluginFolder = WebStats.getPlugin(WebStats.class).getDataFolder();
 			ACME acme = new ACME(pluginFolder,
 					config.email,
-					config.subdomain,
+					config.domain,
 					config.token,
 					new File(pluginFolder, config.keystoreFile),
 					config.keystorePassword);

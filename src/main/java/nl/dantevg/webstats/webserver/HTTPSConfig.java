@@ -11,7 +11,7 @@ public class HTTPSConfig {
 	public static final String DEFAULT_KEYSTORE_PASSWORD = "webstats";
 	
 	public final String email;
-	public final String subdomain;
+	public final String domain;
 	public final String token;
 	
 	public final String keystoreFile;
@@ -26,12 +26,12 @@ public class HTTPSConfig {
 		}
 		
 		email = section.getString("email");
-		subdomain = section.getString("subdomain");
+		domain = section.getString("domain");
 		token = section.getString("token");
-		automatic = (email != null && subdomain != null && token != null);
-		if (!automatic && (email != null || subdomain != null || token != null)) {
+		automatic = (email != null && domain != null && token != null);
+		if (!automatic && (email != null || domain != null || token != null)) {
 			// Partial automatic configuration
-			throw new InvalidConfigurationException("Invalid configuration: automatic HTTPS certificate management requires email subdomain, and token fields. If you do not want automatic certificate management, comment these out.");
+			throw new InvalidConfigurationException("Invalid configuration: automatic HTTPS certificate management requires email, domain and token fields. If you do not want automatic certificate management, comment these out.");
 		}
 		
 		keystoreFile = section.getString("keystore-file", DEFAULT_KEYSTORE_FILE);

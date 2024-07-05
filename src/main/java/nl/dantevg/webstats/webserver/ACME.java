@@ -16,10 +16,10 @@ public class ACME {
 	
 	private final File acmeDir;
 	
-	public ACME(File home, String email, String subdomain, String token, File keystoreFile, String keystorePassword) {
+	public ACME(File home, String email, String domain, String token, File keystoreFile, String keystorePassword) {
 		this.homePath = home.getAbsolutePath();
 		this.email = email;
-		this.domain = subdomain + ".duckdns.org";
+		this.domain = domain;
 		this.token = token;
 		this.keystoreFile = keystoreFile;
 		this.keystorePassword = keystorePassword;
