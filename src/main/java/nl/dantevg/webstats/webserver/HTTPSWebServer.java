@@ -5,10 +5,11 @@ import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
 import nl.dantevg.webstats.WebStats;
 import nl.dantevg.webstats.WebStatsConfig;
-import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 
 import javax.net.ssl.*;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.*;
@@ -41,7 +42,7 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 		
 		SSLContext sslContext = SSLContext.getInstance("TLS");
 		KeyStore keyStore = HTTPSWebServer.getKeyStore(config.keystoreFile, config.keystorePassword);
-		checkCertificatesExpiration(keyStore);
+		boolean needsRenewal = checkCertificatesExpiration(keyStore);
 		sslContext.init(HTTPSWebServer.getKeyManagers(keyStore, config.keystorePassword),
 				HTTPSWebServer.getTrustManagers(keyStore), null);
 		server.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
@@ -50,20 +51,55 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 				params.setSSLParameters(ctx.getDefaultSSLParameters());
 			}
 		});
-	}
-	
-	private void checkCertificatesExpiration(KeyStore keyStore) throws KeyStoreException {
-		Enumeration<String> aliases = keyStore.aliases();
-		while (aliases.hasMoreElements()) {
-			String alias = aliases.nextElement();
-			checkCertificateExpiration((X509Certificate) keyStore.getCertificate(alias));
+		
+		if (needsRenewal && config.automatic) {
+			File pluginFolder = WebStats.getPlugin(WebStats.class).getDataFolder();
+			ACME acme = new ACME(pluginFolder,
+					config.email,
+					config.subdomain,
+					config.token,
+					new File(pluginFolder, config.keystoreFile),
+					config.keystorePassword);
+			Bukkit.getScheduler().runTaskAsynchronously(WebStats.getPlugin(WebStats.class), () -> {
+				WebStats.logger.log(Level.INFO, "Renewing TLS certificate...");
+				try {
+					acme.renew();
+				} catch (IOException | InterruptedException e) {
+					WebStats.logger.log(Level.SEVERE, "Failed to renew TLS certificate!", e);
+				}
+			});
 		}
 	}
 	
-	private void checkCertificateExpiration(X509Certificate certificate) {
+	/**
+	 * Check if any of the certificates in the keystore are expired or will expire soon.
+	 *
+	 * @param keyStore the keystore containing the certificates to check
+	 * @return whether any of the certificates expire within one month
+	 */
+	private boolean checkCertificatesExpiration(KeyStore keyStore) throws KeyStoreException {
+		boolean needsRenewal = false;
+		Enumeration<String> aliases = keyStore.aliases();
+		while (aliases.hasMoreElements()) {
+			String alias = aliases.nextElement();
+			if (checkCertificateExpiration((X509Certificate) keyStore.getCertificate(alias))) {
+				needsRenewal = true;
+			}
+		}
+		return needsRenewal;
+	}
+	
+	/**
+	 * Check if the certificate has expired or will expire soon.
+	 *
+	 * @param certificate the certificate to check
+	 * @return whether the certificate expires within one month, and thus needs to be renewed soon
+	 */
+	private boolean checkCertificateExpiration(X509Certificate certificate) {
 		Date expiration = certificate.getNotAfter();
 		Date now = Date.from(Instant.now());
-		Date oneWeekFromNow = Date.from(Instant.now().plus(Period.ofDays(7)));
+		Date oneWeekFromNow = Date.from(Instant.now().plus(Period.ofWeeks(1)));
+		Date oneMonthFromNow = Date.from(Instant.now().plus(Period.ofMonths(1)));
 		DateFormat formatter = DateFormat.getDateInstance();
 		
 		if (expiration.before(now)) {
@@ -80,6 +116,8 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 					"The TLS certificate should be valid until %s.",
 					formatter.format(expiration)));
 		}
+		
+		return expiration.before(oneMonthFromNow);
 	}
 	
 	private static KeyStore getKeyStore(String keystoreFile, String keystorePassword)
@@ -101,36 +139,6 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 		TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(MANAGER_TYPE);
 		trustManagerFactory.init(keyStore);
 		return trustManagerFactory.getTrustManagers();
-	}
-	
-}
-
-class HTTPSConfig {
-	private static HTTPSConfig instance;
-	
-	public final String keystoreFile;
-	public final String keystorePassword;
-	
-	private HTTPSConfig() throws InvalidConfigurationException {
-		ConfigurationSection section = WebStats.config.getConfigurationSection("https");
-		if (section == null) {
-			throw new InvalidConfigurationException("Invalid configuration: https should be a yaml object");
-		}
-		
-		keystoreFile = section.getString("keystore-file");
-		keystorePassword = section.getString("keystore-password");
-		if (keystoreFile == null || keystorePassword == null) {
-			throw new InvalidConfigurationException("Invalid configuration: keystore-file and keystore-password are required for HTTPS. If you do not want HTTPS, comment it out.");
-		}
-	}
-	
-	public static HTTPSConfig getInstance(boolean forceNew) throws InvalidConfigurationException {
-		if (instance == null || forceNew) instance = new HTTPSConfig();
-		return instance;
-	}
-	
-	public static HTTPSConfig getInstance() throws InvalidConfigurationException {
-		return getInstance(false);
 	}
 	
 }

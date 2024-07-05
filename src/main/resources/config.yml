@@ -44,6 +44,15 @@ column-units:
 # HTTPS configuration. Uncomment to enable HTTPS.
 # See https://github.com/Dantevg/WebStats/wiki/HTTPS for how to set up.
 #https:
+#  # Option 1: automatic certificate management using acme.sh and Let's Encrypt.
+#  # The email address to use for the certificate. This is required by Let's Encrypt.
+#  email: ""
+#  # Your DuckDNS subdomain to use for the certificate.
+#  domain: subdomain.duckdns.org
+#  # Your DuckDNS token.
+#  token: ""
+#  
+#  # Option 2: manual certificate management using a keystore file.
 #  # The path to the keystore file, relative to the plugin config folder.
 #  keystore-file: webstats.p12
 #  # The password of the keystore file.
