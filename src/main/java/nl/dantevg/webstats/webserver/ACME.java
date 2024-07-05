@@ -1,12 +1,21 @@
 package nl.dantevg.webstats.webserver;
 
+import nl.dantevg.webstats.WebStats;
+
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 public class ACME {
+	private static final String ACME_SH_URL = "https://get.acme.sh";
+	
+	private final File homeDir;
 	private final String homePath;
 	private final String email;
 	private final String domain;
@@ -17,6 +26,7 @@ public class ACME {
 	private final File acmeDir;
 	
 	public ACME(File home, String email, String domain, String token, File keystoreFile, String keystorePassword) {
+		this.homeDir = home;
 		this.homePath = home.getAbsolutePath();
 		this.email = email;
 		this.domain = domain;
@@ -35,20 +45,34 @@ public class ACME {
 	 */
 	boolean renew() throws IOException, InterruptedException {
 		boolean success;
+		
+		File acmeShFile = new File(homeDir, "acme.sh");
+		if (!acmeShFile.isFile()) {
+			WebStats.logger.log(Level.INFO, "Downloading acme.sh");
+			try (InputStream in = new URL(ACME_SH_URL).openStream()) {
+				Files.copy(in, acmeShFile.toPath());
+			}
+		}
+		
 		if (acmeDir.isDirectory()) {
+			WebStats.logger.log(Level.INFO, "Updating acme.sh");
 			success = acme(getUpdateCommand());
 		} else {
+			WebStats.logger.log(Level.INFO, "Installing acme.sh");
 			success = acme(getInstallCommand());
 		}
 		if (!success) return false;
 		
 		if (keystoreFile.isFile()) {
+			WebStats.logger.log(Level.INFO, "Renewing existing certificate");
 			success = acme(getRenewCommand());
 		} else {
+			WebStats.logger.log(Level.INFO, "Issuing new certificate");
 			success = acme(getIssueCommand());
 		}
 		if (!success) return false;
 		
+		WebStats.logger.log(Level.INFO, "Converting and installing certificate");
 		return acme(getConvertCommand());
 	}
 	

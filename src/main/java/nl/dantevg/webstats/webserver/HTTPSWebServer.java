@@ -61,9 +61,14 @@ public class HTTPSWebServer extends WebServer<HttpsServer> {
 					new File(pluginFolder, config.keystoreFile),
 					config.keystorePassword);
 			Bukkit.getScheduler().runTaskAsynchronously(WebStats.getPlugin(WebStats.class), () -> {
-				WebStats.logger.log(Level.INFO, "Renewing TLS certificate...");
+				WebStats.logger.log(Level.INFO, "Renewing TLS certificate");
 				try {
-					acme.renew();
+					boolean success = acme.renew();
+					if (success) {
+						WebStats.logger.log(Level.INFO, "TLS certificate renewed, will be applied on next plugin restart.");
+					} else {
+						WebStats.logger.log(Level.SEVERE, "Failed to renew TLS certificate!");
+					}
 				} catch (IOException | InterruptedException e) {
 					WebStats.logger.log(Level.SEVERE, "Failed to renew TLS certificate!", e);
 				}
