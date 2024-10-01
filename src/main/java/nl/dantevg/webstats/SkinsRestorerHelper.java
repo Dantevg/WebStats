@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.logging.Level;
 
 public class SkinsRestorerHelper implements Listener {
-	private @Nullable SkinsRestorer skinsRestorer = null;
+	private final SkinsRestorer skinsRestorer = SkinsRestorerProvider.get();
 	
 	// Map from player UUIDs to skin IDs
 	private final Map<UUID, String> skins = new HashMap<>();
@@ -60,11 +60,6 @@ public class SkinsRestorerHelper implements Listener {
 		}
 	}
 	
-	private SkinsRestorer getSkinsRestorer() {
-		if (skinsRestorer == null) skinsRestorer = SkinsRestorerProvider.get();
-		return skinsRestorer;
-	}
-	
 	private void cacheSkin(OfflinePlayer player) {
 		UUID uuid = player.getUniqueId();
 		String skinID = getSkinIDUncached(uuid, player.getName());
@@ -85,7 +80,7 @@ public class SkinsRestorerHelper implements Listener {
 	// Should not be called on main server thread to avoid lag!
 	private @Nullable String getSkinIDUncached(UUID uuid, String playername) {
 		WebStats.logger.log(Level.CONFIG, String.format("Getting skin for %s (%s)", uuid, playername));
-		PlayerStorage playerStorage = getSkinsRestorer().getPlayerStorage();
+		PlayerStorage playerStorage = skinsRestorer.getPlayerStorage();
 		try {
 			Optional<SkinProperty> skin = playerStorage.getSkinForPlayer(uuid, playername);
 			return skin.map(PropertyUtils::getSkinTextureUrlStripped).orElse(null);

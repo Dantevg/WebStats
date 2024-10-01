@@ -10,6 +10,9 @@ import nl.dantevg.webstats.webserver.WebServer;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.server.PluginEnableEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,7 +26,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class WebStats extends JavaPlugin {
+public class WebStats extends JavaPlugin implements Listener {
 	protected static ScoreboardSource scoreboardSource;
 	protected static DatabaseSource databaseSource;
 	protected static PlaceholderSource placeholderSource;
@@ -37,6 +40,9 @@ public class WebStats extends JavaPlugin {
 	public static Logger logger;
 	public static FileConfiguration config;
 	public static boolean hasEssentials;
+	
+	// SkinsRestorerHelper gets initialised in onPluginEnable, to avoid trying
+	// to load load it before it is enabled
 	public static SkinsRestorerHelper skinsRestorerHelper;
 	
 	// Gets run when the plugin is enabled on server startup
@@ -44,6 +50,8 @@ public class WebStats extends JavaPlugin {
 	public void onEnable() {
 		logger = getLogger();
 		config = getConfig();
+		
+		Bukkit.getServer().getPluginManager().registerEvents(this, this);
 		
 		// Config
 		saveDefaultConfig();
@@ -86,28 +94,6 @@ public class WebStats extends JavaPlugin {
 			} catch (InvalidConfigurationException e) {
 				logger.log(Level.SEVERE, "Invalid Discord webhook configuration", e);
 			}
-		}
-		
-		if (Bukkit.getPluginManager().getPlugin("SkinsRestorer") != null) {
-			// Need to wait a bit before enabling SkinsRestorer integration because it will cause errors otherwise
-			logger.log(Level.INFO, "Enabling SkinsRestorer integration in 1 second");
-			Bukkit.getScheduler().runTaskLater(this, () -> {
-				try {
-					skinsRestorerHelper = new SkinsRestorerHelper(this);
-				} catch (NoClassDefFoundError e) {
-					// SkinsRestorer versions before v15 have a completely different API
-					// and will therefore fail to load.
-					String version = Bukkit.getPluginManager()
-							.getPlugin("SkinsRestorer")
-							.getDescription()
-							.getVersion();
-					logger.log(Level.SEVERE, "Failed to load SkinsRestorer integration! WebStats is not compatible with version " + version + ".");
-				} catch (IllegalStateException e) {
-					// SkinsRestorer in proxy mode will throw IllegalStateException
-					// when calling SkinsRestorerProvider.get()
-					logger.log(Level.INFO, "SkinsRestorer integration is not enabled because SkinsRestorer is likely in proxy mode.");
-				}
-			}, 20);
 		}
 		
 		try {
@@ -157,6 +143,28 @@ public class WebStats extends JavaPlugin {
 		if (discordWebhook != null) {
 			discordWebhook.disable();
 			discordWebhook = null;
+		}
+	}
+	
+	@EventHandler
+	public void onPluginEnable(PluginEnableEvent event) {
+		if (event.getPlugin().getName().equals("SkinsRestorer")) {
+			logger.info("Enabling SkinsRestorer integration");
+			try {
+				skinsRestorerHelper = new SkinsRestorerHelper(this);
+			} catch (NoClassDefFoundError e) {
+				// SkinsRestorer versions before v15 have a completely different API
+				// and will therefore fail to load.
+				String version = Bukkit.getPluginManager()
+						.getPlugin("SkinsRestorer")
+						.getDescription()
+						.getVersion();
+				logger.log(Level.SEVERE, "Failed to load SkinsRestorer integration! WebStats is not compatible with version " + version + ".");
+			} catch (IllegalStateException e) {
+				// SkinsRestorer in proxy mode will throw IllegalStateException
+				// when calling SkinsRestorerProvider.get()
+				logger.log(Level.INFO, "SkinsRestorer integration is not enabled because SkinsRestorer is likely in proxy mode.");
+			}
 		}
 	}
 	
