@@ -62,7 +62,7 @@ export default class WebStats {
 		const tableConfigsPromise = this.connection.getTables()
 		Promise.all([statsPromise, tableConfigsPromise])
 			.then(
-				([stats, tableConfigs]) => this.init(stats, tableConfigs, config, optionHideOffline.checked),
+				([stats, tableConfigs]) => this.init(stats, tableConfigs, config, optionHideOffline?.checked),
 				this.catchError(WebStats.CONNECTION_ERROR_MSG, config)
 			)
 			.catch(this.catchError(undefined, config))
@@ -86,7 +86,7 @@ export default class WebStats {
 		)
 
 		optionHideOffline?.addEventListener("change", (e) => {
-			this.displays.forEach(display => display.changeHideOffline(optionHideOffline.checked))
+			this.displays.forEach(display => display.changeHideOffline(optionHideOffline?.checked))
 		})
 
 		window.webstats = this
