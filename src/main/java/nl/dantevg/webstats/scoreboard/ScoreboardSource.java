@@ -34,20 +34,34 @@ public class ScoreboardSource {
 		for (Objective objective : scoreboard.getObjectives()) {
 			// Filter out objectives that do not appear in the list by either
 			// their internal name or their display name
-			if (!config.allObjectives
-					&& !config.objectives.contains(objective.getDisplayName())
-					&& !config.objectives.contains(objective.getName())) continue;
+			if (!shouldIncludeObjective(objective)) continue;
 			
 			// Get player scores
 			for (String entry : scoreboard.getEntries()) {
 				Score s = objective.getScore(entry);
 				if (s.isScoreSet()) values.put(
 						entry,
-						objective.getDisplayName(),
+						getObjectiveName(objective),
 						String.valueOf(s.getScore()));
 			}
 		}
 		return values;
+	}
+	
+	private boolean shouldIncludeObjective(Objective objective) {
+		return config.allObjectives
+				|| config.objectives.contains(objective.getDisplayName())
+				|| config.objectives.contains(objective.getName());
+	}
+	
+	private String getObjectiveName(Objective objective) {
+		if (config.renameObjectives.containsKey(objective.getName())) {
+			return config.renameObjectives.get(objective.getName());
+		} else if (config.renameObjectives.containsKey(objective.getDisplayName())) {
+			return config.renameObjectives.get(objective.getDisplayName());
+		} else {
+			return objective.getDisplayName();
+		}
 	}
 	
 	public @NotNull EntriesScores getStats() {

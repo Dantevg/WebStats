@@ -76,8 +76,12 @@ additional-resources: []
 
 # Scoreboard objectives to use. When '*' is present, uses all objectives.
 # (make sure to enclose the '*' in quotes)
+# You can also give a custom name for an objective by writing the new name
+# after the original name, separated by a colon.
 objectives:
   - '*'
+#  - Objective Name
+#  - Objective Name: Custom Name
 
 # Database credentials for MySQL database connectivity and placeholder storage
 #database:
