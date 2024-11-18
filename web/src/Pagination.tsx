@@ -43,7 +43,7 @@ export default class Pagination {
 		this.maxPage = Math.ceil(nEntries / this.displayCount)
 
 		// Hide all controls when there is only one page
-		if (this.maxPage == 1) {
+		if (this.maxPage <= 1) {
 			this.parentElem.classList.add("pagination-hidden")
 		} else {
 			this.parentElem.classList.remove("pagination-hidden")
