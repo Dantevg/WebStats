@@ -5,7 +5,8 @@ export default class RandomStats {
 	constructor(n_entries = RandomStats.N_ENTRIES, n_stats = RandomStats.N_STATS){
 		this.scores = { entries: [], scores: {} }
 		
-		for(let i = 0; i < n_entries; i++){
+		this.scores.entries.push("#server")
+		for(let i = 1; i < n_entries; i++){
 			this.scores.entries.push(RandomStats.intToName(i, 3))
 		}
 		
