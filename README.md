@@ -34,14 +34,22 @@ it should be very easy to work on the code yourself (barring sparse comments).
 ### Contributors
 Thank you to these people for helping out with the plugin by suggesting features,
 reporting bugs and submitting PRs!
+- [@bacalhau-seco](https://github.com/bacalhau-seco):
+  bug reports ([#94](https://github.com/Dantevg/WebStats/issues/94), [#95](https://github.com/Dantevg/WebStats/issues/95), [#96](https://github.com/Dantevg/WebStats/issues/96))
+- [@Baklashkaa](https://github.com/Baklashkaa):
+  bug report ([#102](https://github.com/Dantevg/WebStats/issues/102))
+- [@calvinli723](https://github.com/calvinli723):
+  player name scrolling suggestion ([#103](https://github.com/Dantevg/WebStats/issues/103))
 - [@Chokitu (spigotmc)](https://www.spigotmc.org/members/chokitu.1888568/):
-  SkinsRestorer feature suggestion and testing ([#83](https://www.spigotmc.org/members/chokitu.1888568/)),
+  SkinsRestorer feature suggestion and testing ([#83](https://github.com/Dantevg/WebStats/issues/83)),
   delete-placeholders command suggestion ([#85](https://github.com/Dantevg/WebStats/issues/85))
 - [@Dancull47](https://github.com/Dancull47):
   MySQL feature suggestion ([#2](https://github.com/Dantevg/WebStats/issues/2))
 - [@draexo (spigotmc)](https://www.spigotmc.org/members/draexo.2905/):
   bug report ([spigotmc #13](https://www.spigotmc.org/threads/web-stats.492833/#post-4308888)),
   Discord feature suggestion ([#13](https://github.com/Dantevg/WebStats/issues/13))
+- [@kommodore1024](https://github.com/kommodore1024):
+  bug report ([#99](https://github.com/Dantevg/WebStats/issues/99))
 - [@LcorpOfficial](https://github.com/LcorpOfficial):
   colour codes feature suggestion ([#33](https://github.com/Dantevg/WebStats/issues/33)),
   bug report ([#32](https://github.com/Dantevg/WebStats/issues/32))
