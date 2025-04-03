@@ -71,9 +71,11 @@ export default class WebStats {
 		const cookies = document.cookie.split("; ") ?? []
 		cookies.filter(str => str.length > 0).forEach(cookie => {
 			const [property, value] = cookie.match(/[^=]+/g)
-			document.documentElement.classList.toggle(property, value == "true")
-			const el = document.querySelector("input.webstats-option#" + property) as HTMLInputElement
-			if (el) el.checked = (value == "true")
+			if (value == "true") {
+				document.documentElement.classList.add(property)
+				const el = document.querySelector("input.webstats-option#" + property) as HTMLInputElement
+				if (el) el.checked = true
+			}
 		})
 
 		// On config option toggle, set the html element's class and store cookie
