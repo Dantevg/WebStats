@@ -1,6 +1,6 @@
 {
 	"name": "webstats-frontend",
-	"version": "1.10.0",
+	"version": "1.11.0",
 	"author": "RedPolygon <mail@dantevg.nl>",
 	"license": "MIT",
 	"description": "The front-end for the WebStats Spigot plugin",
