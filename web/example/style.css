@@ -7,6 +7,7 @@
 	--status-online: #4F4;
 	--status-afk: #F84;
 	--error: #F44;
+	--compact-transition-duration: 0.2s;
 }
 
 a {
@@ -34,7 +35,13 @@ a {
 }
 
 table {
-	border-spacing: 2px;
+	--row-height: 50px;
+	--gap: 2px;
+	border-spacing: var(--gap);
+}
+
+html.compact table {
+	--row-height: 32px;
 }
 
 html.hide-offline tr.offline {
@@ -48,13 +55,12 @@ tr.current-player td:not(.empty) {
 
 td:not(.empty) {
 	position: relative;
-	height: 50px;
+	height: var(--row-height);
 	padding: 0px 20px;
 	background: var(--bg1);
 	text-align: right;
 	white-space: nowrap;
-	-webkit-transition: height 0.2s, padding 0.2s;
-	transition: height 0.2s, padding 0.2s;
+	transition: height var(--compact-transition-duration), padding var(--compact-transition-duration);
 }
 
 td:not(.empty)[data-objective=Player] {
@@ -78,27 +84,40 @@ td:not(.empty)::after {
 	z-index: -1;
 }
 
-td.skin {
-	padding: 0px !important;
-	background: transparent;
+td.skin, html.scroll-playernames td[data-objective=Player], html.scroll-playernames th[data-objective=Player] {
+	position: sticky !important;
 	z-index: 10;
 }
 
+html.scroll-playernames th[data-objective=Player] {
+	left: 0;
+	backdrop-filter: blur(5px);
+}
+
+html.scroll-playernames td[data-objective=Player] {
+	left: calc(var(--row-height) + var(--gap));
+	backdrop-filter: blur(5px);
+	transition:
+		height var(--compact-transition-duration),
+		padding var(--compact-transition-duration),
+		left var(--compact-transition-duration);
+}
+
+td.skin {
+	left: 0;
+	padding: 0px !important;
+	background: transparent;
+}
+
 td.skin img {
-	width: 50px;
-	height: 100%;
+	width: var(--row-height);
 	-ms-interpolation-mode: nearest-neighbor;
 		image-rendering: -webkit-optimize-contrast;
 		image-rendering: -moz-crisp-edges;
 		image-rendering: -o-pixelated;
 		image-rendering: pixelated;
 	display: block;
-	transition: width 0.2s;
-}
-
-td.skin img[title="#server"] {
-	/* Disable pixelated rendering for server icon (probably better most of the time) */
-	image-rendering: auto;
+	transition: width var(--compact-transition-duration);
 }
 
 td.skin[title="#server"] {
@@ -109,34 +128,22 @@ td.skin[title="#server"] {
 }
 
 html.compact td:not(.empty){
-	height: 32px;
 	padding: 0px 10px;
 }
 
 html.compact td:not(.empty)[data-objective=Player]{
-	padding-left: 32px;
+	padding-left: var(--row-height);
 }
 
 html.compact td:not(.empty)[data-objective=Player][title="#server"] {
 	padding-left: 10px;
 }
 
-html.compact td.skin img {
-	width: 32px;
-}
-
-.sticky {
-	position: -webkit-sticky !important;
-	position: sticky !important;
-	left: 0;
-}
-
 th {
 	padding: 10px 20px;
 	background: var(--bg2);
 	cursor: pointer;
-	-webkit-transition: padding 0.2s;
-	transition: padding 0.2s;
+	transition: padding var(--compact-transition-duration);
 }
 
 html.compact th{
@@ -151,7 +158,7 @@ th.webstats-sort-column::after {
 	position: absolute;
 	top: 10px;
 	right: 10px;
-	transition: top 0.2s, right 0.2s;
+	transition: top var(--compact-transition-duration), right var(--compact-transition-duration);
 }
 
 th.webstats-sort-column.ascending::after {
@@ -175,8 +182,7 @@ html.compact th.webstats-sort-column::after {
 	height: 10px;
 	border-radius: 10px;
 	background: var(--status-offline);
-	-webkit-transition: top 0.2s, left 0.2s;
-	transition: top 0.2s, left 0.2s;
+	transition: top var(--compact-transition-duration), left var(--compact-transition-duration);
 }
 
 html.compact .status {
@@ -230,8 +236,7 @@ body {
 main {
 	margin: 100px auto;
 	width: 60%;
-	-webkit-transition: width 0.2s;
-	transition: width 0.2s;
+	transition: width var(--compact-transition-duration);
 }
 
 main > span {
