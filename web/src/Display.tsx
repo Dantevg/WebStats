@@ -40,7 +40,7 @@ export default class Display {
 		this.rows = new Map()
 		for (const entry of this.getEntries()) {
 			this.rows.set(entry, new Row({
-				columns: this.columns ?? this.data.columns,
+				columns: this.getColumns(),
 				units: this.data.units,
 				showSkins: this.showSkins,
 				skin: (entry == "#server") ? this.serverIconURL : this.data.skins[entry],
@@ -52,10 +52,14 @@ export default class Display {
 		// Fill entries
 		this.updateStats()
 	}
+	
+	getColumns() {
+		return (this.columns ?? this.data.columns).filter(column => column != "Player")
+	}
 
 	getEntries() {
 		const entriesHere = this.data.entries.filter((entry: string) =>
-			(this.columns ?? this.data.columns).some((column: string) =>
+			(this.getColumns()).some((column: string) =>
 				this.data.scoreboard.scores[column]?.[entry]
 				&& this.data.scoreboard.scores[column][entry] != "0"))
 
@@ -77,7 +81,7 @@ export default class Display {
 	}
 
 	updateScoreboard() {
-		for (const column of ["Player"].concat(this.columns ?? this.data.columns)) {
+		for (const column of ["Player"].concat(this.getColumns())) {
 			if (column == "Player" && this.data.columns_.Player == 1) continue;
 			
 			let max = 0
@@ -150,7 +154,7 @@ export default class Display {
 
 		const rows: ijJSX.Node[] = []
 		rows.push(<Heading
-			columns={this.columns ?? this.data.columns}
+			columns={this.getColumns()}
 			showSkins={this.showSkins}
 			sortColumn={this.sortColumn}
 			sortDescending={this.descending}
