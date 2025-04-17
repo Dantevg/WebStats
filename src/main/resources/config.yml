@@ -38,6 +38,7 @@ server-columns: []
 # - distance: blocks/metres/meters/m, kilometres/kilometers/km
 # - date: formatted date, timestamp
 # - item count: items, items16 (for 16-stackables)
+# - percent
 column-units:
 #  Column Name: source unit
 
