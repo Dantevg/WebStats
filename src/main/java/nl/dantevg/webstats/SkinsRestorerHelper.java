@@ -83,7 +83,7 @@ public class SkinsRestorerHelper implements Listener {
 		PlayerStorage playerStorage = skinsRestorer.getPlayerStorage();
 		try {
 			Optional<SkinProperty> skin = playerStorage.getSkinForPlayer(uuid, playername);
-			return skin.map(PropertyUtils::getSkinTextureUrlStripped).orElse(null);
+			return skin.map(PropertyUtils::getSkinTextureHash).orElse(null);
 		} catch (DataRequestException e) {
 			return null;
 		}
